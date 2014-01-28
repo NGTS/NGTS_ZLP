@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import pyfits as pf
 import os
-import astropysics.obstools as astropy
 import linecache
 import threading
 import multiprocessing
@@ -9,19 +8,24 @@ import scipy.optimize as opt
 from os import listdir
 from os.path import isfile, join
 from util import thread_alloc
+from numpy import *
 
-def m_condense_data(image_directory,nproc,nfiles,appsize):
+def m_condense_data(filelist,nproc,appsize):
+
+  nfiles = 0
+  for line in open(filelist):
+    nfiles += 1
 
   starts, ends = thread_alloc(nfiles,nproc)
 
   processes = []
   for i in range(0,nproc):
-    p = multiprocessing.Process(target=condense_data, args = (dir,starts[i],ends[i],i+1,appsize))
+    p = multiprocessing.Process(target=condense_data, args = (filelist,starts[i],ends[i],i+1,appsize))
     processes.append(p)
   [x.start() for x in processes]
   [x.join() for x in processes]
 
-  filelist = array([ f for f in listdir(image_directory) if 'output_' in f ])
+  filelist = array([ f for f in listdir(os.getcwd()) if 'output_' in f ])
   numberlist = array([int(f.split('_')[1].split('.')[0]) for f in filelist])
   ordered = numberlist.argsort() 
   stitch(filelist[ordered])
@@ -29,9 +33,10 @@ def m_condense_data(image_directory,nproc,nfiles,appsize):
   for f in filelist:
     os.system('rm '+f)
 
-def condense_data(dir,minlen,maxlen,thread_no,appsize):
+def condense_data(filelist,minlen,maxlen,thread_no,appsize):
 
 #Take all .phot outputs from casu imstack_ls and condense them into a single file with formatting suitible for reading by sysrem
+  import numpy as np
 
   flux = []
   flux_err = []
@@ -40,6 +45,8 @@ def condense_data(dir,minlen,maxlen,thread_no,appsize):
   ypos = []
   ALT = []
   AZ = []
+  RA = []
+  DEC = []
   time=[]
   centerra = []
   centerdec = []
@@ -55,6 +62,7 @@ def condense_data(dir,minlen,maxlen,thread_no,appsize):
   SKY_MED = []
   CLOUDS = []
   SHIFT = []
+  exposure = []
 
   #the .copy() addition is necessary when dealing with long filelists - by default python list optimization keeps all files open otherwise,
   #leading to a crash from too many open files
@@ -69,88 +77,84 @@ def condense_data(dir,minlen,maxlen,thread_no,appsize):
   first_frame = True
 
   for i in range(minlen,maxlen):
-    line = linecache.getline('filelist',i).strip('\n')
-    with pf.open(line.rstrip('.fits\n').split('/')[-1]+'_cal.fits.phot') as photdata:
+    line = linecache.getline(filelist,i).strip('\n')
+    status_checks = line.split(' ')[1:]
+    print status_checks
+    if all(status == 'ok' for status in status_checks):
+      with pf.open(line.split(' ')[0]+'.phot') as photdata:
+        frame_xpos = photdata[1].data['X_coordinate'].copy()
+        frame_ypos = photdata[1].data['Y_coordinate'].copy()
+        if first_frame == True:
+  	  first_frame = False
+	  frame_ypos_prev = frame_ypos
+	  frame_xpos_prev = frame_xpos
+        xshift = sqrt(mean((frame_xpos - frame_xpos_prev)**2))
+        yshift = sqrt(mean((frame_ypos - frame_ypos_prev)**2))      
+        frame_shift = sqrt(xshift**2 + yshift**2)
 
-      frame_xpos = photdata[1].data['X_coordinate'].copy()
-      frame_ypos = photdata[1].data['Y_coordinate'].copy()
-      if first_frame == True:
-	first_frame = False
-	frame_ypos_prev = frame_ypos
-	frame_xpos_prev = frame_xpos
-      xshift = sqrt(mean((frame_xpos - frame_xpos_prev)**2))
-      yshift = sqrt(mean((frame_ypos - frame_ypos_prev)**2))      
-      frame_shift = sqrt(xshift**2 + yshift**2)
-
-      frame_ypos_prev = frame_ypos
-      frame_xpos_prev = frame_xpos
-
-
-      SKY_SNR_frame = photdata[1].header['SKYLEVEL']/photdata[1].header['SKYNOISE']
-      fwhm_frame = get_fwhm(photdata,appsize)
-      gain = photdata[1].header['GAINFACT']  
-      try:
-	ambient = photdata[1].header['WXTEMP']
-      except:
-	ambient = 10.0
-      cloud_status = cloud_check(line.split('/')[-1].strip('.fits')+'_cal.fits')
-      if ((cloud_status < 2) & (fwhm_frame < 5) & (fwhm_frame > 1.0) & (frame_shift < 1.0) & (ambient > 19)):
-	SHIFT += [frame_shift]
-	CLOUDS += [cloud_status]
-	SKY_MED += [photdata[1].header['SKYLEVEL']]
-	SKY_SNR += [SKY_SNR_frame]
-	ALT +=[photdata[1].header['TEL_ALT']]
-	AZ +=[photdata[1].header['TEL_AZ']]
-	try:
-	  ADU_DEV +=[photdata[1].header['ADU_DEV']]
-	  skylevel +=[photdata[1].header['skylevel']]
-	  meanbias += [photdata[1].header['BIASMEAN']]
-	except:
-	  imagedata = pf.open(line)
-	  ADU_DEV +=[std(imagedata[0].data)]
-	  skylevel +=[median(imagedata[0].data)]	  
-	  biasstrip = append(imagedata[0].data[:,:20],imagedata[0].data[:,-20:])
-	  meanbias += [mean(biasstrip)]
-	centerra +=[photdata[1].header['CRVAL1']]
-	centerdec +=[photdata[1].header['CRVAL2']]
-	# correcting for airmass - the newer fits files have an airmass term, so just use that instead perhaps
-	airmass = 1.0/cos((90.0-ALT[-1])*pi/180.0)
-	fluxcorrection = 10**(airmass*k/2.5)
-	sky += [photdata[1].data['Skylev'].copy()]
-	xpos += [frame_xpos]
-	ypos += [frame_ypos]
-	utc = photdata[1].header['OBSSTART'].split('T')
-	yr, month, day = utc[0].split('-')
-	hr, min, sec = utc[1].split(':')
-	fwhm += [fwhm_frame]
-	rawflux = photdata[1].data['Core3_flux'].copy()
-	correctedflux = gain*rawflux*fluxcorrection/photdata[1].header['EXPOSURE']
-	flux += [correctedflux]
-	rel_err = 1.0/(rawflux*gain/sqrt(rawflux*gain + npix*sky[-1]*gain))
-	abs_err = rel_err*correctedflux
-	flux_err += [abs_err]
-	T +=[photdata[1].header['CCDTEMP']]
-	coolstat +=[photdata[1].header['COOLSTAT']]
-	jd = astropy.calendar_to_jd((yr,month,day,hr,min,sec)) - 2400000
-	time +=[[jd]*len(flux[0])]
-	print shape(time), line.rstrip('.fits\n').split('/')[-1]+'_cal.fits.phot', thread_no
-      else:
-	print 'Image ',line,' rejected for being too noisy! (sky SNR ',cloud_status,') (fwhm ',fwhm_frame,') (frame_shift ',frame_shift,') (ambient ',ambient,')'
+        frame_ypos_prev = frame_ypos
+        frame_xpos_prev = frame_xpos
 
 
-  # open the last file from the loop again to retrieve additional global data
-  with pf.open(line.rstrip('.fits\n').split('/')[-1]+'_cal.fits.phot') as imdata:
-    RA = imdata[1].data['RA']
-    DEC = imdata[1].data['DEC']
-    exposure = imdata[1].header['EXPOSURE']  
-    gain = imdata[1].header['GAINFACT']  
-
-  print gain, exposure
+        SKY_SNR_frame = photdata[1].header['SKYLEVEL']/photdata[1].header['SKYNOISE']
+#        fwhm_frame = get_fwhm(photdata,appsize)
+        fwhm_frame = 3
+        gain = photdata[1].header['GAINFACT']  
+        try:
+	  ambient = photdata[1].header['WXTEMP']
+        except:
+	  ambient = 10.0
+        cloud_status = cloud_check(line.split(' ')[0])
+        if ((cloud_status < 3) & (fwhm_frame < 5) & (fwhm_frame > 1.0) & (frame_shift < 10.0) & (ambient > 19)):
+	  SHIFT += [frame_shift]
+	  CLOUDS += [cloud_status]
+	  SKY_MED += [photdata[1].header['SKYLEVEL']]
+	  SKY_SNR += [SKY_SNR_frame]
+	  ALT +=[photdata[1].header['TEL_ALT']]
+	  AZ +=[photdata[1].header['TEL_AZ']]
+	  RA +=[photdata[1].header['TEL_RA']]
+	  DEC +=[photdata[1].header['TEL_DEC']]
+          exposure += [photdata[1].header['EXPOSURE']]
+	  try:
+	    ADU_DEV +=[photdata[1].header['ADU_DEV']]
+	    skylevel +=[photdata[1].header['skylevel']]
+	    meanbias += [photdata[1].header['BIASMEAN']]
+	  except:
+	    imagedata = pf.open(line)
+	    ADU_DEV +=[std(imagedata[0].data)]
+	    skylevel +=[median(imagedata[0].data)]	  
+	    biasstrip = append(imagedata[0].data[:,:20],imagedata[0].data[:,-20:])
+	    meanbias += [mean(biasstrip)]
+	  centerra +=[photdata[1].header['CRVAL1']]
+	  centerdec +=[photdata[1].header['CRVAL2']]
+	  # correcting for airmass - the newer fits files have an airmass term, so just use that instead perhaps
+	  airmass = 1.0/cos((90.0-ALT[-1])*pi/180.0)
+	  fluxcorrection = 10**(airmass*k/2.5)
+	  sky += [photdata[1].data['Skylev'].copy()]
+	  xpos += [frame_xpos]
+	  ypos += [frame_ypos]
+	  utc = photdata[1].header['OBSSTART'].split('T')
+	  yr, month, day = utc[0].split('-')
+	  hr, min, sec = utc[1].split(':')
+	  fwhm += [fwhm_frame]
+	  rawflux = photdata[1].data['Core3_flux'].copy()
+	  correctedflux = gain*rawflux*fluxcorrection/photdata[1].header['EXPOSURE']
+	  flux += [correctedflux]
+	  rel_err = 1.0/(rawflux*gain/sqrt(rawflux*gain + npix*sky[-1]*gain))
+	  abs_err = rel_err*correctedflux
+	  flux_err += [abs_err]
+	  T +=[photdata[1].header['CCDTEMP']]
+	  coolstat +=[photdata[1].header['COOLSTAT']]
+          mjd = photdata[1].header['MJD']
+	  time +=[[mjd]*len(flux[0])]
+	  print shape(time), line.split(' ')[0]+'.phot', thread_no
+        else:
+	  print 'Image ',line,' rejected for being too noisy! (sky SNR ',cloud_status,') (fwhm ',fwhm_frame,') (frame_shift ',frame_shift,') (ambient ',ambient,')'
 
   # generate time of mid exposure array
   tarray = np.array(time)
   print shape(tarray)
-  tmid = tarray[:,0] + ((exposure/2.0)/(3600.0*24.0))
+  tmid = tarray[:,0] + ((array(exposure)/2.0)/(3600.0*24.0))
 
   zeros = tmid*0
 
@@ -171,8 +175,8 @@ def condense_data(dir,minlen,maxlen,thread_no,appsize):
   c2 = pf.Column(name='FLUX_MEAN', format='1D', unit='Counts', array=meanarray)
   c3 = pf.Column(name='BLEND_FRACTION', format='1D', array=(meanarray)*0)
   c4 = pf.Column(name='NPTS', format='1J', array=npts)
-  c5 = pf.Column(name='RA', format='1D', array=RA)
-  c6 = pf.Column(name='DEC', format='1D', array=DEC)
+  c5 = pf.Column(name='TEL_RA', format='1D', array=RA)
+  c6 = pf.Column(name='TEL_DEC', format='1D', array=DEC)
 
   a1 = pf.Column(name='HICOUNT', format='1J', array=zeros)
   a2 = pf.Column(name='LOCOUNT', format='1J', array=zeros)
