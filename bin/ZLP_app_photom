@@ -43,7 +43,7 @@ outfile.close()
 
 if arguments['--filelist']:
 #  m_call_ZLP(arguments['--filelist'],arguments['--outlist'],arguments['--confmap'],arguments['--catfile'],arguments['--appsize'],int(arguments['--nproc']),arguments['--s_thresh'],verbose=arguments['--verbose'])
-  m_condense_data(arguments['--filelist'],int(arguments['--nproc']),int(arguments['--appsize']))
+  m_condense_data(arguments['--filelist'],int(arguments['--nproc']),int(arguments['--appsize']),verbose=arguments['--verbose'])
 
 if arguments['INPUT']:
   for filename in arguments['INPUT']:

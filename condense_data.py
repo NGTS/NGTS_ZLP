@@ -10,7 +10,7 @@ from os.path import isfile, join
 from util import thread_alloc
 from numpy import *
 
-def m_condense_data(filelist,nproc,appsize):
+def m_condense_data(filelist,nproc,appsize,verbose=False):
 
   nfiles = 0
   for line in open(filelist):
@@ -20,7 +20,7 @@ def m_condense_data(filelist,nproc,appsize):
 
   processes = []
   for i in range(0,nproc):
-    p = multiprocessing.Process(target=condense_data, args = (filelist,starts[i],ends[i],i+1,appsize))
+    p = multiprocessing.Process(target=condense_data, args = (filelist,starts[i],ends[i],i+1,appsize,verbose))
     processes.append(p)
   [x.start() for x in processes]
   [x.join() for x in processes]
@@ -33,7 +33,7 @@ def m_condense_data(filelist,nproc,appsize):
   for f in filelist:
     os.system('rm '+f)
 
-def condense_data(filelist,minlen,maxlen,thread_no,appsize):
+def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 
 #Take all .phot outputs from casu imstack_ls and condense them into a single file with formatting suitible for reading by sysrem
   import numpy as np
@@ -79,8 +79,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize):
   for i in range(minlen,maxlen):
     line = linecache.getline(filelist,i).strip('\n')
     status_checks = line.split(' ')[1:]
-    print status_checks
-    if all(status == 'ok' for status in status_checks):
+    if all([status == 'ok' for status in status_checks]):
       with pf.open(line.split(' ')[0]+'.phot') as photdata:
         frame_xpos = photdata[1].data['X_coordinate'].copy()
         frame_ypos = photdata[1].data['Y_coordinate'].copy()
@@ -147,13 +146,16 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize):
 	  coolstat +=[photdata[1].header['COOLSTAT']]
           mjd = photdata[1].header['MJD']
 	  time +=[[mjd]*len(flux[0])]
-	  print shape(time), line.split(' ')[0]+'.phot', thread_no
+          if verbose == True:
+	    print shape(time), line.split(' ')[0]+'.phot', thread_no
         else:
-	  print 'Image ',line,' rejected for being too noisy! (sky SNR ',cloud_status,') (fwhm ',fwhm_frame,') (frame_shift ',frame_shift,') (ambient ',ambient,')'
+	  if verbose == True:  
+            print 'Image ',line,' rejected for being too noisy! (sky SNR ',cloud_status,') (fwhm ',fwhm_frame,') (frame_shift ',frame_shift,') (ambient ',ambient,')'
 
+    else:
+      print 'frame bad'
   # generate time of mid exposure array
   tarray = np.array(time)
-  print shape(tarray)
   tmid = tarray[:,0] + ((array(exposure)/2.0)/(3600.0*24.0))
 
   zeros = tmid*0
@@ -220,7 +222,8 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize):
 
   outname = 'output_'+str(thread_no)+'.fits'
 
-  hdulist.writeto(outname, clobber=True)
+  if len(exposure) > 0:
+    hdulist.writeto(outname, clobber=True)
 
 def get_fwhm(photdata,appsize):
 
