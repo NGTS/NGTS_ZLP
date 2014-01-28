@@ -96,8 +96,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 
 
         SKY_SNR_frame = photdata[1].header['SKYLEVEL']/photdata[1].header['SKYNOISE']
-#        fwhm_frame = get_fwhm(photdata,appsize)
-        fwhm_frame = 3
+        fwhm_frame = get_fwhm(photdata,appsize)
         gain = photdata[1].header['GAINFACT']  
         try:
 	  ambient = photdata[1].header['WXTEMP']
@@ -260,6 +259,7 @@ def get_fwhm(photdata,appsize):
   return fwhm
 
 def cum_guassian_fit(p,x,data):
+  from scipy.stats import norm
   p[1] = 0
   f = p[0]*norm.cdf((x-p[1])/p[2])
   return data - f

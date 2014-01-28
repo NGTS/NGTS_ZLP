@@ -26,8 +26,11 @@ def wcs_photom(filelist,minlen,maxlen,thread,conf_file,cat_file,appsize,verbose=
 
   for i in range(minlen,maxlen):
     percent = 100*((i+1)-minlen)/(maxlen-minlen)
-    image = linecache.getline(filelist,i).rstrip('\n')
-    casu_photom(image,conf_file,cat_file,appsize,verbose)
+    line = linecache.getline(filelist,i).rstrip('\n')
+    image = line.split(' ')[0]
+    status_check = line.split(' ')[1:]
+    if(all([status == 'ok' for status in status_check])):
+      casu_photom(image,conf_file,cat_file,appsize,verbose)
     if verbose == True:
       print 'process ',thread,' ',percent,'% complete'
 
