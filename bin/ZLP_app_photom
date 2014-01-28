@@ -31,21 +31,23 @@ import threading
 from os.path import isfile, join
 from NGTS_workpackage import *
 
-arguments = docopt(__doc__)
+argv = docopt(__doc__)
 
 #if you don't provide an outlist name i'll assume you just want to add _phot to the end
-if not arguments['--outlist']:
-  arguments['--outlist'] = arguments['--filelist'] + '_phot'
+if not argv['--outlist']:
+  argv['--outlist'] = argv['--filelist'] + '_phot'
 
-outfile = open(arguments['--outlist'],'w')
+outfile = open(argv['--outlist'],'w')
 outfile.close()
 
 
-if arguments['--filelist']:
-#  m_call_ZLP(arguments['--filelist'],arguments['--outlist'],arguments['--confmap'],arguments['--catfile'],arguments['--appsize'],int(arguments['--nproc']),arguments['--s_thresh'],verbose=arguments['--verbose'])
-  m_condense_data(arguments['--filelist'],int(arguments['--nproc']),int(arguments['--appsize']),verbose=arguments['--verbose'])
+if argv['--filelist']:
+#  m_call_ZLP(argv['--filelist'],argv['--outlist'],argv['--confmap'],argv['--catfile'],argv['--appsize'],int(argv['--nproc']),argv['--s_thresh'],verbose=argv['--verbose'])
+#  m_solve_images(argv['--filelist'],argv['--outlist'],nproc=int(argv['--nproc']),thresh=int(argv['--s_thresh']),verbose=argv['--verbose'])
+#  m_wcs_photom(argv['--filelist'],argv['--outlist'],int(argv['--appsize']),argv['--confmap'],argv['--catfile'],nproc=int(argv['--nproc']),verbose=argv['--verbose'])
+  m_condense_data(argv['--filelist'],int(argv['--nproc']),int(argv['--appsize']),verbose=argv['--verbose'])
 
-if arguments['INPUT']:
-  for filename in arguments['INPUT']:
-    casu_solve(filename,arguments['--s_thresh'],verbose=arguments['--verbose'])
-    casu_photom(filename,arguments['--confmap'],arguments['--catfile'],arguments['--appsize'],verbose=arguments['--verbose'])
+if argv['INPUT']:
+  for filename in argv['INPUT']:
+    casu_solve(filename,argv['--s_thresh'],verbose=argv['--verbose'])
+    casu_photom(filename,argv['--confmap'],argv['--catfile'],argv['--appsize'],verbose=argv['--verbose'])

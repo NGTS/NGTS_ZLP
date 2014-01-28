@@ -32,34 +32,45 @@ import threading
 from os.path import isfile, join
 from NGTS_workpackage import *
 
-arguments = docopt(__doc__)
+argv = docopt(__doc__)
 
-if arguments['--verbose'] == True:
-  print 'Creating source catalogue from first ',arguments['--nfiles'],' images...'
+if argv['--verbose'] == True:
+  print 'Creating source catalogue from first ',argv['--nfiles'],' images...'
 
 # for now we just pick the first n images, in future we might want to be more selective.
-stacklist = open(arguments['--stacklist'],'w')
+
+tmp = open('tmp','w')
 i = 0
-for line in open(arguments['--filelist'],'r'):
+for line in open(argv['--filelist'],'r'):
     cal_stat = line.strip('\n').split(' ')[1]
     if cal_stat == 'ok':
       image = line.split(' ')[0]
-      if i < int(arguments['--nfiles']):
-        stacklist.write(image+'\n')
+      if i < int(argv['--nfiles']):
+        tmp.write(line)
       i+=1
+tmp.close()
+
+m_solve_images('tmp','tmp',thresh=argv['--s_thresh'],nproc=int(argv['--nproc']),verbose=argv['--verbose'])
+
+stacklist = open(argv['--stacklist'],'w')
+for line in open('tmp'):
+  image = line.strip('\n').split(' ')[0]
+  status_check = line.strip('\n').split(' ')[1:]
+  if all([status == 'ok' for status in status_check]):
+    stacklist.write(image+'\n')
 stacklist.close()
 
-m_solve_images(arguments['--stacklist'],thresh=arguments['--s_thresh'],nproc=int(arguments['--nproc']),verbose=arguments['--verbose'])
+os.system('rm tmp')
 
-command = 'casu_imstack @'+arguments['--stacklist']+' '+arguments['--confmap']+' "" outstack.fits outstackconf.fits'
-if arguments['--verbose'] == True:
+command = 'casu_imstack @'+argv['--stacklist']+' '+argv['--confmap']+' "" outstack.fits outstackconf.fits'
+if argv['--verbose'] == True:
   print(command)
 os.system(command)
 
-command = 'imcore outstack.fits outstackconf.fits '+arguments['--outname']+' 2 '+arguments['--c_thresh'] + ' --filtfwhm=1'
-if arguments['--verbose'] == True:
+command = 'imcore outstack.fits outstackconf.fits '+argv['--outname']+' 2 '+argv['--c_thresh'] + ' --filtfwhm=1'
+if argv['--verbose'] == True:
   print(command)
 os.system(command)  
 
-if arguments['--verbose'] == True:
+if argv['--verbose'] == True:
   print 'Catalogue complete'
