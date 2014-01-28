@@ -68,6 +68,19 @@ def load_wcs_from_file(filename,pixcrd):
     return world
 
 def status_update(file_path, pattern, subst):
+  import time
+  i = 0
+  while i < 100:
+    try:
+     s_update(file_path, pattern, subst)
+     return
+    except:
+      time.sleep(0.1)
+      i += 1
+      
+
+
+def s_update(file_path, pattern, subst):
   from tempfile import mkstemp
   from shutil import move
   from os import remove, close

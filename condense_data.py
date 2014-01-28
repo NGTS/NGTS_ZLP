@@ -79,8 +79,9 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   for i in range(minlen,maxlen):
     line = linecache.getline(filelist,i).strip('\n')
     status_checks = line.split(' ')[1:]
+    image = line.split(' ')[0]
     if all([status == 'ok' for status in status_checks]):
-      with pf.open(line.split(' ')[0]+'.phot') as photdata:
+      with pf.open(image+'.phot') as photdata:
         frame_xpos = photdata[1].data['X_coordinate'].copy()
         frame_ypos = photdata[1].data['Y_coordinate'].copy()
         if first_frame == True:
@@ -135,7 +136,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	  yr, month, day = utc[0].split('-')
 	  hr, min, sec = utc[1].split(':')
 	  fwhm += [fwhm_frame]
-	  rawflux = photdata[1].data['Core3_flux'].copy()
+	  rawflux = photdata[1].data['Core_flux'].copy()
 	  correctedflux = gain*rawflux*fluxcorrection/photdata[1].header['EXPOSURE']
 	  flux += [correctedflux]
 	  rel_err = 1.0/(rawflux*gain/sqrt(rawflux*gain + npix*sky[-1]*gain))
@@ -149,7 +150,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	    print shape(time), line.split(' ')[0]+'.phot', thread_no
         else:
 	  if verbose == True:  
-            print 'Image ',line,' rejected for being too noisy! (sky SNR ',cloud_status,') (fwhm ',fwhm_frame,') (frame_shift ',frame_shift,') (ambient ',ambient,')'
+            print 'Image ',image,' rejected for being too noisy! (sky SNR ',cloud_status,') (fwhm ',fwhm_frame,') (frame_shift ',frame_shift,') (ambient ',ambient,')'
 
     else:
       print 'frame bad'
@@ -226,18 +227,20 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 
 def get_fwhm(photdata,appsize):
 
+  from pylab import *
+
   # quick estimate of the median FWHM of the IQR range of the image by looking at the curve of growth.
 
   mean_fluxes = photdata[1].data['Core3_flux']
 
   IQR = [(mean_fluxes < (median(mean_fluxes[mean_fluxes > median(mean_fluxes)]))) & (mean_fluxes > (median(mean_fluxes[mean_fluxes < median(mean_fluxes)])))]
 
-  core = photdata[1].data['Core_flux']
-  core1 = photdata[1].data['Core1_flux']
-  core2 = photdata[1].data['Core2_flux']
-  core3 = photdata[1].data['Core3_flux']
-  core4 = photdata[1].data['Core4_flux']
-  core5 = photdata[1].data['Core5_flux']
+  core = photdata[1].data['Core_flux'][IQR]
+  core1 = photdata[1].data['Core1_flux'][IQR]
+  core2 = photdata[1].data['Core2_flux'][IQR]
+  core3 = photdata[1].data['Core3_flux'][IQR]
+  core4 = photdata[1].data['Core4_flux'][IQR]
+  core5 = photdata[1].data['Core5_flux'][IQR]
   total = core5
   annulus1 = (core1/total)
   annulus = (core/total)
@@ -246,23 +249,39 @@ def get_fwhm(photdata,appsize):
   annulus4 = (core4/total) - (annulus + annulus2 + annulus3)
   annulus5 = (core5/total) - (annulus + annulus2 + annulus3 + annulus4)
 
-  profile = array([annulus,annulus2,annulus3,annulus4])
-  cum_profile = array([core/total, core2/total, core3/total, core4/total])
+  profile = array([annulus1,annulus,annulus2,annulus3,annulus4])
+  cum_profile = array([core1/total,core/total, core2/total, core3/total, core4/total, core5/total])
+
   median_profile = median(profile, axis = 1)
   median_cum_profile = median(cum_profile, axis = 1)
-  rad = appsize*array([1,sqrt(2),2,2*sqrt(2)])
-  x1 = [0.5,0,0.5]
+  rad = appsize*array([0.5,1.0,sqrt(2.0),2.0,2.0*sqrt(2.0),4])
+  x1 = [0.25,2.0]
+
+  rad = rad[:3]
+  median_cum_profile = median_cum_profile[:3]
+
   x, success = opt.leastsq(cum_guassian_fit, x1, args=(rad,median_cum_profile))
-  x[2] = abs(x[2])
-  fwhm = (sqrt(2*log(2)))*x[2]
+  x[1] = abs(x[1])
+  fwhm = (sqrt(2*log(2)))*x[1]
+
+  print median(core), median(core5)
+  fit = cum_guassian_func(x,rad)
+  plot(rad,median_cum_profile)
+  plot(rad,fit)
+  show()
+  print x
+  print fwhm
 
   return fwhm
 
 def cum_guassian_fit(p,x,data):
-  from scipy.stats import norm
-  p[1] = 0
-  f = p[0]*norm.cdf((x-p[1])/p[2])
+  f = cum_guassian_func(p,x)
   return data - f
+
+def cum_guassian_func(p,x):
+  from scipy.stats import norm
+  f = p[0]*norm.cdf(x/p[1])
+  return f
 
 def cloud_check(image_name):
   with pf.open(image_name) as imagedata:
