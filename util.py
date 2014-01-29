@@ -75,7 +75,8 @@ def status_update(file_path, pattern, subst):
      s_update(file_path, pattern, subst)
      return
     except:
-      time.sleep(0.1)
+      print('attempt ',str(i),'!')
+      time.sleep(0.01)
       i += 1
       
 

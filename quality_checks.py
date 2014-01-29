@@ -10,11 +10,14 @@ from os.path import isfile, join
 from util import thread_alloc
 from numpy import *
 
-def get_fwhm(photdata,appsize):
+def get_fwhm(fname,appsize):
 
   from pylab import *
 
   # quick estimate of the median FWHM of the IQR range of the image by looking at the curve of growth.
+
+  photdata = pf.open(fname)
+
 
   mean_fluxes = photdata[1].data['Core3_flux']
 
@@ -49,13 +52,13 @@ def get_fwhm(photdata,appsize):
   x[1] = abs(x[1])
   fwhm = (sqrt(2*log(2)))*x[1]
 
-  print median(core), median(core5)
-  fit = cum_guassian_func(x,rad)
-  plot(rad,median_cum_profile)
-  plot(rad,fit)
-  show()
-  print x
-  print fwhm
+#  print median(core), median(core5)
+#  fit = cum_guassian_func(x,rad)
+#  plot(rad,median_cum_profile)
+#  plot(rad,fit)
+#  show()
+#  print x
+#  print fwhm
 
   return fwhm
 
@@ -74,4 +77,25 @@ def cloud_check(image_name):
     SNimage = (mean(imagedata[0].data)/std(imagedata[0].data))*sqrt(gain)
   return SNimage
 
-)
+def m_frame_shift(filelist,starts,ends):
+  for i in range(starts,ends):
+    image1 = linecache.getline(filelist,i-1).split(' ')[0] + '.phot'
+    image2 = linecache.getline(filelist,i).split(' ')[0] + '.phot'
+    shift = frame_shift(image1,image2)
+    pf.setval(image2,'SHIFT',1,value=shift)
+    print shift
+
+def frame_shift(image1,image2):
+
+  with pf.open(image1) as photdata:
+    xpos_prev = photdata[1].data['X_coordinate'].copy()
+    ypos_prev = photdata[1].data['Y_coordinate'].copy()
+
+  with pf.open(image2) as photdata:
+    xpos = photdata[1].data['X_coordinate'].copy()
+    ypos = photdata[1].data['Y_coordinate'].copy()
+
+  xshift = sqrt(mean((xpos - xpos_prev)**2))
+  yshift = sqrt(mean((ypos - ypos_prev)**2))
+  shift = sqrt(xshift**2 + yshift**2)
+  return shift

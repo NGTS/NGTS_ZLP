@@ -82,28 +82,16 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
     image = line.split(' ')[0]
     if all([status == 'ok' for status in status_checks]):
       with pf.open(image+'.phot') as photdata:
-        frame_xpos = photdata[1].data['X_coordinate'].copy()
-        frame_ypos = photdata[1].data['Y_coordinate'].copy()
-        if first_frame == True:
-  	  first_frame = False
-	  frame_ypos_prev = frame_ypos
-	  frame_xpos_prev = frame_xpos
-        xshift = sqrt(mean((frame_xpos - frame_xpos_prev)**2))
-        yshift = sqrt(mean((frame_ypos - frame_ypos_prev)**2))      
-        frame_shift = sqrt(xshift**2 + yshift**2)
-
-        frame_ypos_prev = frame_ypos
-        frame_xpos_prev = frame_xpos
-
-
         SKY_SNR_frame = photdata[1].header['SKYLEVEL']/photdata[1].header['SKYNOISE']
-#        fwhm_frame = get_fwhm(photdata,appsize)
         gain = photdata[1].header['GAINFACT']  
         try:
 	  ambient = photdata[1].header['WXTEMP']
         except:
 	  ambient = 10.0
-#        cloud_status = cloud_check(line.split(' ')[0])
+
+        cloud_status = photdata[1].header['CLOUD_S']
+        fwhm_frame = photdata[1].header['FWHM']
+        frame_shift = photdata[1].header['SHIFT']
         if ((cloud_status < 3) & (fwhm_frame < 5) & (fwhm_frame > 1.0) & (frame_shift < 10.0) & (ambient > 19)):
 	  SHIFT += [frame_shift]
 	  CLOUDS += [cloud_status]
@@ -130,6 +118,8 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	  airmass = 1.0/cos((90.0-ALT[-1])*pi/180.0)
 	  fluxcorrection = 10**(airmass*k/2.5)
 	  sky += [photdata[1].data['Skylev'].copy()]
+          frame_xpos = photdata[1].data['X_coordinate'].copy()
+          frame_ypos = photdata[1].data['Y_coordinate'].copy()
 	  xpos += [frame_xpos]
 	  ypos += [frame_ypos]
 	  utc = photdata[1].header['OBSSTART'].split('T')
