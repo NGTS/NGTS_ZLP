@@ -73,5 +73,3 @@ def cloud_check(image_name):
     gain = imagedata[0].header['GAINFACT']
     SNimage = (mean(imagedata[0].data)/std(imagedata[0].data))*sqrt(gain)
   return SNimage
-
-)
