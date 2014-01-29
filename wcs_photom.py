@@ -50,5 +50,11 @@ def casu_photom(image,conf_file,cat_file,appsize,verbose=False):
 
     status = 'ok'
 
+    photdata = pf.open(outname)
+
+    fwhm = (photdata,appsize)
+    cloud_status = cloud_check(image)
+
+
     return status
 
