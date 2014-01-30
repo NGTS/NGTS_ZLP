@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import pyfits as pf
+from astropy.io import fits as pf
 import os
 from pylab import *
 
