@@ -42,7 +42,6 @@ outfile.close()
 
 
 if argv['--filelist']:
-#  m_call_ZLP(argv['--filelist'],argv['--outlist'],argv['--confmap'],argv['--catfile'],argv['--appsize'],int(argv['--nproc']),argv['--s_thresh'],verbose=argv['--verbose'])
   m_solve_images(argv['--filelist'],argv['--outlist'],nproc=int(argv['--nproc']),thresh=int(argv['--s_thresh']),verbose=argv['--verbose'])
   m_wcs_photom(argv['--filelist'],argv['--outlist'],int(argv['--appsize']),argv['--confmap'],argv['--catfile'],nproc=int(argv['--nproc']),verbose=argv['--verbose'])
   m_condense_data(argv['--filelist'],int(argv['--nproc']),int(argv['--appsize']),verbose=argv['--verbose'])
