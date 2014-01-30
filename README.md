@@ -20,4 +20,13 @@ To uninstall, run
 python setup.py develop --uninstall
 ```
 
-The python scripts to run the code will not be updated automatically when changed.
+The python scripts to run the code will be updated during development.
+
+Installation
+------------
+
+To install, run `python setup.py install` or to install directly from git:
+
+```
+python setup.py install git+https://github.com/tomlouden/NGTS_ZLP.git
+```
