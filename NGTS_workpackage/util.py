@@ -2,14 +2,11 @@
 from __future__ import division, print_function
 import os
 from numpy import *
-import numpy
 from astropy import wcs
 from astropy.io import fits
 import sys
 import time
 from tempfile import mkstemp
-from shutil import move
-from os import remove, close
 
 def thread_alloc(nfiles, nproc):
 
@@ -98,9 +95,9 @@ def s_update(file_path, pattern, subst):
   close(fh)
   old_file.close()
   #Remove original file
-  remove(file_path)
+  os.remove(file_path)
   #Move new file
-  move(abs_path, file_path)
+  shutil.move(abs_path, file_path)
 
 
 def callsysrem(dir,repeats,modified = False):
