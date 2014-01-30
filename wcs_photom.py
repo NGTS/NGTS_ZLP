@@ -6,9 +6,9 @@ import threading
 from os.path import isfile, join
 from util import thread_alloc, status_update
 import multiprocessing
+from quality_checks import *
 
 def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=False):
-  from quality_checks import *
 
   nfiles = 0
   for line in open(filelist):
@@ -45,7 +45,6 @@ def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=Fal
   [x.join() for x in process]
 
 def wcs_photom(filelist,outlist,minlen,maxlen,thread,conf_file,cat_file,appsize,verbose=False):
-  from quality_checks import *
   
   first_frame = True
 

@@ -8,11 +8,11 @@ import scipy.optimize as opt
 from os import listdir
 from os.path import isfile, join
 from util import thread_alloc
-from numpy import *
+from pylab import *
+from scipy.stats import norm
 
 def get_fwhm(fname,appsize):
 
-  from pylab import *
 
   # quick estimate of the median FWHM of the IQR range of the image by looking at the curve of growth.
 
@@ -67,7 +67,6 @@ def cum_guassian_fit(p,x,data):
   return data - f
 
 def cum_guassian_func(p,x):
-  from scipy.stats import norm
   f = p[0]*norm.cdf(x/p[1])
   return f
 

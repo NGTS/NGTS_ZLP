@@ -2,6 +2,15 @@
 from __future__ import division, print_function
 import os
 from numpy import *
+import numpy
+from astropy import wcs
+from astropy.io import fits
+import sys
+import time
+from tempfile import mkstemp
+from shutil import move
+from os import remove, close
+
 def thread_alloc(nfiles, nproc):
 
   chunks = int(nfiles/nproc)
@@ -49,10 +58,6 @@ def genfilelist(directory_list,name):
 def load_wcs_from_file(filename,pixcrd):
 # Load the WCS information from a fits header, and use it
 # to convert pixel coordinates to world coordinates.
-    import numpy
-    from astropy import wcs
-    from astropy.io import fits
-    import sys
    # Load the FITS hdulist using astropy.io.fits
 
     hdulist = fits.open(filename)
@@ -68,7 +73,6 @@ def load_wcs_from_file(filename,pixcrd):
     return world
 
 def status_update(file_path, pattern, subst):
-  import time
   i = 0
   while i < 100:
     try:
@@ -82,9 +86,6 @@ def status_update(file_path, pattern, subst):
 
 
 def s_update(file_path, pattern, subst):
-  from tempfile import mkstemp
-  from shutil import move
-  from os import remove, close
 
   #Create temp file
   fh, abs_path = mkstemp()

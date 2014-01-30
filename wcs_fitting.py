@@ -7,6 +7,7 @@ from util import thread_alloc, status_update
 import numpy
 import sys
 import astropy.io.fits as pf
+from catmatch import *
 
 def m_solve_images(filelist,outfile,nproc=1,thresh=20.0,verbose=False):
 
@@ -43,7 +44,6 @@ def solve_images(filelist,outfile,minlen,maxlen,thread,thresh=20.0,verbose=False
   linecache.clearcache()
 
 def casu_solve(casuin,thresh=20,thread='',verbose=False):
-  from catmatch import *
 
   command = 'imcore '+casuin+' noconf outputcat'+str(thread)+'.fits 2 '+str(thresh)+' --filtfwhm=1 --noell'
   if verbose == True:
