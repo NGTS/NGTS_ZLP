@@ -2,6 +2,9 @@
 from astropy.io import fits as pf
 import os
 from pylab import *
+import scipy.optimize as opt
+from util import load_wcs_from_file
+import os
 
 def shift_wcs_axis(casuin,mycatname,thresh=100):
 
@@ -38,7 +41,6 @@ def testbed():
 
   conf_dir = '../jul12/'
 
-  import scipy.optimize as opt
 
 
   #this is the best solution for the catalog
@@ -191,7 +193,6 @@ def find_dist_center(x,casuin,XVAL,YVAL,TEL_RA,TEL_DEC,x_prior,y_prior,CRVAL1_pr
   return [sep]*30
 
 def apply_xy_correct(x,casuin,XVAL,YVAL,TEL_RA,TEL_DEC,x_prior,y_prior,CRVAL1_prior,CRVAL2_prior):
-  import os
 
   x_shift = (x[0]-x_prior)
   y_shift = (x[1]-y_prior)
@@ -205,7 +206,6 @@ def apply_xy_correct(x,casuin,XVAL,YVAL,TEL_RA,TEL_DEC,x_prior,y_prior,CRVAL1_pr
   pf.setval(casuin,'CRVAL2',value=TEL_DEC + y_shift*plate_scale_y + CRVAL2_prior)
 
 def apply_correct(x,casuin,XVAL,YVAL,TEL_RA,TEL_DEC):
-  import os
 
   pf.setval(casuin,'CRPIX1',value=XVAL + x[0])
   pf.setval(casuin,'CRPIX2',value=YVAL + x[1])
@@ -221,7 +221,6 @@ def apply_correct(x,casuin,XVAL,YVAL,TEL_RA,TEL_DEC):
     pf.setval(casuin,'PV2_5',value=x[10])
 
 def apply_dist_correct(x,casuin,XVAL,YVAL,TEL_RA,TEL_DEC):
-  import os
 
   pf.setval(casuin,'PV2_3',value=x[0])
   pf.setval(casuin,'PV2_5',value=x[1])
@@ -241,7 +240,6 @@ def plot_differences(mycatname,casuin):
   show()
 
 def fit_distortion(x,casuin,XVAL,YVAL,TEL_RA,TEL_DEC,thresh):
-  import os
 
   nice = '/usr/bin/nice -n20 '
 
@@ -267,7 +265,6 @@ def fit_distortion(x,casuin,XVAL,YVAL,TEL_RA,TEL_DEC,thresh):
 
 def calc_seps(mycatname,casuin):
 
-  from util import load_wcs_from_file
 
   plate_scale = -3600.0/5.0
 

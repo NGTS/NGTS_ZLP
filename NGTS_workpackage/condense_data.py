@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from astropy.io import fits as pf
 import os
+import numpy as np
 import linecache
 import threading
 import multiprocessing
@@ -36,7 +37,6 @@ def m_condense_data(filelist,nproc,appsize,verbose=False):
 def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 
 #Take all .phot outputs from casu imstack_ls and condense them into a single file with formatting suitible for reading by sysrem
-  import numpy as np
 
   flux = []
   flux_err = []
