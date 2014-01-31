@@ -6,19 +6,17 @@
 Zero Level Pipeline catalog generation
 
 Usage: 
-  ZLP_create_cat [-h] [--verbose] [--nproc=NPROC] [--nfiles=NFILES] [--s_thresh=S_THRESH] [--c_thresh=C_THRESH] [--stacklist=STACKLIST] (--confmap=CONFMAP) (--filelist=FILELIST) [--outname=OUTNAME]
+  ZLP_create_cat [options] (-c <CONFMAP> | --confmap <CONFMAP>) (-f <FILELIST> | --filelist <FILELIST>)
 
 Options:
-  -h --help              Show help text
-  --verbose              Print more text
-  --confmap=CONFMAP      The confidence map (callibration product)
-  --filelist=FILELIST    Specify a filelist to use instead of command line
-  --outname=OUTNAME      Specify the name of the output catalog [default: catfile.fits]
-  --stacklist=STACKLIST  The name of the file that stores the names of the images used in the stack [default: stackfilelist]
-  --nproc=NPROC          Enable multithreading if you're analysing a lot of files at once [default: 16]
-  --c_thresh=C_THRESH    The detection threshold to use when defining the input [default: 2]
-  --s_thresh=S_THRESH    The detection threshold to use when WCS solving images - typically higher than when doing actual photometry [default: 20]
-  --nfiles=NFILES        Maximum number of files to use in the stack [default: 16]
+  -h --help                                 Show help text
+  -v, --verbose                             Print more text
+  -o <OUTNAME>, --outname <OUTNAME>         Specify the name of the output catalog [default: catfile.fits]
+  -s <STACKLIST>, --stacklist <STACKLIST>   The name of the file that stores the names of the images used in the stack [default: stackfilelist]
+  -n <NPROC>, --nproc <NPROC>               Enable multithreading if you're analysing a lot of files at once [default: 16]
+  --c_thresh <C_THRESH>                     The detection threshold to use when defining the input [default: 2]
+  --s_thresh <S_THRESH>                     The detection threshold to use when WCS solving images - typically higher than when doing actual photometry [default: 20]
+  -N <NFILES>, --nfiles <NFILES>            Maximum number of files to use in the stack [default: 16]
 
 This is the catalog generation tool, requires a filelist input. need to work on being selective on the files used in input.
  
