@@ -39,7 +39,7 @@ if argv['--verbose'] == True:
 
 tmp = open('tmp','w')
 i = 0
-for line in open(argv['--filelist'],'r'):
+for line in open(argv['<FILELIST>'],'r'):
     cal_stat = line.strip('\n').split(' ')[1]
     if cal_stat == 'ok':
       image = line.split(' ')[0]
@@ -60,7 +60,7 @@ stacklist.close()
 
 os.system('rm tmp')
 
-command = 'casu_imstack @'+argv['--stacklist']+' '+argv['--confmap']+' "" outstack.fits outstackconf.fits'
+command = 'casu_imstack @'+argv['--stacklist']+' '+argv['<CONFMAP>']+' "" outstack.fits outstackconf.fits'
 if argv['--verbose'] == True:
   print(command)
 os.system(command)
