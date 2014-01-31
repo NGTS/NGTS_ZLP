@@ -6,17 +6,14 @@
 Zero Level Pipeline apperture photometry 
 
 Usage: 
-  ZLP_app_photom [-h] [--verbose] [--nproc=NPROC] [--appsize=APPSIZE] [--s_thresh=S_THRESH] (--confmap=CONFMAP) (--catfile=CATFILE) (--filelist=FILELIST | INPUT ...) [--outlist=OUTLIST]
+  ZLP_app_photom [options] (-c <CONFMAP> | --confmap <CONFMAP>) (-C <CATFILE> | --catfile <CATFILE>) (-f <FILELIST> | --filelist <FILELIST> | INPUT ...)
 
 Options:
   -h --help              Show help text
   --verbose              Print more text
-  --catfile=CATFILE      The catalog file for this field
-  --confmap=CONFMAP      The confidence map (callibration product)
-  --filelist=FILELIST    Specify a filelist to use instead of command line
   --outlist=OUTLIST      Specify the name of the list of completed files
   --nproc=NPROC          Enable multithreading if you're analysing a lot of files at once [default: 1]
-  --appsize=APPSIZE      The radius of the apperture you wish to use in the photometry stage [default: 2]
+  --apsize=APSIZE      The radius of the apperture you wish to use in the photometry stage [default: 2]
   --s_thresh=S_THRESH    The detection threshold to use when WCS solving images - typically higher than when doing actual photometry [default: 20]
 
 This is the apperture photometry portion of the pipeline. It can be driven either in a list mode
@@ -35,18 +32,19 @@ argv = docopt(__doc__)
 
 #if you don't provide an outlist name i'll assume you just want to add _phot to the end
 if not argv['--outlist']:
-  argv['--outlist'] = argv['--filelist'] + '_phot'
+  argv['--outlist'] = argv['<FILELIST>'] + '_phot'
 
 outfile = open(argv['--outlist'],'w')
 outfile.close()
 
 
-if argv['--filelist']:
-  m_solve_images(argv['--filelist'],argv['--outlist'],nproc=int(argv['--nproc']),thresh=int(argv['--s_thresh']),verbose=argv['--verbose'])
-  m_wcs_photom(argv['--filelist'],argv['--outlist'],int(argv['--appsize']),argv['--confmap'],argv['--catfile'],nproc=int(argv['--nproc']),verbose=argv['--verbose'])
-  m_condense_data(argv['--filelist'],int(argv['--nproc']),int(argv['--appsize']),verbose=argv['--verbose'])
+filelist = argv['<FILELIST>']
+if filelist:
+  m_solve_images(filelist,argv['--outlist'],nproc=int(argv['--nproc']),thresh=int(argv['--s_thresh']),verbose=argv['--verbose'])
+  m_wcs_photom(filelist,argv['--outlist'],int(argv['--apsize']),argv['<CONFMAP>'],argv['<CATFILE>'],nproc=int(argv['--nproc']),verbose=argv['--verbose'])
+  m_condense_data(filelist,int(argv['--nproc']),int(argv['--apsize']),verbose=argv['--verbose'])
 
 if argv['INPUT']:
   for filename in argv['INPUT']:
     casu_solve(filename,argv['--s_thresh'],verbose=argv['--verbose'])
-    casu_photom(filename,argv['--confmap'],argv['--catfile'],argv['--appsize'],verbose=argv['--verbose'])
+    casu_photom(filename,argv['<CONFMAP>'],argv['<CATFILE>'],argv['--apsize'],verbose=argv['--verbose'])
