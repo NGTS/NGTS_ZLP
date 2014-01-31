@@ -3,62 +3,48 @@ import os
 import linecache
 import threading
 from os.path import isfile, join
+import tempfile
 from util import thread_alloc, status_update
 import numpy
 import sys
 import astropy.io.fits as pf
 from catmatch import *
+from multiprocessing.dummy import Pool as ThreadPool
+from functools import partial
+import casutools as casu
 
-def m_solve_images(filelist,outfile,nproc=1,thresh=20.0,verbose=False):
+def m_solve_images(filelist, outfile, nproc=None, thresh=20.0, verbose=False):
+  infiles = []
+  with open(filelist) as infile:
+    for line in infile:
+      parts = line.split()
+      image = parts[0]
+      status_checks = parts[1:]
 
-  nfiles = 0
-  for line in open(filelist):
-    nfiles += 1
+      if all(status == 'ok' for status in status_checks):
+        infiles.append(image)
 
-  os.system('cp '+filelist+' '+outfile)
+  fn = partial(casu_solve, thresh=thresh, verbose=verbose)
 
-  starts, ends = thread_alloc(nfiles,nproc)
+  pool = ThreadPool(nproc)
+  return pool.map(fn, infiles)
 
-  threads = []
-  for i in range(0,nproc):
-    t = threading.Thread(target=solve_images, args = (filelist,outfile,starts[i],ends[i],i+1,thresh,verbose))
-    threads.append(t)
-  [x.start() for x in threads]
-  [x.join() for x in threads]
+def casu_solve(casuin, thresh=20, verbose=False):
+  with tempfile.NamedTemporaryFile(dir='.', suffix='.fits', prefix='catalogue.') as catfile:
+    catfile_name = catfile.name
 
-def solve_images(filelist,outfile,minlen,maxlen,thread,thresh=20.0,verbose=False):
+    casu.imcore(casuin, catfile_name, threshold=thresh, filtfwhm=1, verbose=verbose)
+    catfile.seek(0)
 
-  for i in range(minlen,maxlen):
-    line = linecache.getline(filelist,i).rstrip('\n')
-    image = line.split(' ')[0]
-    status_check = line.split(' ')[1:]
-    if(all([status=='ok' for status in status_check])):
-      fit_status = casu_solve(image,thresh,thread=thread,verbose=verbose)
-      status_update(outfile,line,line+' '+fit_status)
-    else:
-      status_update(outfile,line,line+' not_done')
-    if verbose==True:
-      percent = 100.0*((i+1)-minlen)/(maxlen-minlen)
-      print 'Process ',thread,' is ',percent,'% complete'
+    # quick correction factor because the central wcs axis is not always pointed in the right place at the central distortion axis
+    try:
+      shift_wcs_axis(casuin, catfile_name, thresh=thresh)
+    except IOError:
+      print "Performing initial fit"
+      casu.wcsfit(casuin, catfile_name, verbose=verbose)
+      shift_wcs_axis(casuin, catfile_name, thresh=thresh)
 
-  linecache.clearcache()
+    casu.wcsfit(casuin, catfile_name, verbose=verbose)
+    return 'ok'
 
-def casu_solve(casuin,thresh=20,thread='',verbose=False):
-
-  command = 'imcore '+casuin+' noconf outputcat'+str(thread)+'.fits 2 '+str(thresh)+' --filtfwhm=1 --noell'
-  if verbose == True:
-    print command
-  os.system(command)
-
-  # quick correction factor because the central wcs axis is not always pointed in the right place at the central distortion axis
-  shift_wcs_axis(casuin,'outputcat'+str(thread)+'.fits',thresh=thresh)
-
-  command = 'wcsfit '+casuin+' outputcat'+str(thread)+'.fits --site cds'
-  if verbose == True:
-    print command
-  os.system(command)
-  os.system('rm outputcat'+str(thread)+'.fits')
-
-  status = 'ok'
-
-  return status
+# vim: ts=2 sw=2
