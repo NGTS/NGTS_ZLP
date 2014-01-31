@@ -40,3 +40,17 @@ def imstack(filelist, confidence_map, outstack='outstack.fits', outconf='outconf
 
     run_command(cmd, verbose=verbose)
 
+
+def imcore(input_file, output_table, ipix=2, threshold=2.0, confidence_map='noconf', rcore=5,
+        filtfwhm=3, ellfile=False, casu_verbose=False, verbose=False):
+    cmd = ['imcore', input_file, confidence_map, output_table, ipix, threshold,
+            '--filtfwhm', filtfwhm,
+            '--rcore', rcore]
+
+    if casu_verbose:
+        cmd.append('--verbose')
+
+    if not ellfile:
+        cmd.append('--noell')
+
+    run_command(cmd, verbose=verbose)

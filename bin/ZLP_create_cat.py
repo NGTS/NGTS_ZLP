@@ -60,15 +60,13 @@ stacklist.close()
 
 os.system('rm tmp')
 
-command = 'casu_imstack @'+argv['--stacklist']+' '+argv['<CONFMAP>']+' "" outstack.fits outstackconf.fits'
-if argv['--verbose'] == True:
-  print(command)
-os.system(command)
+outstack_name = 'outstack.fits'
+outstackconf_name = 'outstackconf.fits'
 
-command = 'imcore outstack.fits outstackconf.fits '+argv['--outname']+' 2 '+argv['--c_thresh'] + ' --filtfwhm=1'
-if argv['--verbose'] == True:
-  print(command)
-os.system(command)  
+casutools.imstack(argv['--stacklist'], argv['<CONFMAP>'], casu_verbose=argv['--verbose'],
+        outstack=outstack_name, outconf=outstackconf_name)
+casutools.imcore(outstack_name, argv['--outname'], threshold=argv['--c_thresh'],
+        confidence_map=outstackconf_name)
 
 if argv['--verbose'] == True:
   print 'Catalogue complete'
