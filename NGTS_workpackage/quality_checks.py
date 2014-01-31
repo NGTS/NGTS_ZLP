@@ -52,14 +52,6 @@ def get_fwhm(fname,appsize):
   x[1] = abs(x[1])
   fwhm = (sqrt(2*log(2)))*x[1]
 
-#  print median(core), median(core5)
-#  fit = cum_guassian_func(x,rad)
-#  plot(rad,median_cum_profile)
-#  plot(rad,fit)
-#  show()
-#  print x
-#  print fwhm
-
   return fwhm
 
 def cum_guassian_fit(p,x,data):
