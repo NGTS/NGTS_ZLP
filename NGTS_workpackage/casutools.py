@@ -55,3 +55,8 @@ def imcore(input_file, output_table, ipix=2, threshold=2.0, confidence_map='noco
         cmd.append('--noell')
 
     run_command(cmd, verbose=verbose)
+
+def wcsfit(infile, incat, catsrc='viz2mass', site='cds', verbose=False):
+    cmd = ['wcsfit', infile, incat, '--catsrc', catsrc, '--site', site]
+
+    run_command(cmd, verbose=verbose)
