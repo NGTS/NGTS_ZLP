@@ -1,4 +1,5 @@
 import subprocess as sp
+from threading import Lock
 
 def find_imstack():
     names = ['casu_imstack', 'imstack']
@@ -13,11 +14,14 @@ def find_imstack():
 def construct_filelist_argument(filelist):
     return '@{}'.format(filelist)
 
-def run_command(args, verbose=False):
+
+lock = Lock()
+def run_command(cmd, verbose=False):
     str_cmd = map(str, cmd)
 
     if verbose:
-        print str_cmd
+        with lock:
+            print ' '.join(str_cmd)
 
     sp.check_call(str_cmd)
 
