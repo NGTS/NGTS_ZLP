@@ -14,7 +14,6 @@ setup(name='NGTS_workpackage',
         long_description=open('README.md').read(),
         install_requires=['astropy>=0.3',
             'docopt',
-            'matplotlib',
             'numpy>=1.8',
             'scipy',
             ]
