@@ -26,7 +26,7 @@ def run_command(cmd, verbose=False):
     sp.check_call(str_cmd)
 
 def imstack(filelist, confidence_map, outstack='outstack.fits', outconf='outconf.fits',
-        verbose=False, casu_verbose=False):
+        verbose=False):
     """
     Runs the casu task `imstack`
     """
@@ -38,9 +38,6 @@ def imstack(filelist, confidence_map, outstack='outstack.fits', outconf='outconf
             catalogues,
             outstack,
             outconf]
-
-    if casu_verbose:
-        cmd.append('--verbose')
 
     run_command(cmd, verbose=verbose)
 
