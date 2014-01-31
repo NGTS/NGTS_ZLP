@@ -5,7 +5,6 @@ import numpy as np
 import linecache
 import threading
 import multiprocessing
-import scipy.optimize as opt
 from os import listdir
 from os.path import isfile, join
 from util import thread_alloc

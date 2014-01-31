@@ -2,7 +2,6 @@
 from astropy.io import fits as pf
 import os
 from pylab import *
-import scipy.optimize as opt
 from util import load_wcs_from_file
 import os
 
