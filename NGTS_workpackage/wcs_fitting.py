@@ -11,7 +11,7 @@ import astropy.io.fits as pf
 from catmatch import *
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
-import casutools as casu
+import casutools
 
 def m_solve_images(filelist, outfile, nproc=None, thresh=20.0, verbose=False):
   infiles = []
@@ -33,7 +33,7 @@ def casu_solve(casuin, thresh=20, verbose=False):
   with tempfile.NamedTemporaryFile(dir='.', suffix='.fits', prefix='catalogue.') as catfile:
     catfile_name = catfile.name
 
-    casu.imcore(casuin, catfile_name, threshold=thresh, filtfwhm=1, verbose=verbose)
+    casutools.imcore(casuin, catfile_name, threshold=thresh, filtfwhm=1, verbose=verbose)
     catfile.seek(0)
 
     # quick correction factor because the central wcs axis is not always pointed in the right place at the central distortion axis
@@ -41,10 +41,10 @@ def casu_solve(casuin, thresh=20, verbose=False):
       shift_wcs_axis(casuin, catfile_name, thresh=thresh)
     except IOError:
       print "Performing initial fit"
-      casu.wcsfit(casuin, catfile_name, verbose=verbose)
+      casutools.wcsfit(casuin, catfile_name, verbose=verbose)
       shift_wcs_axis(casuin, catfile_name, thresh=thresh)
 
-    casu.wcsfit(casuin, catfile_name, verbose=verbose)
+    casutools.wcsfit(casuin, catfile_name, verbose=verbose)
     return 'ok'
 
 # vim: ts=2 sw=2

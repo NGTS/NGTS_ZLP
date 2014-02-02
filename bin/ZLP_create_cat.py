@@ -25,7 +25,7 @@ This is the catalog generation tool, requires a filelist input. need to work on 
 from docopt import docopt
 import os
 from NGTS_workpackage.wcs_fitting import m_solve_images
-from NGTS_workpackage import casutools as casu
+from NGTS_workpackage import casutools
 from tempfile import NamedTemporaryFile
 
 def main(argv):
@@ -62,9 +62,9 @@ def main(argv):
     outstack_name = 'outstack.fits'
     outstackconf_name = 'outstackconf.fits'
 
-    casu.imstack(argv['--stacklist'], argv['--confmap'], verbose=argv['--verbose'],
+    casutools.imstack(argv['--stacklist'], argv['--confmap'], verbose=argv['--verbose'],
             outstack=outstack_name, outconf=outstackconf_name)
-    casu.imcore(outstack_name, argv['--outname'], threshold=argv['--c_thresh'],
+    casutools.imcore(outstack_name, argv['--outname'], threshold=argv['--c_thresh'],
             confidence_map=outstackconf_name, verbose=argv['--verbose'])
 
     if argv['--verbose'] == True:
