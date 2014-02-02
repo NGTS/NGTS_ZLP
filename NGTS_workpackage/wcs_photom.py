@@ -74,12 +74,9 @@ def wcs_photom(filelist,outlist,minlen,maxlen,thread,conf_file,cat_file,appsize,
 
 def casu_photom(image,conf_file,cat_file,appsize,verbose=False):
     outname = image + '.phot'
-    screen = 'imcore_list '+image+' '+conf_file+' '+cat_file+' '+outname+' --rcore='+str(appsize)+' --noell'
-    if verbose == True:
-      print screen
-    os.system(screen)
+    casutools.imcore_list(image, conf_file, cat_file, outname, rcore=appsize, noell=True,
+            verbose=verbose)
 
     status = 'ok'
 
     return status
-
