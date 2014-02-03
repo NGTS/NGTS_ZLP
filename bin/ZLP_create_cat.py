@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
- 
+
 Zero Level Pipeline catalog generation
 
-Usage: 
+Usage:
   ZLP_create_cat [options] --confmap=CONFMAP --filelist=FILELIST
 
 Options:
@@ -13,13 +13,13 @@ Options:
   -v, --verbose                             Print more text
   -o <OUTNAME>, --outname <OUTNAME>         Specify the name of the output catalog [default: catfile.fits]
   -s <STACKLIST>, --stacklist <STACKLIST>   The name of the file that stores the names of the images used in the stack [default: stackfilelist]
-  -n <NPROC>, --nproc <NPROC>               Enable multithreading if you're analysing a lot of files at once [default: 16]
   --c_thresh <C_THRESH>                     The detection threshold to use when defining the input [default: 2]
   --s_thresh <S_THRESH>                     The detection threshold to use when WCS solving images - typically higher than when doing actual photometry [default: 20]
+  -n <NPROC>, --nproc <NPROC>               Enable multithreading if you're analysing a lot of files at once
   -N <NFILES>, --nfiles <NFILES>            Maximum number of files to use in the stack [default: 16]
 
 This is the catalog generation tool, requires a filelist input. need to work on being selective on the files used in input.
- 
+
 """
 
 from docopt import docopt
@@ -48,7 +48,8 @@ def main(argv):
 
         tmp.seek(0)
 
-        m_solve_images(name, name, thresh=argv['--s_thresh'], nproc=int(argv['--nproc']), verbose=argv['--verbose'])
+        m_solve_images(name, name, thresh=argv['--s_thresh'], nproc=int(argv['--nproc'] or None),
+                verbose=argv['--verbose'])
 
         with open(argv['--stacklist'],'w') as stacklist:
             for line in tmp:
