@@ -48,7 +48,8 @@ def main(argv):
 
         tmp.seek(0)
 
-        m_solve_images(name, name, thresh=argv['--s_thresh'], nproc=int(argv['--nproc'] or None),
+        m_solve_images(name, name, thresh=argv['--s_thresh'],
+                nproc=int(argv['--nproc']) if argv['--nproc'] else None,
                 verbose=argv['--verbose'])
 
         with open(argv['--stacklist'],'w') as stacklist:
