@@ -43,12 +43,10 @@ def run_command(cmd, verbose=False):
     sp.check_call(str_cmd)
 
 def imstack(filelist, confidence_map, outstack='outstack.fits', outconf='outconf.fits',
-        verbose=False):
+        verbose=False, catalogues=''):
     '''
     Runs the casu task `imstack`
     '''
-    catalogues = ""
-
     cmd = [find_imstack(),
             construct_filelist_argument(filelist),
             confidence_map,
