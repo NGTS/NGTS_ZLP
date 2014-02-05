@@ -1,14 +1,7 @@
 # -*- coding: utf-8 -*-
-import os
-import linecache
-import threading
-from os.path import isfile, join
+
 import tempfile
-from util import thread_alloc, status_update
-import numpy
-import sys
-import astropy.io.fits as pf
-from catmatch import *
+from catmatch import shift_wcs_axis
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
 import casutools
