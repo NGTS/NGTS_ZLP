@@ -1,7 +1,18 @@
+'''
+Implements the used casutools tasks in python scripts
+
+Functions require the associated tools to be available on the
+system.
+'''
+
+
 import subprocess as sp
 from threading import Lock
 
 def find_imstack():
+    '''
+    Function to find imstack, as it has been renamed on ngtshead
+    '''
     names = ['casu_imstack', 'imstack']
     for name in names:
         try:
@@ -12,11 +23,17 @@ def find_imstack():
             return name
 
 def construct_filelist_argument(filelist):
+    '''
+    Wrapper around constructing a filelist
+    '''
     return '@{}'.format(filelist)
 
 
 lock = Lock()
 def run_command(cmd, verbose=False):
+    '''
+    Wraps subprocess to run the command
+    '''
     str_cmd = map(str, cmd)
 
     if verbose:
@@ -27,9 +44,9 @@ def run_command(cmd, verbose=False):
 
 def imstack(filelist, confidence_map, outstack='outstack.fits', outconf='outconf.fits',
         verbose=False):
-    """
+    '''
     Runs the casu task `imstack`
-    """
+    '''
     catalogues = ""
 
     cmd = [find_imstack(),
@@ -44,6 +61,9 @@ def imstack(filelist, confidence_map, outstack='outstack.fits', outconf='outconf
 
 def imcore(input_file, output_table, ipix=2, threshold=2.0, confidence_map='noconf', rcore=2,
         filtfwhm=3, ellfile=False, casu_verbose=False, verbose=False):
+    '''
+    Runs the casu task `imcore`
+    '''
     cmd = ['imcore', input_file, confidence_map, output_table, ipix, threshold,
             '--filtfwhm', filtfwhm,
             '--rcore', rcore]
@@ -58,6 +78,9 @@ def imcore(input_file, output_table, ipix=2, threshold=2.0, confidence_map='noco
 
 def imcore_list(input_file, listfile, output_file, threshold=2.0, confidence_map='noconf',
         rcore=5, filtfwhm=3, casu_verbose=False, noell=True, verbose=False):
+    '''
+    Runs the casu task `imcore_list`
+    '''
     cmd = ['imcore_list', input_file, confidence_map, listfile, output_file,
             threshold, '--rcore', rcore,
             '--filtfwhm', filtfwhm]
@@ -71,6 +94,9 @@ def imcore_list(input_file, listfile, output_file, threshold=2.0, confidence_map
     run_command(cmd, verbose=verbose)
 
 def wcsfit(infile, incat, catsrc='viz2mass', site='cds', verbose=False):
+    '''
+    Runs the casu task `wcsfit`
+    '''
     cmd = ['wcsfit', infile, incat, '--catsrc', catsrc, '--site', site]
 
     run_command(cmd, verbose=verbose)
