@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 from astropy.io import fits as pf
 import os
-from pylab import *
-import scipy.optimize as opt
 from util import load_wcs_from_file
+from numpy import *
 import os
 
 def shift_wcs_axis(casuin,mycatname,thresh=100):
