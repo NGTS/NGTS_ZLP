@@ -33,7 +33,7 @@ def main(argv):
         print 'Creating source catalogue from first {} images...'.format(argv['--nfiles'])
 
     # Pick the first N files if argument given
-    nfiles = int(args['--nfiles']) if args['--nfiles'] else None
+    nfiles = int(argv['--nfiles']) if argv['--nfiles'] else None
 
     with NamedTemporaryFile() as tmp:
         name = tmp.name
