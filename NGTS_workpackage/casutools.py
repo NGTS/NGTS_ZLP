@@ -75,13 +75,12 @@ def imcore(input_file, output_table, ipix=2, threshold=2.0, confidence_map='noco
     run_command(cmd, verbose=verbose)
 
 def imcore_list(input_file, listfile, output_file, threshold=2.0, confidence_map='noconf',
-        rcore=5, filtfwhm=3, casu_verbose=False, noell=True, verbose=False):
+        rcore=5, casu_verbose=False, noell=True, verbose=False):
     '''
     Runs the casu task `imcore_list`
     '''
     cmd = ['imcore_list', input_file, confidence_map, listfile, output_file,
-            threshold, '--rcore', rcore,
-            '--filtfwhm', filtfwhm]
+            threshold, '--rcore', rcore]
 
     if noell:
         cmd.append('--noell')
