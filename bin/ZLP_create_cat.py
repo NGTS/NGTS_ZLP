@@ -16,7 +16,7 @@ Options:
   --c_thresh <C_THRESH>                     The detection threshold to use when defining the input [default: 2]
   --s_thresh <S_THRESH>                     The detection threshold to use when WCS solving images - typically higher than when doing actual photometry [default: 20]
   -n <NPROC>, --nproc <NPROC>               Enable multithreading if you're analysing a lot of files at once
-  -N <NFILES>, --nfiles <NFILES>            Maximum number of files to use in the stack [default: 16]
+  -N <NFILES>, --nfiles <NFILES>            Maximum number of files to use in the stack
 
 This is the catalog generation tool, requires a filelist input. need to work on being selective on the files used in input.
 
@@ -32,13 +32,14 @@ def main(argv):
     if argv['--verbose'] == True:
         print 'Creating source catalogue from first {} images...'.format(argv['--nfiles'])
 
-    # for now we just pick the first n images, in future we might want to be more selective.
+    # Pick the first N files if argument given
+    nfiles = int(argv['--nfiles']) if argv['--nfiles'] else None
 
     with NamedTemporaryFile() as tmp:
         name = tmp.name
         with open(argv['--filelist']) as infile:
             for i, line in enumerate(infile):
-                if i >= int(argv['--nfiles']):
+                if nfiles and i >= nfiles:
                     break
 
                 _, cal_stat = line.strip('\n').split(' ')
