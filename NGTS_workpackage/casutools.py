@@ -58,7 +58,7 @@ def imstack(filelist, confidence_map, outstack='outstack.fits', outconf='outconf
 
 
 def imcore(input_file, output_table, ipix=2, threshold=2.0, confidence_map='noconf', rcore=2,
-        filtfwhm=3, ellfile=False, casu_verbose=False, verbose=False):
+        filtfwhm=1, ellfile=False, casu_verbose=False, verbose=False):
     '''
     Runs the casu task `imcore`
     '''

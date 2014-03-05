@@ -26,7 +26,7 @@ def casu_solve(casuin, thresh=20, verbose=False):
   with tempfile.NamedTemporaryFile(dir='.', suffix='.fits', prefix='catalogue.') as catfile:
     catfile_name = catfile.name
 
-    casutools.imcore(casuin, catfile_name, threshold=thresh, filtfwhm=1, verbose=verbose)
+    casutools.imcore(casuin, catfile_name, threshold=thresh, verbose=verbose)
     catfile.seek(0)
 
     # quick correction factor because the central wcs axis is not always pointed in the right place at the central distortion axis
