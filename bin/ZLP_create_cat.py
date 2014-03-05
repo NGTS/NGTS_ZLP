@@ -17,6 +17,7 @@ Options:
   --s_thresh <S_THRESH>                     The detection threshold to use when WCS solving images - typically higher than when doing actual photometry [default: 20]
   -n <NPROC>, --nproc <NPROC>               Enable multithreading if you're analysing a lot of files at once
   -N <NFILES>, --nfiles <NFILES>            Maximum number of files to use in the stack
+  --no-wcs                                  Do not solve each image for WCS.  However images must have a solution somehow
 
 This is the catalog generation tool, requires a filelist input. need to work on being selective on the files used in input.
 
