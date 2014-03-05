@@ -50,9 +50,10 @@ def main(argv):
 
         tmp.seek(0)
 
-        m_solve_images(name, name, thresh=argv['--s_thresh'],
-                nproc=int(argv['--nproc']) if argv['--nproc'] else None,
-                verbose=argv['--verbose'])
+        if not argv['--no-wcs']:
+            m_solve_images(name, name, thresh=argv['--s_thresh'],
+                    nproc=int(argv['--nproc']) if argv['--nproc'] else None,
+                    verbose=argv['--verbose'])
 
         with open(argv['--stacklist'],'w') as stacklist:
             for line in tmp:
