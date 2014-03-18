@@ -30,7 +30,7 @@ def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=Fal
   for name in open(outlist):
     files_done += 1
 
-  first_image = linecache.getline(outlist,1).split(' ')[0] + '.phot'
+  first_image = linecache.getline(outlist,1).strip('\n') + '.phot'
   pf.setval(first_image,'SHIFT',1,value='0')
 
   starts, ends = thread_alloc(files_done-1,nproc)
@@ -52,15 +52,20 @@ def wcs_photom(filelist,outlist,minlen,maxlen,thread,conf_file,cat_file,appsize,
   for i in range(minlen,maxlen):
     percent = 100*((i+1)-minlen)/(maxlen-minlen)
     line = linecache.getline(filelist,i).rstrip('\n')
-    image = line.split(' ')[0]
+    image = line.strip('\n')
     outname = image + '.phot'
-    status_check = line.split(' ')[1:]
+
+    status_check = ['ok','ok'] 
+
+
     if(all([status == 'ok' for status in status_check])):
       phot_status = casu_photom(image,conf_file,cat_file,appsize,verbose)
-      status_update(outlist,line,line+' '+phot_status)
+      status_update(outlist,line,line)
 
      #    do some quality checks
-      fwhm = get_fwhm(outname,int(appsize))
+#      fwhm can't be done currently because we don't have scipy, placeholder here untill we get a workaround
+#      fwhm = get_fwhm(outname,int(appsize))
+      fwhm = 2.5
       cloud_status = cloud_check(image)
 
       pf.setval(outname,'CLOUD_S',1,value=cloud_status)

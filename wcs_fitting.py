@@ -32,8 +32,9 @@ def solve_images(filelist,outfile,minlen,maxlen,thread,thresh=20.0,verbose=False
     image = line.split(' ')[0]
     status_check = line.split(' ')[1:]
     if(all([status=='ok' for status in status_check])):
+      verify_headers(image)
       fit_status = casu_solve(image,thresh,thread=thread,verbose=verbose)
-      status_update(outfile,line,line+' '+fit_status)
+      status_update(outfile,line,line)
     else:
       status_update(outfile,line,line+' not_done')
     if verbose==True:
@@ -51,7 +52,17 @@ def casu_solve(casuin,thresh=20,thread='',verbose=False):
   os.system(command)
 
   # quick correction factor because the central wcs axis is not always pointed in the right place at the central distortion axis
-  shift_wcs_axis(casuin,'outputcat'+str(thread)+'.fits',thresh=thresh)
+
+  try:
+	shift_wcs_axis(casuin,'outputcat'+str(thread)+'.fits',thresh=thresh)
+  except:
+	command = 'wcsfit '+casuin+' outputcat'+str(thread)+'.fits --site cds'
+	if verbose == True:
+	  print command
+	os.system(command)
+	os.system('rm outputcat'+str(thread)+'.fits')
+        shift_wcs_axis(casuin,'outputcat'+str(thread)+'.fits',thresh=thresh)
+
 
   command = 'wcsfit '+casuin+' outputcat'+str(thread)+'.fits --site cds'
   if verbose == True:
@@ -62,3 +73,7 @@ def casu_solve(casuin,thresh=20,thread='',verbose=False):
   status = 'ok'
 
   return status
+
+def verify_headers(image):
+	pf.setval(image,keyword='CTYPE1',value='RA---ZPN')
+        pf.setval(image,keyword='CTYPE2',value='DEC--ZPN')

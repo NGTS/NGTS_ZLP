@@ -4,7 +4,7 @@ import os
 import linecache
 import threading
 import multiprocessing
-import scipy.optimize as opt
+#import scipy.optimize as opt
 from os import listdir
 from os.path import isfile, join
 from util import thread_alloc
@@ -79,8 +79,8 @@ def cloud_check(image_name):
 
 def m_frame_shift(filelist,starts,ends):
   for i in range(starts,ends):
-    image1 = linecache.getline(filelist,i-1).split(' ')[0] + '.phot'
-    image2 = linecache.getline(filelist,i).split(' ')[0] + '.phot'
+    image1 = linecache.getline(filelist,i-1).strip('\n') + '.phot'
+    image2 = linecache.getline(filelist,i).strip('\n') + '.phot'
     shift = frame_shift(image1,image2)
     pf.setval(image2,'SHIFT',1,value=shift)
     print shift

@@ -4,7 +4,7 @@ import os
 import linecache
 import threading
 import multiprocessing
-import scipy.optimize as opt
+#import scipy.optimize as opt
 from os import listdir
 from os.path import isfile, join
 from util import thread_alloc
@@ -58,7 +58,6 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   coolstat = []
   ADU_DEV = []
   fwhm = []
-  SKY_SNR = [] 
   SKY_MED = []
   CLOUDS = []
   SHIFT = []
@@ -82,21 +81,25 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
     image = line.split(' ')[0]
     if all([status == 'ok' for status in status_checks]):
       with pf.open(image+'.phot') as photdata:
-        SKY_SNR_frame = photdata[1].header['SKYLEVEL']/photdata[1].header['SKYNOISE']
         gain = photdata[1].header['GAINFACT']  
         try:
 	  ambient = photdata[1].header['WXTEMP']
         except:
 	  ambient = 10.0
 
-        cloud_status = photdata[1].header['CLOUD_S']
-        fwhm_frame = photdata[1].header['FWHM']
-        frame_shift = photdata[1].header['SHIFT']
+#        cloud_status = photdata[1].header['CLOUD_S']
+#        fwhm_frame = photdata[1].header['FWHM']
+#        frame_shift = photdata[1].header['SHIFT']
+
+	cloud_status = 1
+	fwhm_frame = 3
+	frame_shift = 3
+	ambient = 20
+
         if ((cloud_status < 3) & (fwhm_frame < 5) & (fwhm_frame > 1.0) & (frame_shift < 10.0) & (ambient > 19)):
 	  SHIFT += [frame_shift]
 	  CLOUDS += [cloud_status]
 	  SKY_MED += [photdata[1].header['SKYLEVEL']]
-	  SKY_SNR += [SKY_SNR_frame]
 	  ALT +=[photdata[1].header['TEL_ALT']]
 	  AZ +=[photdata[1].header['TEL_AZ']]
 	  RA +=[photdata[1].header['TEL_RA']]
