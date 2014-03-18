@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-import pyfits as pf
+from astropy.io import fits as pf
 import os
 import linecache
 import threading
 from os.path import isfile, join
 from util import thread_alloc, status_update
 import multiprocessing
+from quality_checks import *
 
 def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=False):
-  from quality_checks import *
 
   nfiles = 0
   for line in open(filelist):
@@ -45,7 +45,6 @@ def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=Fal
   [x.join() for x in process]
 
 def wcs_photom(filelist,outlist,minlen,maxlen,thread,conf_file,cat_file,appsize,verbose=False):
-  from quality_checks import *
   
   first_frame = True
 
@@ -80,12 +79,9 @@ def wcs_photom(filelist,outlist,minlen,maxlen,thread,conf_file,cat_file,appsize,
 
 def casu_photom(image,conf_file,cat_file,appsize,verbose=False):
     outname = image + '.phot'
-    screen = 'imcore_list '+image+' '+conf_file+' '+cat_file+' '+outname+' --rcore='+str(appsize)+' --noell'
-    if verbose == True:
-      print screen
-    os.system(screen)
+    casutools.imcore_list(image, conf_file, cat_file, outname, rcore=appsize, noell=True,
+            verbose=verbose)
 
     status = 'ok'
 
     return status
-

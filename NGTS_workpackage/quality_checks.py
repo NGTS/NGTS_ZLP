@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import pyfits as pf
+from astropy.io import fits as pf
 import os
 import linecache
 import threading
@@ -8,11 +8,11 @@ import multiprocessing
 from os import listdir
 from os.path import isfile, join
 from util import thread_alloc
+from scipy.stats import norm
 from numpy import *
 
 def get_fwhm(fname,appsize):
 
-  from pylab import *
 
   # quick estimate of the median FWHM of the IQR range of the image by looking at the curve of growth.
 
@@ -52,14 +52,6 @@ def get_fwhm(fname,appsize):
   x[1] = abs(x[1])
   fwhm = (sqrt(2*log(2)))*x[1]
 
-#  print median(core), median(core5)
-#  fit = cum_guassian_func(x,rad)
-#  plot(rad,median_cum_profile)
-#  plot(rad,fit)
-#  show()
-#  print x
-#  print fwhm
-
   return fwhm
 
 def cum_guassian_fit(p,x,data):
@@ -67,7 +59,6 @@ def cum_guassian_fit(p,x,data):
   return data - f
 
 def cum_guassian_func(p,x):
-  from scipy.stats import norm
   f = p[0]*norm.cdf(x/p[1])
   return f
 
