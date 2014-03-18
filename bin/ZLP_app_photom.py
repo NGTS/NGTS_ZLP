@@ -40,7 +40,7 @@ outfile.close()
 
 filelist = argv['<FILELIST>']
 if filelist:
-  m_solve_images(filelist,argv['--outlist'],nproc=int(argv['--nproc']),thresh=int(argv['--s_thresh']),verbose=argv['--verbose'])
+#  m_solve_images(filelist,argv['--outlist'],nproc=int(argv['--nproc']),thresh=int(argv['--s_thresh']),verbose=argv['--verbose'])
   m_wcs_photom(filelist,argv['--outlist'],int(argv['--apsize']),argv['<CONFMAP>'],argv['<CATFILE>'],nproc=int(argv['--nproc']),verbose=argv['--verbose'])
   m_condense_data(filelist,int(argv['--nproc']),int(argv['--apsize']),verbose=argv['--verbose'])
 

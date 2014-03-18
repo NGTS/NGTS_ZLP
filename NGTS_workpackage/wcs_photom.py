@@ -7,6 +7,7 @@ from os.path import isfile, join
 from util import thread_alloc, status_update
 import multiprocessing
 from quality_checks import *
+import casutools
 
 def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=False):
 
@@ -24,7 +25,6 @@ def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=Fal
     process.append(p)
   [x.start() for x in process]
   [x.join() for x in process]
-
 
   files_done = 0
   for name in open(outlist):
@@ -44,6 +44,8 @@ def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=Fal
   [x.start() for x in process]
   [x.join() for x in process]
 
+  print nproc
+
 def wcs_photom(filelist,outlist,minlen,maxlen,thread,conf_file,cat_file,appsize,verbose=False):
   
   first_frame = True
@@ -51,7 +53,7 @@ def wcs_photom(filelist,outlist,minlen,maxlen,thread,conf_file,cat_file,appsize,
   for i in range(minlen,maxlen):
     percent = 100*((i+1)-minlen)/(maxlen-minlen)
     line = linecache.getline(filelist,i).rstrip('\n')
-    image = line.strip('\n')
+    image = line
     outname = image + '.phot'
 
     status_check = ['ok','ok'] 
@@ -59,7 +61,7 @@ def wcs_photom(filelist,outlist,minlen,maxlen,thread,conf_file,cat_file,appsize,
 
     if(all([status == 'ok' for status in status_check])):
       phot_status = casu_photom(image,conf_file,cat_file,appsize,verbose)
-      status_update(outlist,line,line)
+#      status_update(outlist,line,line)
 
      #    do some quality checks
 #      fwhm can't be done currently because we don't have scipy, placeholder here untill we get a workaround
@@ -79,7 +81,7 @@ def wcs_photom(filelist,outlist,minlen,maxlen,thread,conf_file,cat_file,appsize,
 
 def casu_photom(image,conf_file,cat_file,appsize,verbose=False):
     outname = image + '.phot'
-    casutools.imcore_list(image, conf_file, cat_file, outname, rcore=appsize, noell=True,
+    casutools.imcore_list(image, cat_file, outname, confidence_map=conf_file,rcore=appsize, noell=True,
             verbose=verbose)
 
     status = 'ok'

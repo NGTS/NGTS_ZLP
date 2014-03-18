@@ -8,7 +8,7 @@ import multiprocessing
 from os import listdir
 from os.path import isfile, join
 from util import thread_alloc
-from scipy.stats import norm
+#from scipy.stats import norm
 from numpy import *
 
 def get_fwhm(fname,appsize):
