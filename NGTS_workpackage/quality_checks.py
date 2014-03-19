@@ -4,17 +4,16 @@ import os
 import linecache
 import threading
 import multiprocessing
-#import scipy.optimize as opt
 from os import listdir
 from os.path import isfile, join
 from util import thread_alloc
-#from scipy.stats import norm
 from numpy import *
 
 def get_fwhm(fname,appsize):
 
 
   # quick estimate of the median FWHM of the IQR range of the image by looking at the curve of growth.
+  # defunct - replaced by reading 'seeing' value from CASU output
 
   photdata = pf.open(fname)
 
@@ -68,13 +67,13 @@ def cloud_check(image_name):
     SNimage = (mean(imagedata[0].data)/std(imagedata[0].data))*sqrt(gain)
   return SNimage
 
-def m_frame_shift(filelist,starts,ends):
-  for i in range(starts,ends):
-    image1 = linecache.getline(filelist,i-1).strip('\n') + '.phot'
-    image2 = linecache.getline(filelist,i).strip('\n') + '.phot'
-    shift = frame_shift(image1,image2)
-    pf.setval(image2,'SHIFT',1,value=shift)
-    print shift
+def m_frame_shift(imagelist,index):
+  image1 = imagelist[index-1] + '.phot'
+  image2 = imagelist[index] + '.phot'
+  shift = frame_shift(image1,image2)
+  plate_scale = pf.getval(image2,'CD1_1',1)
+  pf.setval(image2,'SHIFT',1,value=shift,comment='[pixels] shift from previous image')
+  pf.setval(image2,'SKYSHIFT',1,value=shift*plate_scale*3600,comment='[arcseconds] shift from previous image')
 
 def frame_shift(image1,image2):
 

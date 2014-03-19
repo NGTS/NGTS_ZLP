@@ -10,9 +10,9 @@ def m_solve_images(filelist, outfile, nproc=None, thresh=20.0, verbose=False):
   infiles = []
   with open(filelist) as infile:
     for line in infile:
-      parts = line.split()
-      image = parts[0]
-      status_checks = parts[1:]
+      image = line.strip('\n')
+
+      status_checks = ['ok','ok']
 
       if all(status == 'ok' for status in status_checks):
         infiles.append(image)
@@ -40,4 +40,3 @@ def casu_solve(casuin, thresh=20, verbose=False):
     casutools.wcsfit(casuin, catfile_name, verbose=verbose)
     return 'ok'
 
-# vim: ts=2 sw=2

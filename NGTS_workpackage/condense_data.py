@@ -62,6 +62,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   CLOUDS = []
   SHIFT = []
   exposure = []
+  seeing = []
 
   #the .copy() addition is necessary when dealing with long filelists - by default python list optimization keeps all files open otherwise,
   #leading to a crash from too many open files
@@ -85,18 +86,14 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
         try:
 	  ambient = photdata[1].header['WXTEMP']
         except:
-	  ambient = 10.0
+	  ambient = 30.0
 
-#        cloud_status = photdata[1].header['CLOUD_S']
-#        fwhm_frame = photdata[1].header['FWHM']
-#        frame_shift = photdata[1].header['SHIFT']
+        cloud_status = photdata[1].header['CLOUD_S']
+        fwhm_frame = photdata[1].header['FWHM']
+        frame_shift = photdata[1].header['SHIFT']
+	seeing_frame = photdata[1].header['SEEING']
 
-	cloud_status = 1
-	fwhm_frame = 3
-	frame_shift = 3
-	ambient = 20
-
-        if ((cloud_status < 3) & (fwhm_frame < 5) & (fwhm_frame > 1.0) & (frame_shift < 10.0) & (ambient > 19)):
+        if ((cloud_status < 3) & (fwhm_frame < 5) & (fwhm_frame > 0.5) & (frame_shift < 10.0) & (ambient > 19)):
 	  SHIFT += [frame_shift]
 	  CLOUDS += [cloud_status]
 	  SKY_MED += [photdata[1].header['SKYLEVEL']]
@@ -129,6 +126,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	  yr, month, day = utc[0].split('-')
 	  hr, min, sec = utc[1].split(':')
 	  fwhm += [fwhm_frame]
+	  seeing += [seeing_frame]
 	  rawflux = photdata[1].data['Core_flux'].copy()
 	  correctedflux = gain*rawflux*fluxcorrection/photdata[1].header['EXPOSURE']
 	  flux += [correctedflux]
@@ -185,12 +183,13 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   a10 = pf.Column(name='ADU_DEV', format='1D', array=ADU_DEV)
   a11 = pf.Column(name='SKYLEVEL', format='1D', array=skylevel)
   a12 = pf.Column(name='FWHM', format='1D', array=fwhm)
-  a13 = pf.Column(name='CLOUDS', format='1D', array=CLOUDS)
-  a14 = pf.Column(name='SHIFT', format='1D', array=SHIFT)
+  a13 = pf.Column(name='SEEING', format='1D', array=seeing)
+  a14 = pf.Column(name='CLOUDS', format='1D', array=CLOUDS)
+  a15 = pf.Column(name='SHIFT', format='1D', array=SHIFT)
 
   hducatalogue=pf.new_table([c1,c2,c3,c4,c5,c6])
 
-  hduimagelist=pf.new_table([a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14])
+  hduimagelist=pf.new_table([a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15])
 
   hduprime = pf.PrimaryHDU(np.array(flux).T)
 
