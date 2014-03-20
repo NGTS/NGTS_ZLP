@@ -60,7 +60,9 @@ def status_update(file_path, pattern, subst):
       time.sleep(0.01)
       i += 1
       
-
+def validate_headers(image):
+  fits.setval(image,'CTYPE1',value='RA---ZPN')
+  fits.setval(image,'CTYPE2',value='DEC--ZPN')
 
 def s_update(file_path, pattern, subst):
 

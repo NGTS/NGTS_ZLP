@@ -5,13 +5,14 @@ from catmatch import shift_wcs_axis
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
 import casutools
+from util import validate_headers
 
 def m_solve_images(filelist, outfile, nproc=None, thresh=20.0, verbose=False):
   infiles = []
   with open(filelist) as infile:
     for line in infile:
       image = line.strip('\n')
-
+      validate_headers(image)
       status_checks = ['ok','ok']
 
       if all(status == 'ok' for status in status_checks):
