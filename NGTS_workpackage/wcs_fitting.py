@@ -12,7 +12,6 @@ def m_solve_images(filelist, outfile, nproc=None, thresh=20.0, verbose=False):
   with open(filelist) as infile:
     for line in infile:
       image = line.strip('\n')
-      validate_headers(image)
       status_checks = ['ok','ok']
 
       if all(status == 'ok' for status in status_checks):
@@ -24,6 +23,9 @@ def m_solve_images(filelist, outfile, nproc=None, thresh=20.0, verbose=False):
   return pool.map(fn, infiles)
 
 def casu_solve(casuin, thresh=20, verbose=False):
+
+  validate_headers(casuin)
+
   with tempfile.NamedTemporaryFile(dir='.', suffix='.fits', prefix='catalogue.') as catfile:
     catfile_name = catfile.name
 

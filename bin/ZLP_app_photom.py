@@ -13,7 +13,7 @@ Options:
   --verbose              Print more text
   --outlist=OUTLIST      Specify the name of the list of completed files
   --nproc=NPROC          Enable multithreading if you're analysing a lot of files at once [default: 1]
-  --apsize=APSIZE      The radius of the apperture you wish to use in the photometry stage [default: 2]
+  --apsize=APSIZE        The radius of the apperture you wish to use in the photometry stage [default: 2]
   --s_thresh=S_THRESH    The detection threshold to use when WCS solving images - typically higher than when doing actual photometry [default: 20]
 
 This is the apperture photometry portion of the pipeline. It can be driven either in a list mode

@@ -38,6 +38,13 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 
 #Take all .phot outputs from casu imstack_ls and condense them into a single file with formatting suitible for reading by sysrem
 
+  min_temp = 0
+  max_clouds = 50
+  max_fwhm = 10
+  min_fwhm = 0.1
+  max_shift = 100
+
+
   flux = []
   flux_err = []
   sky = []
@@ -76,6 +83,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 
   first_frame = True
 
+
   for i in range(minlen,maxlen):
     line = linecache.getline(filelist,i).strip('\n')
     status_checks = line.split(' ')[1:]
@@ -93,7 +101,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
         frame_shift = photdata[1].header['SHIFT']
 	seeing_frame = photdata[1].header['SEEING']
 
-        if ((cloud_status < 3) & (fwhm_frame < 5) & (fwhm_frame > 0.5) & (frame_shift < 10.0) & (ambient > 19)):
+        if ((cloud_status < max_clouds) & (fwhm_frame < max_fwhm) & (fwhm_frame > min_fwhm) & (frame_shift < max_shift) & (ambient > min_temp)):
 	  SHIFT += [frame_shift]
 	  CLOUDS += [cloud_status]
 	  SKY_MED += [photdata[1].header['SKYLEVEL']]
