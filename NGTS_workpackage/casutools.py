@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Implements the used casutools tasks in python scripts
 
@@ -26,7 +27,7 @@ def construct_filelist_argument(filelist):
     '''
     Wrapper around constructing a filelist
     '''
-    return '@{}'.format(filelist)
+    return '@{0}'.format(filelist)
 
 
 lock = Lock()

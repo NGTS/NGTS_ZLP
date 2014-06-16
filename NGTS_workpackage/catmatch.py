@@ -1,93 +1,101 @@
 # -*- coding: utf-8 -*-
-from astropy.io import fits as pf
-import os
-from util import load_wcs_from_file
-from numpy import *
-import os
+from astropy import wcs
+import numpy as np
+import fitsio
 
-def shift_wcs_axis(casuin,mycatname,thresh=100):
-
-  #this is the best solution for the catalog
-  CRPIX1  =  -30.3589661445
-  CRPIX2  =  -1.76800252831
-  CRVAL1  =  -0.0134278702942
-  CRVAL2  =  -0.0444093066511
-  CD1_1   =  0.00138877871593
-  CD2_2   =  0.00138875543313
-  CD1_2   =  1.41054781057e-05
-  CD2_1   =  -1.41656423353e-05
-  PV2_1   =  0.999993897433
-  PV2_3   =  8.11292725428
-  PV2_5   =  901.974288037
-
-  with pf.open(casuin) as hdulist:
-    XVAL = hdulist[0].header['NAXIS1']/2
-    YVAL = hdulist[0].header['NAXIS2']/2
-    TEL_RA = hdulist[0].header['TEL_RA']
-    TEL_DEC = hdulist[0].header['TEL_DEC']
-
-  prior = [CRPIX1,CRPIX2,CRVAL1,CRVAL2,CD1_1,CD2_2,CD1_2,CD2_1,PV2_1,PV2_3,PV2_5]
-
-  apply_correct(prior,casuin,XVAL,YVAL,TEL_RA,TEL_DEC)
-
-  # this corrects efficiently for the 'offset' between the optical axis and the RA/DEC optical axis
-  xs,ys,RA_sep,DEC_sep, sep_list = calc_seps(mycatname,casuin)
-  prior[2] += median(RA_sep)
-  prior[3] += median(DEC_sep)
-  apply_correct(prior,casuin,XVAL,YVAL,TEL_RA,TEL_DEC)
-
-def apply_correct(x,casuin,XVAL,YVAL,TEL_RA,TEL_DEC):
-
-  pf.setval(casuin,'CRPIX1',value=XVAL + x[0])
-  pf.setval(casuin,'CRPIX2',value=YVAL + x[1])
-  pf.setval(casuin,'CRVAL1',value=TEL_RA + x[2])
-  pf.setval(casuin,'CRVAL2',value=TEL_DEC + x[3])
-  pf.setval(casuin,'CD1_1',value=x[4])
-  pf.setval(casuin,'CD2_2',value=x[5])
-  pf.setval(casuin,'CD1_2',value=x[6])
-  pf.setval(casuin,'CD2_1',value=x[7])
-  if len(x) > 8:
-    pf.setval(casuin,'PV2_1',value=x[8])
-    pf.setval(casuin,'PV2_3',value=x[9])
-    pf.setval(casuin,'PV2_5',value=x[10])
-
-  
-def calc_seps(mycatname,casuin):
-
-
-  plate_scale = -3600.0/5.0
-
-  mycat = pf.open(mycatname)
-
-  cat_names = []
-  RA_lims = []
-  DEC_lims = []
-  for line in open('catcache/index'):
-    vals = line.strip('\n').split(' ')
-    cat_names += [vals[0]]
-    RA_lims += [[float(vals[2]),float(vals[3])]]
-    DEC_lims += [[float(vals[4]),float(vals[5])]]
-
-  n = 0
-
-  cat_name = cat_names[n]
-  cat = pf.open('catcache/'+cat_name)
-
-  cat_RA_raw = cat[1].data['ra']
-  cat_DEC_raw = cat[1].data['dec']
-
-  zero = 21.5
-
-  cat_Jmag = cat[1].data['Jmag']
-  my_mag = zero - 2.512*log10(mycat[1].data['Aper_flux_3'])
-    
-  my_X = mycat[1].data['x_coordinate']
-  my_Y = mycat[1].data['y_coordinate']
+def shift_wcs_axis(dicty,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,iters=1):
 
   pix_coords = [[my_X[i],my_Y[i]] for i in range(0,len(my_X))]
 
-  world = load_wcs_from_file(casuin,pix_coords)
+  for i in range(0,iters):
+    dicty['CRVAL1'] = TEL_RA + dicty['RA_s']
+    dicty['CRVAL2'] = TEL_DEC + dicty['DEC_s']
+    world = load_wcs_from_keywords(dicty,pix_coords)
 
+    xs,ys,RA_sep,DEC_sep, sep_list = calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y)
+
+    med_RA = np.median(RA_sep)
+    med_DEC = np.median(DEC_sep)
+
+    dicty['RA_s'] += med_RA
+    dicty['CRVAL1'] += med_RA
+    dicty['DEC_s'] += med_DEC
+    dicty['CRVAL2'] += med_DEC
+
+  return dicty
+
+def lmq_fit(best_fit,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,fitlist=['RA_s','DEC_s','CD1_1','CD1_2','CD2_1','CD2_2']):
+  import scipy.optimize as opt
+
+  name_list = []
+  priorl = []
+  for key in best_fit:
+    if any( key ==  np.array(fitlist)):
+      priorl += [best_fit[key]]
+      name_list += [key]
+
+  pix_coords = [[my_X[i],my_Y[i]] for i in range(0,len(my_X))]
+
+  x, success = opt.leastsq(lmq_fit_model,priorl,args=(mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TEL_DEC,name_list,best_fit),factor=1.0,epsfcn=0.0000001)
+
+  for i in range(0,len(name_list)):
+    best_fit[name_list[i]] = x[i]
+
+  return best_fit
+
+def lmq_fit_model(vals,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TEL_DEC,name_list,dicty):
+
+  for i in range(0,len(vals)):
+    dicty[name_list[i]] = vals[i]
+
+  dicty['CRVAL1'] = TEL_RA + dicty['RA_s']
+  dicty['CRVAL2'] = TEL_DEC + dicty['DEC_s']
+
+  world = load_wcs_from_keywords(dicty,pix_coords)
+
+  xs,ys,RA_sep,DEC_sep, sep_list = calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y)
+
+  goodness = [np.median(sep_list)*2000]*len(vals)
+
+
+  print vals
+  print np.median(sep_list)
+
+  return goodness
+  
+def fit_shift_wcs_axis(dicty,casuin,mycat,cat,XVAL,YVAL,TEL_RA,TEL_DEC,RA_lims,DEC_lims,my_X,my_Y,pix_coords,thresh=100,reset=False,update=False):
+
+  world = load_wcs_from_keywords(dicty,pix_coords)
+
+  if update == True:
+    apply_correct(dicty,casuin,TEL_RA,TEL_DEC)
+
+  xs,ys,RA_sep,DEC_sep, sep_list = calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y)
+
+  return np.array(sep_list)
+
+def apply_correct(dicty,casuin,TEL_RA,TEL_DEC):
+
+  dicty['CRVAL1'] = TEL_RA + dicty['RA_s']
+  dicty['CRVAL2'] = TEL_DEC + dicty['DEC_s']
+
+  with fitsio.FITS(casuin,'rw') as fits:
+    for key in dicty:
+      fits[0].write_key(key,dicty[key])
+  
+def calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,in_test=2000):
+
+  plate_scale = -3600.0/5.0
+
+  cat_RA_raw = cat['ra']
+  cat_DEC_raw = cat['dec']
+
+  zero = 21.5
+
+  cat_Jmag = cat['Jmag']
+
+  my_mag = zero - 2.512*np.log10(mycat['Aper_flux_3'])
+    
   my_RA_raw = world[:,0]
   my_DEC_raw = world[:,1]
 
@@ -100,57 +108,96 @@ def calc_seps(mycatname,casuin):
   y_sep = []
 
   try:
-    my_RA = my_RA_raw[(my_RA_raw > RA_lims[n][0]) & (my_RA_raw < RA_lims[n][1]) & (my_DEC_raw > DEC_lims[n][0]) & (my_DEC_raw < DEC_lims[n][1])]
-    my_DEC = my_DEC_raw[(my_RA_raw > RA_lims[n][0]) & (my_RA_raw < RA_lims[n][1]) & (my_DEC_raw > DEC_lims[n][0]) & (my_DEC_raw < DEC_lims[n][1])]
+    my_RA = my_RA_raw[(my_RA_raw > RA_lims[0][0]) & (my_RA_raw < RA_lims[0][1]) & (my_DEC_raw > DEC_lims[0][0]) & (my_DEC_raw < DEC_lims[0][1])]
+    my_DEC = my_DEC_raw[(my_RA_raw > RA_lims[0][0]) & (my_RA_raw < RA_lims[0][1]) & (my_DEC_raw > DEC_lims[0][0]) & (my_DEC_raw < DEC_lims[0][1])]
     cat_RA = cat_RA_raw[(cat_RA_raw > min(my_RA)) & (cat_RA_raw < max(my_RA)) & (cat_DEC_raw > min(my_DEC)) & (cat_DEC_raw < max(my_DEC))]
     cat_DEC = cat_DEC_raw[(cat_RA_raw > min(my_RA)) & (cat_RA_raw < max(my_RA)) & (cat_DEC_raw > min(my_DEC)) & (cat_DEC_raw < max(my_DEC))]
   except:
-    return xs,ys,RA_sep,DEC_sep, array([10.0])
+    return xs,ys,RA_sep,DEC_sep, np.array([1000.0])
 
-  my_X = my_X[(my_RA_raw > RA_lims[n][0]) & (my_RA_raw < RA_lims[n][1]) & (my_DEC_raw > DEC_lims[n][0]) & (my_DEC_raw < DEC_lims[n][1])]
-  my_Y = my_Y[(my_RA_raw > RA_lims[n][0]) & (my_RA_raw < RA_lims[n][1]) & (my_DEC_raw > DEC_lims[n][0]) & (my_DEC_raw < DEC_lims[n][1])]
+  my_X = my_X[(my_RA_raw > RA_lims[0][0]) & (my_RA_raw < RA_lims[0][1]) & (my_DEC_raw > DEC_lims[0][0]) & (my_DEC_raw < DEC_lims[0][1])]
+  my_Y = my_Y[(my_RA_raw > RA_lims[0][0]) & (my_RA_raw < RA_lims[0][1]) & (my_DEC_raw > DEC_lims[0][0]) & (my_DEC_raw < DEC_lims[0][1])]
 
-  my_brightest = argsort(my_mag[(my_RA_raw > RA_lims[n][0]) & (my_RA_raw < RA_lims[n][1]) & (my_DEC_raw > DEC_lims[n][0]) & (my_DEC_raw < DEC_lims[n][1])])[:20]
-
-  c_b = argsort(cat_Jmag[(cat_RA_raw > min(my_RA)) & (cat_RA_raw < max(my_RA)) & (cat_DEC_raw > min(my_DEC)) & (cat_DEC_raw < max(my_DEC))])[:100]
+  my_brightest = np.argsort(my_mag[(my_RA_raw > RA_lims[0][0]) & (my_RA_raw < RA_lims[0][1]) & (my_DEC_raw > DEC_lims[0][0]) & (my_DEC_raw < DEC_lims[0][1])])[:in_test]
+  c_b = np.argsort(cat_Jmag[(cat_RA_raw > min(my_RA)) & (cat_RA_raw < max(my_RA)) & (cat_DEC_raw > min(my_DEC)) & (cat_DEC_raw < max(my_DEC))])[:in_test]
 
   for i in my_brightest:
     RA = my_RA[i]
     DEC = my_DEC[i]
-    sep = 3600*(((RA - cat_RA[c_b])*(cos(DEC*pi/180.0)))**2.0 + (DEC - cat_DEC[c_b])**2.0)**0.5
-    index = argmin(sep)
+    sep = 3600*(((RA - cat_RA[c_b])*(np.cos(DEC*np.pi/180.0)))**2.0 + (DEC - cat_DEC[c_b])**2.0)**0.5
+    index = np.argmin(sep)
     sep_list +=[sep[index]]
     RA_sep += [cat_RA[c_b][index] - RA]
     DEC_sep += [cat_DEC[c_b][index] - DEC]
     xs += [my_X[i]]
     ys += [my_Y[i]]
-    x_sep += [RA_sep[-1]*plate_scale*cos(DEC*pi/180.0)]
+    x_sep += [RA_sep[-1]*plate_scale*np.cos(DEC*np.pi/180.0)]
     y_sep += [DEC_sep[-1]*plate_scale]
 
-  clever = array([x for x in sort(sep_list)])
-  
-  course_fit = median(clever)
+  course_seps = np.array(sep_list)
+  course_fit = np.median(course_seps)
 
-  if course_fit > 3:
-    return xs,ys,RA_sep,DEC_sep, array(course_fit)
+  xs = np.array(xs)
+  ys = np.array(ys)
+  RA_sep = np.array(RA_sep)
+  DEC_sep = np.array(DEC_sep)
+  course_seps = np.array(course_seps)
+
+  old_n = len(course_seps)
+  n = old_n - 1
+  while ((old_n-n) > 0):
+    old_n = len(course_seps)
+    stdev = np.std(course_seps)
+    course_fit = np.median(course_seps)
+#      print 'std',stdev,'med',course_fit,'n',len(course_seps)
+    fs = [course_seps < (course_fit + 5.0*stdev)]
+    xs = xs[fs]
+    ys = ys[fs]
+    RA_sep = RA_sep[fs]
+    DEC_sep = DEC_sep[fs]
+    course_seps = course_seps[fs]
+    n = len(course_seps)
+  return xs,ys,RA_sep,DEC_sep, course_seps
   
+def old_fit_shift():
+
   for i in range(0,len(my_RA)):
     RA = my_RA[i]
     DEC = my_DEC[i]
-    sep = 3600*(((RA - cat_RA)*(cos(DEC*pi/180.0)))**2.0 + (DEC - cat_DEC)**2.0)**0.5
-    index = argmin(sep)
+    sep = 3600*(((RA - cat_RA)*(np.cos(DEC*np.pi/180.0)))**2.0 + (DEC - cat_DEC)**2.0)**0.5
+    index = np.argmin(sep)
     sep_list +=[sep[index]]
     RA_sep += [cat_RA[index] - RA]
     DEC_sep += [cat_DEC[index] - DEC]
     xs += [my_X[i]]
     ys += [my_Y[i]]
 
-  sep_list = array(sep_list)
-  RA_sep = array(RA_sep)
-  DEC_sep = array(DEC_sep)
-  xs = array(xs)
-  ys = array(ys)
+  sep_list = np.array(sep_list)
+  RA_sep = np.array(RA_sep)
+  DEC_sep = np.array(DEC_sep)
+  xs = np.array(xs)
+  ys = np.array(ys)
 
   c = [sep_list < 3*5.0]
 
+  print 'got right to the end!'
+
   return xs[c],ys[c],RA_sep[c],DEC_sep[c], sep_list[c]
+
+def load_wcs_from_keywords(fheader,pixcrd):
+# Load the WCS information from a fits header, and use it
+# to convert pixel coordinates to world coordinates.
+   # Load the FITS hdulist using astropy.io.fits
+
+    #hdulist = fits.open(filename)
+    #fheader = hdulist[0].header
+
+    # Parse the WCS keywords in the primary HDU
+    w = wcs.WCS(fheader)
+
+    # Convert pixel coordinates to world coordinates
+    # The second argument is "origin" -- in this case we're declaring we
+    # have 1-based (Fortran-like) coordinates.
+    world = w.wcs_pix2world(pixcrd, 1)
+
+    return world
