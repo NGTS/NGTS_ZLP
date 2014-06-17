@@ -12,7 +12,7 @@ def shift_wcs_axis(dicty,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,ite
     dicty['CRVAL2'] = TEL_DEC + dicty['DEC_s']
     world = load_wcs_from_keywords(dicty,pix_coords)
 
-    xs,ys,RA_sep,DEC_sep, sep_list = calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y)
+    xs,ys,RA_sep,DEC_sep,x_sep,y_sep,sep_list = calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,dicty)
 
     med_RA = np.median(RA_sep)
     med_DEC = np.median(DEC_sep)
@@ -53,7 +53,7 @@ def lmq_fit_model(vals,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TE
 
   world = load_wcs_from_keywords(dicty,pix_coords)
 
-  xs,ys,RA_sep,DEC_sep, sep_list = calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y)
+  xs,ys,RA_sep,DEC_sep,x_sep,y_sep,sep_list = calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,dicty)
 
   goodness = [np.median(sep_list)*2000]*len(vals)
 
@@ -70,7 +70,7 @@ def fit_shift_wcs_axis(dicty,casuin,mycat,cat,XVAL,YVAL,TEL_RA,TEL_DEC,RA_lims,D
   if update == True:
     apply_correct(dicty,casuin,TEL_RA,TEL_DEC)
 
-  xs,ys,RA_sep,DEC_sep, sep_list = calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y)
+  xs,ys,RA_sep,DEC_sep,x_sep,y_sep,sep_list = calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,dicty)
 
   return np.array(sep_list)
 
@@ -83,7 +83,7 @@ def apply_correct(dicty,casuin,TEL_RA,TEL_DEC):
     for key in dicty:
       fits[0].write_key(key,dicty[key])
   
-def calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,in_test=2000):
+def calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,dicty,in_test=2000):
 
   plate_scale = -3600.0/5.0
 
@@ -121,6 +121,8 @@ def calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,in_test=2000):
   my_brightest = np.argsort(my_mag[(my_RA_raw > RA_lims[0][0]) & (my_RA_raw < RA_lims[0][1]) & (my_DEC_raw > DEC_lims[0][0]) & (my_DEC_raw < DEC_lims[0][1])])[:in_test]
   c_b = np.argsort(cat_Jmag[(cat_RA_raw > min(my_RA)) & (cat_RA_raw < max(my_RA)) & (cat_DEC_raw > min(my_DEC)) & (cat_DEC_raw < max(my_DEC))])[:in_test]
 
+  w = wcs.WCS(dicty)
+
   for i in my_brightest:
     RA = my_RA[i]
     DEC = my_DEC[i]
@@ -131,8 +133,9 @@ def calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,in_test=2000):
     DEC_sep += [cat_DEC[c_b][index] - DEC]
     xs += [my_X[i]]
     ys += [my_Y[i]]
-    x_sep += [RA_sep[-1]*plate_scale*np.cos(DEC*np.pi/180.0)]
-    y_sep += [DEC_sep[-1]*plate_scale]
+    cat_pix = w.wcs_world2pix([[cat_RA[c_b][index],cat_DEC[c_b][index]]], 1)
+    x_sep += [cat_pix[0][0] - my_X[i]]
+    y_sep += [cat_pix[0][1] - my_Y[i]]
 
   course_seps = np.array(sep_list)
   course_fit = np.median(course_seps)
@@ -141,6 +144,8 @@ def calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,in_test=2000):
   ys = np.array(ys)
   RA_sep = np.array(RA_sep)
   DEC_sep = np.array(DEC_sep)
+  x_sep = np.array(x_sep)
+  y_sep = np.array(y_sep)
   course_seps = np.array(course_seps)
 
   old_n = len(course_seps)
@@ -155,9 +160,11 @@ def calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,in_test=2000):
     ys = ys[fs]
     RA_sep = RA_sep[fs]
     DEC_sep = DEC_sep[fs]
+    x_sep = x_sep[fs]
+    y_sep = y_sep[fs]
     course_seps = course_seps[fs]
     n = len(course_seps)
-  return xs,ys,RA_sep,DEC_sep, course_seps
+  return xs,ys,RA_sep,DEC_sep,x_sep,y_sep,course_seps
   
 def old_fit_shift():
 
@@ -183,6 +190,21 @@ def old_fit_shift():
   print 'got right to the end!'
 
   return xs[c],ys[c],RA_sep[c],DEC_sep[c], sep_list[c]
+
+def correct_catfile(catfile_name,image_name,nstars=False):
+
+  with fitsio.FITS(catfile_name,'rw') as cat:
+    im_header = fitsio.read_header(image_name)
+    my_X = cat[1]['X_coordinate'][:]
+    old_RA = cat[1]['RA'][:]
+    my_Y = cat[1]['Y_coordinate'][:]
+    pix_coords = [[my_X[i],my_Y[i]] for i in range(0,len(my_X))]
+    world = load_wcs_from_keywords(im_header,pix_coords)
+    RA = world[:,0]*np.pi/180
+    DEC = world[:,1]*np.pi/180
+    cat[1].write_column('RA',RA,clobber=True)
+    cat[1].write_column('DEC',DEC,clobber=True)
+  
 
 def load_wcs_from_keywords(fheader,pixcrd):
 # Load the WCS information from a fits header, and use it
