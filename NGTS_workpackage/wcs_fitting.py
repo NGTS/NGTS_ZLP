@@ -14,7 +14,7 @@ from util import validate_headers
 import fitsio
 import astropy.io.fits as pf
 import os
-from vector_plot import plot_differences
+from vector_plot import wcsf_QCheck
 
 def m_solve_images(filelist, outfile, nproc=None, thresh=20.0, verbose=False, reset=False):
 
@@ -92,8 +92,8 @@ def casu_solve(casuin, thresh=20, verbose=False):
 # Now we're ready to solve wcs
     casutools.wcsfit(casuin, catfile_name, verbose=verbose)
 
-# make the QC vector plot
-
-#    plot_differences(mycat,casuin,casuin.strip('.fits')+'.png',cat,RA_lims,DEC_lims,my_X,my_Y)
+# Do QC checks. plotting disabled for now.
+    plot = False
+    wcsf_QCheck(mycat,casuin,casuin.strip('.fits')+'.png',cat,RA_lims,DEC_lims,my_X,my_Y,plot=plot)
 
     return 'ok'

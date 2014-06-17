@@ -23,7 +23,7 @@ import fitsio
 from NGTS_workpackage.catmatch import load_wcs_from_keywords
 from NGTS_workpackage.catmatch import calc_seps
 
-def plot_differences(catalog_name,image_name,plot_name,cat,RA_lims,DEC_lims,my_X,my_Y,upscale_factor=500):
+def wcsf_QCheck(catalog_name,image_name,plot_name,cat,RA_lims,DEC_lims,my_X,my_Y,upscale_factor=500,plot=True):
 
   plot_dir = 'plots/'
 
@@ -40,37 +40,38 @@ def plot_differences(catalog_name,image_name,plot_name,cat,RA_lims,DEC_lims,my_X
   #true_cen_ys = iter_poly(ys,DEC_sep)
   #print true_cen_xs, true_cen_ys
 
-  fig, axis = plt.subplots(figsize=(11, 8))
+  if plot == True:
+    fig, axis = plt.subplots(figsize=(11, 8))
 
-  h = fitsio.read_header(image_name)
-  CRPIX1 =  h['CRPIX1']
-  CRPIX2 =  h['CRPIX2']
+    h = fitsio.read_header(image_name)
+    CRPIX1 =  h['CRPIX1']
+    CRPIX2 =  h['CRPIX2']
 
-  cen_X = h['NAXIS1']/2.0
-  cen_Y = h['NAXIS2']/2.0
+    cen_X = h['NAXIS1']/2.0
+    cen_Y = h['NAXIS2']/2.0
 
-  cen = [[cen_X,cen_Y]]
+    cen = [[cen_X,cen_Y]]
 
-  cen_world = load_wcs_from_keywords(im_header,cen)
+    cen_world = load_wcs_from_keywords(im_header,cen)
 
-  for i in range(0,len(xs)):
-    axis.plot([xs[i],(xs[i]+x_sep[i]*upscale_factor)],[ys[i],(ys[i]+y_sep[i]*upscale_factor)],'k-')
-    axis.plot((xs[i]),(ys[i]),'ko',markersize=3)
+    for i in range(0,len(xs)):
+      axis.plot([xs[i],(xs[i]+x_sep[i]*upscale_factor)],[ys[i],(ys[i]+y_sep[i]*upscale_factor)],'k-')
+      axis.plot((xs[i]),(ys[i]),'ko',markersize=3)
 
-#  axis.plot(true_cen_xs,true_cen_ys,'go',markersize=10)
+  #  axis.plot(true_cen_xs,true_cen_ys,'go',markersize=10)
 
-  axis.plot(CRPIX1,CRPIX2,'ro',markersize=10)
+    axis.plot(CRPIX1,CRPIX2,'ro',markersize=10)
 
-  axis.set_ylim([0,2048])
-  axis.set_xlim([0,2088])
-  axis.set_aspect('equal')
-  axis.set_xlabel(r'X')
-  axis.set_ylabel(r'Y')
-  axis.set_title(r'RMS: '+str(rms)+'"')
-  fig.tight_layout()
-  fig.savefig(plot_dir+plot_name, bbox_inches='tight')
+    axis.set_ylim([0,2048])
+    axis.set_xlim([0,2088])
+    axis.set_aspect('equal')
+    axis.set_xlabel(r'X')
+    axis.set_ylabel(r'Y')
+    axis.set_title(r'RMS: '+str(rms)+'"')
+    fig.tight_layout()
+    fig.savefig(plot_dir+plot_name, bbox_inches='tight')
 
-  plt.close()
+    plt.close()
 
   with fitsio.FITS(image_name,'rw') as fits:
     fits[0].write_key('wcsf_ns',len(sep_list))
