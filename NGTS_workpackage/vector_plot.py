@@ -13,9 +13,9 @@ Options:
 
 """
 from docopt import docopt
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+#import matplotlib
+#matplotlib.use('Agg')
+#import matplotlib.pyplot as plt
 import numpy as np
 from astropy import wcs
 from astropy.io import fits
