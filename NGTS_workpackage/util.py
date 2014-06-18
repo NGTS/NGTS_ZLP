@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
-from __future__ import division, print_function
-import os
-from numpy import *
 from astropy import wcs
 from astropy.io import fits
-import sys
-import time
-from tempfile import mkstemp
 
 def thread_alloc(nfiles, nproc):
 
@@ -37,10 +31,32 @@ def load_wcs_from_file(filename,pixcrd):
 # to convert pixel coordinates to world coordinates.
    # Load the FITS hdulist using astropy.io.fits
 
-    hdulist = fits.open(filename)
+    #hdulist = fits.open(filename)
+    #fheader = hdulist[0].header
+    fheader = fitsio.read_header(filename, 0)
+
+    print(fheader)
 
     # Parse the WCS keywords in the primary HDU
-    w = wcs.WCS(hdulist[0].header)
+    w = wcs.WCS(fheader)
+
+    # Convert pixel coordinates to world coordinates
+    # The second argument is "origin" -- in this case we're declaring we
+    # have 1-based (Fortran-like) coordinates.
+    world = w.wcs_pix2world(pixcrd, 1)
+
+    return world
+
+def load_wcs_from_keywords(fheader,pixcrd):
+# Load the WCS information from a fits header, and use it
+# to convert pixel coordinates to world coordinates.
+   # Load the FITS hdulist using astropy.io.fits
+
+    #hdulist = fits.open(filename)
+    #fheader = hdulist[0].header
+
+    # Parse the WCS keywords in the primary HDU
+    w = wcs.WCS(fheader)
 
     # Convert pixel coordinates to world coordinates
     # The second argument is "origin" -- in this case we're declaring we

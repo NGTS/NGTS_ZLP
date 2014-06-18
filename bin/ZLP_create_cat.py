@@ -42,11 +42,7 @@ def main(argv):
             for i, line in enumerate(infile):
                 if nfiles and i >= nfiles:
                     break
-
-                _, cal_stat = line.strip('\n').split(' ')
-
-                if cal_stat == 'ok':
-                    tmp.write(line)
+		tmp.write(line)
 
         tmp.seek(0)
 
@@ -57,9 +53,9 @@ def main(argv):
 
         with open(argv['--stacklist'],'w') as stacklist:
             for line in tmp:
-                image, _ = line.strip('\n').split(' ')
+                image = line.strip('\n')
 
-                status_check = line.strip('\n').split(' ')[1:]
+                status_check = ['ok','ok']
 
                 if all([status == 'ok' for status in status_check]):
                     stacklist.write(image + '\n')
