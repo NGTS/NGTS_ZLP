@@ -51,6 +51,11 @@ def casu_solve(casuin, thresh=20, verbose=False,catsrc='viz2mass',catpath=False)
     cat_names = []
     RA_lims = []
     DEC_lims = []
+
+    print catpath
+
+    quit()
+
     for line in open('catcache/index'):
       vals = line.strip('\n').split(' ')
       cat_names += [vals[0]]
