@@ -84,11 +84,6 @@ def casu_solve(casuin, thresh=20, verbose=False,catsrc='viz2mass',catpath=False)
       shift_wcs_axis(casuin, catfile_name, thresh=thresh)
       # make mag limited version should go in here
 
-    casutools.wcsfit(casuin, catfile_name, verbose=verbose, catsrc=catsrc, catpath=catpath)
-    return 'ok'
-      casutools.wcsfit(casuin, catfile_name, verbose=verbose)      
-      best_fit = shift_wcs_axis(best_fit,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,iters=1)
-
     apply_correct(best_fit,casuin,TEL_RA,TEL_DEC)
 
 # wcs keywords may have changed since imcore was done, so we have to update the RA and DEC values.
@@ -96,7 +91,6 @@ def casu_solve(casuin, thresh=20, verbose=False,catsrc='viz2mass',catpath=False)
 
 # Now we're ready to solve wcs
     casutools.wcsfit(casuin, catfile_name, verbose=verbose)
->>>>>>> 6100297ad0897a4cc0096494b2b9e97a32158334
 
 # Do QC checks. plotting disabled for now.
     plot = False
