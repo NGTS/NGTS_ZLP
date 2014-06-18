@@ -16,7 +16,6 @@ import astropy.io.fits as pf
 import os
 from vector_plot import wcsf_QCheck
 
-
 def m_solve_images(filelist, outfile, nproc=None, thresh=20.0, verbose=False, catsrc='viz2mass', catpath=False):
   infiles = []
   with open(filelist) as infile:
@@ -84,11 +83,6 @@ def casu_solve(casuin, thresh=20, verbose=False,catsrc='viz2mass',catpath=False)
       casutools.wcsfit(casuin, catfile_name, verbose=verbose)
       shift_wcs_axis(casuin, catfile_name, thresh=thresh)
       # make mag limited version should go in here
-
-    casutools.wcsfit(casuin, catfile_name, verbose=verbose, catsrc=catsrc, catpath=catpath)
-    return 'ok'
-      casutools.wcsfit(casuin, catfile_name, verbose=verbose)      
-      best_fit = shift_wcs_axis(best_fit,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,iters=1)
 
     apply_correct(best_fit,casuin,TEL_RA,TEL_DEC)
 
