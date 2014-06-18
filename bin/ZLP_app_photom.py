@@ -14,7 +14,10 @@ Options:
   --outlist=OUTLIST      Specify the name of the list of completed files
   --nproc=NPROC          Enable multithreading if you're analysing a lot of files at once [default: 1]
   --apsize=APSIZE        The radius of the apperture you wish to use in the photometry stage [default: 2]
-  --s_thresh=S_THRESH    The detection threshold to use when WCS solving images - typically higher than when doing actual photometry [default: 20]
+  --s_thresh=S_THRESH    The detection threshold to use when WCS solving images - typically higher than when doing actual photometry [default: 7]
+  --catsrc=CATSRC        What catalogue to use during catalog matching [default: viz2mass]
+  --catpath=CATPATH      If you're using a local catalog for cat matching, where is it? [default: False]
+  --outdir=OUTDIR        Where you would like the result files to go [default: ./]
 
 This is the apperture photometry portion of the pipeline. It can be driven either in a list mode
 or on a single file
@@ -40,11 +43,14 @@ outfile.close()
 
 filelist = argv['<FILELIST>']
 if filelist:
-  m_solve_images(filelist,argv['--outlist'],nproc=int(argv['--nproc']),thresh=int(argv['--s_thresh']),verbose=argv['--verbose'])
+# redundant since adding the astrometry package
+# m_solve_images(filelist,argv['--outlist'],nproc=int(argv['--nproc']),thresh=int(argv['--s_thresh']),verbose=argv['--verbose'],catsrc=argv['--catsrc'],catpath=argv['--catpath'])
   m_wcs_photom(filelist,argv['--outlist'],int(argv['--apsize']),argv['<CONFMAP>'],argv['<CATFILE>'],nproc=int(argv['--nproc']),verbose=argv['--verbose'])
-  m_condense_data(filelist,int(argv['--nproc']),int(argv['--apsize']),verbose=argv['--verbose'])
+  m_condense_data(filelist,int(argv['--nproc']),int(argv['--apsize']),verbose=argv['--verbose'],outdir=argv['--outdir'])
 
 if argv['INPUT']:
   for filename in argv['INPUT']:
-    casu_solve(filename,argv['--s_thresh'],verbose=argv['--verbose'])
+
+#   redundant since adding the astrometry package
+#   casu_solve(filename,argv['--s_thresh'],verbose=argv['--verbose'])
     casu_photom(filename,argv['<CONFMAP>'],argv['<CATFILE>'],argv['--apsize'],verbose=argv['--verbose'])

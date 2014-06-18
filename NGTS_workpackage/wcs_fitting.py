@@ -7,7 +7,7 @@ from functools import partial
 import casutools
 from util import validate_headers
 
-def m_solve_images(filelist, outfile, nproc=None, thresh=20.0, verbose=False):
+def m_solve_images(filelist, outfile, nproc=None, thresh=20.0, verbose=False, catsrc='viz2mass', catpath=False):
   infiles = []
   with open(filelist) as infile:
     for line in infile:
@@ -17,12 +17,12 @@ def m_solve_images(filelist, outfile, nproc=None, thresh=20.0, verbose=False):
       if all(status == 'ok' for status in status_checks):
         infiles.append(image)
 
-  fn = partial(casu_solve, thresh=thresh, verbose=verbose)
+  fn = partial(casu_solve, thresh=thresh, verbose=verbose, catsrc=catsrc, catpath=catpath)
 
   pool = ThreadPool(nproc)
   return pool.map(fn, infiles)
 
-def casu_solve(casuin, thresh=20, verbose=False):
+def casu_solve(casuin, thresh=20, verbose=False,catsrc='viz2mass',catpath=False):
 
   validate_headers(casuin)
 
@@ -39,7 +39,8 @@ def casu_solve(casuin, thresh=20, verbose=False):
       print "Performing initial fit"
       casutools.wcsfit(casuin, catfile_name, verbose=verbose)
       shift_wcs_axis(casuin, catfile_name, thresh=thresh)
+      # make mag limited version should go in here
 
-    casutools.wcsfit(casuin, catfile_name, verbose=verbose)
+    casutools.wcsfit(casuin, catfile_name, verbose=verbose, catsrc=catsrc, catpath=catpath)
     return 'ok'
 

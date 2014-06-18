@@ -11,7 +11,7 @@ from os.path import isfile, join
 from util import thread_alloc
 from numpy import *
 
-def m_condense_data(filelist,nproc,appsize,verbose=False):
+def m_condense_data(filelist,nproc,appsize,verbose=False,outdir='./'):
 
   nfiles = 0
   for line in open(filelist):
@@ -29,7 +29,7 @@ def m_condense_data(filelist,nproc,appsize,verbose=False):
   filelist = array([ f for f in listdir(os.getcwd()) if 'output_' in f ])
   numberlist = array([int(f.split('_')[1].split('.')[0]) for f in filelist])
   ordered = numberlist.argsort() 
-  stitch(filelist[ordered])
+  stitch(filelist[ordered],outdir)
 
   for f in filelist:
     os.system('rm '+f)
@@ -52,8 +52,8 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   ypos = []
   ALT = []
   AZ = []
-  RA = []
-  DEC = []
+  TEL_RA = []
+  TEL_DEC = []
   time=[]
   centerra = []
   centerdec = []
@@ -83,7 +83,6 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 
   first_frame = True
 
-
   for i in range(minlen,maxlen):
     line = linecache.getline(filelist,i).strip('\n')
     status_checks = line.split(' ')[1:]
@@ -107,8 +106,8 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	  SKY_MED += [photdata[1].header['SKYLEVEL']]
 	  ALT +=[photdata[1].header['TEL_ALT']]
 	  AZ +=[photdata[1].header['TEL_AZ']]
-	  RA +=[photdata[1].header['TEL_RA']]
-	  DEC +=[photdata[1].header['TEL_DEC']]
+	  TEL_RA +=[photdata[1].header['TEL_RA']]
+	  TEL_DEC +=[photdata[1].header['TEL_DEC']]
           exposure += [photdata[1].header['EXPOSURE']]
 	  try:
 	    ADU_DEV +=[photdata[1].header['ADU_DEV']]
@@ -157,6 +156,12 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   tarray = np.array(time)
   tmid = tarray[:,0] + ((array(exposure)/2.0)/(3600.0*24.0))
 
+
+  #get some data that should be common to all frames
+  with pf.open(image+'.phot') as photdata:
+    RA = photdata[1].data['RA']
+    DEC = photdata[1].data['DEC']
+
   zeros = tmid*0
 
   objid = np.arange(len(flux[0])) + 1
@@ -176,8 +181,8 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   c2 = pf.Column(name='FLUX_MEAN', format='1D', unit='Counts', array=meanarray)
   c3 = pf.Column(name='BLEND_FRACTION', format='1D', array=(meanarray)*0)
   c4 = pf.Column(name='NPTS', format='1J', array=npts)
-  c5 = pf.Column(name='TEL_RA', format='1D', array=RA)
-  c6 = pf.Column(name='TEL_DEC', format='1D', array=DEC)
+  c5 = pf.Column(name='RA', format='1D', array=RA)
+  c6 = pf.Column(name='DEC', format='1D', array=DEC)
 
   a1 = pf.Column(name='HICOUNT', format='1J', array=zeros)
   a2 = pf.Column(name='LOCOUNT', format='1J', array=zeros)
@@ -225,9 +230,11 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   if len(exposure) > 0:
     hdulist.writeto(outname, clobber=True)
 
-def stitch(filelist):
+def stitch(filelist,outdir='./'):
 
   #combine the sub output files into a single master file, preserving the data types
+
+  outname = outdir + '/output.fits'
 
   hdulist = []
 
@@ -289,4 +296,4 @@ def stitch(filelist):
   new_hdulist[7].name = 'CCDX'
   new_hdulist[8].name = 'CCDY'
 
-  new_hdulist.writeto('output.fits', clobber=True)
+  new_hdulist.writeto(outname, clobber=True)

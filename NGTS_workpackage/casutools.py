@@ -90,10 +90,20 @@ def imcore_list(input_file, listfile, output_file, threshold=2.0, confidence_map
 
     run_command(cmd, verbose=verbose)
 
-def wcsfit(infile, incat, catsrc='viz2mass', site='cds', verbose=False):
+def wcsfit(infile, incat, catsrc='viz2mass', site='cds', catpath=False, verbose=False):
     '''
     Runs the casu task `wcsfit`
     '''
     cmd = ['wcsfit', infile, incat, '--catsrc', catsrc, '--site', site]
+
+    if 'local' in catsrc:
+      print 'using local catalog!'
+      cmd = cmd[:-2]
+      if catpath:
+        cmd.append('--catpath')
+        cmd.append(catpath)
+      else:
+        print 'no path supplied!'
+        quit()
 
     run_command(cmd, verbose=verbose)
