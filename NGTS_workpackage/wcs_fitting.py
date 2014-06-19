@@ -52,7 +52,7 @@ def casu_solve(casuin, thresh=20, verbose=False,catsrc='viz2mass',catpath=False)
     RA_lims = []
     DEC_lims = []
 
-    catcache_path = '/ngts/pipedev/AperturePhot'
+    catcache_path = '/ngts/pipedev/AperturePhot/output/11th_june_output/'
 
     for line in open(catcache_path+'catcache/index'):
       vals = line.strip('\n').split(' ')
@@ -67,6 +67,8 @@ def casu_solve(casuin, thresh=20, verbose=False,catsrc='viz2mass',catpath=False)
     with pf.open(catcache_path+'catcache/'+cat_name) as catd:
       catt = catd[1].data.copy()
     cat = {'ra':catt['ra'],'dec':catt['dec'],'Jmag':catt['Jmag']}
+
+    print cat
 
     apply_correct(best_fit,casuin,TEL_RA,TEL_DEC)
 

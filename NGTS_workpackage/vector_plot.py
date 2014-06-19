@@ -40,30 +40,31 @@ def wcsf_QCheck(catalog_name,image_name,plot_name,cat,RA_lims,DEC_lims,my_X,my_Y
   #true_cen_ys = iter_poly(ys,DEC_sep)
   #print true_cen_xs, true_cen_ys
 
+  h = fitsio.read_header(image_name)
+  CRPIX1 =  h['CRPIX1']
+  CRPIX2 =  h['CRPIX2']
+
+  cen_X = h['NAXIS1']/2.0
+  cen_Y = h['NAXIS2']/2.0
+
+  cen = [[cen_X,cen_Y]]
+
+  cen_world = load_wcs_from_keywords(im_header,cen)
+
+  #  axis.plot(true_cen_xs,true_cen_ys,'go',markersize=10)
+
   if plot == True:
     fig, axis = plt.subplots(figsize=(11, 8))
-
-    h = fitsio.read_header(image_name)
-    CRPIX1 =  h['CRPIX1']
-    CRPIX2 =  h['CRPIX2']
-
-    cen_X = h['NAXIS1']/2.0
-    cen_Y = h['NAXIS2']/2.0
-
-    cen = [[cen_X,cen_Y]]
-
-    cen_world = load_wcs_from_keywords(im_header,cen)
-
     for i in range(0,len(xs)):
       axis.plot([xs[i],(xs[i]+x_sep[i]*upscale_factor)],[ys[i],(ys[i]+y_sep[i]*upscale_factor)],'k-')
       axis.plot((xs[i]),(ys[i]),'ko',markersize=3)
 
-  #  axis.plot(true_cen_xs,true_cen_ys,'go',markersize=10)
+
 
     axis.plot(CRPIX1,CRPIX2,'ro',markersize=10)
 
     axis.set_ylim([0,2048])
-    axis.set_xlim([0,2088])
+    axis.set_xlim([0,2048])
     axis.set_aspect('equal')
     axis.set_xlabel(r'X')
     axis.set_ylabel(r'Y')

@@ -68,24 +68,34 @@ def cloud_check(image_name):
   return SNimage
 
 def m_frame_shift(imagelist,index):
-  image1 = imagelist[index-1] + '.phot'
-  image2 = imagelist[index] + '.phot'
-  shift = frame_shift(image1,image2)
-  plate_scale = pf.getval(image2,'CD1_1',1)
-  pf.setval(image2,'SHIFT',1,value=shift,comment='[pixels] shift from previous image')
-  pf.setval(image2,'SKYSHIFT',1,value=shift*plate_scale*3600,comment='[arcseconds] shift from previous image')
+  image1 = imagelist[index-1]
+  image2 = imagelist[index]
+  RA_shift, DEC_shift, tot_shift, RA, DEC = frame_shift(image1,image2)
+  pf.setval(image2+'.phot','RA_MOVE',1,value=RA_shift,comment='RA shift from previous image [arcseconds]')
+  pf.setval(image2+'.phot','DEC_MOVE',1,value=DEC_shift,comment='Dec shift from previous image [arcseconds]')
+  pf.setval(image2+'.phot','SKY_MOVE',1,value=tot_shift,comment='Total movement on sky [arcseconds]')
 
+  pf.setval(image2+'.phot','WCSF_RA',1,value=RA_shift,comment='RA center pix')
+  pf.setval(image2+'.phot','WCSF_DEC',1,value=DEC_shift,comment='Dec center pix')
+ 
 def frame_shift(image1,image2):
 
+
+  print image1
+
   with pf.open(image1) as photdata:
-    xpos_prev = photdata[1].data['X_coordinate'].copy()
-    ypos_prev = photdata[1].data['Y_coordinate'].copy()
+    RA_prev = photdata[0].header['WCSF_RA']
+    DEC_prev = photdata[0].header['WCSF_DEC']
 
   with pf.open(image2) as photdata:
-    xpos = photdata[1].data['X_coordinate'].copy()
-    ypos = photdata[1].data['Y_coordinate'].copy()
+    RA = photdata[0].header['WCSF_RA']
+    DEC = photdata[0].header['WCSF_DEC']
 
-  xshift = sqrt(mean((xpos - xpos_prev)**2))
-  yshift = sqrt(mean((ypos - ypos_prev)**2))
-  shift = sqrt(xshift**2 + yshift**2)
-  return shift
+  RA_shift = 3600*(RA_prev - RA)
+  DEC_shift = 3600*(DEC_prev - DEC)
+
+  tot_shift = ((RA_shift*cos(DEC*pi/180))**2 + DEC_shift**2)**0.5
+
+  print tot_shift
+
+  return RA_shift, DEC_shift, tot_shift, RA, DEC

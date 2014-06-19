@@ -97,10 +97,10 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 
         cloud_status = photdata[1].header['CLOUD_S']
         fwhm_frame = photdata[1].header['FWHM']
-        frame_shift = photdata[1].header['SHIFT']
+        frame_shift = photdata[1].header['SKY_MOVE']
 	seeing_frame = photdata[1].header['SEEING']
 
-        if ((cloud_status < max_clouds) & (fwhm_frame < max_fwhm) & (fwhm_frame > min_fwhm) & (frame_shift < max_shift) & (ambient > min_temp)):
+        if ((cloud_status < max_clouds) & (fwhm_frame < max_fwhm) & (fwhm_frame > min_fwhm) & (frame_shift < max_shift)):
 	  SHIFT += [frame_shift]
 	  CLOUDS += [cloud_status]
 	  SKY_MED += [photdata[1].header['SKYLEVEL']]
@@ -119,8 +119,8 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	    skylevel +=[median(imagedata[0].data)]	  
 	    biasstrip = append(imagedata[0].data[:,:20],imagedata[0].data[:,-20:])
 	    meanbias += [mean(biasstrip)]
-	  centerra +=[photdata[1].header['CRVAL1']]
-	  centerdec +=[photdata[1].header['CRVAL2']]
+	  centerra +=[photdata[1].header['WCSF_RA']]
+	  centerdec +=[photdata[1].header['WCSF_DEC']]
 	  # correcting for airmass - the newer fits files have an airmass term, so just use that instead perhaps
 	  airmass = 1.0/cos((90.0-ALT[-1])*pi/180.0)
 	  fluxcorrection = 10**(airmass*k/2.5)
@@ -148,7 +148,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	    print shape(time), line.split(' ')[0]+'.phot', thread_no
         else:
 	  if verbose == True:  
-            print 'Image ',image,' rejected for being too noisy! (sky SNR ',cloud_status,') (fwhm ',fwhm_frame,') (frame_shift ',frame_shift,') (ambient ',ambient,')'
+            print 'Image ',image,' rejected for being too noisy! (sky SNR ',cloud_status,') (fwhm ',fwhm_frame,') (frame_shift ',frame_shift,')'
 
     else:
       print 'frame bad'
@@ -199,10 +199,11 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   a13 = pf.Column(name='SEEING', format='1D', array=seeing)
   a14 = pf.Column(name='CLOUDS', format='1D', array=CLOUDS)
   a15 = pf.Column(name='SHIFT', format='1D', array=SHIFT)
+  a16 = pf.Column(name='EXPOSURE', format='1D', array=exposure)
 
   hducatalogue=pf.new_table([c1,c2,c3,c4,c5,c6])
 
-  hduimagelist=pf.new_table([a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15])
+  hduimagelist=pf.new_table([a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16])
 
   hduprime = pf.PrimaryHDU(np.array(flux).T)
 
@@ -211,7 +212,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   hduxpos = pf.ImageHDU(np.array(xpos).T)
   hduypos = pf.ImageHDU(np.array(ypos).T)
   hdutime = pf.ImageHDU(np.array(time).T)
-  hdunullq = pf.ImageHDU(np.array(time).T)
+  hdunullq = pf.ImageHDU((np.array(time).T)*0 + 1)
 
   hdulist = pf.HDUList([hduprime] + [hducatalogue] + [hduimagelist] + [hdutime] + [hduflux] + [hdufluxerr] + [hdunullq] + [hduxpos] + [hduypos])
 

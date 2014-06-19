@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from astropy import wcs
 from astropy.io import fits
+import numpy as np
 
 def thread_alloc(nfiles, nproc):
 
@@ -14,8 +15,8 @@ def thread_alloc(nfiles, nproc):
     starts += [(i-1)*chunks]
     ends += [i*chunks]
 
-  ends = array(ends)+1
-  starts = array(starts)+1
+  ends = np.array(ends)+1
+  starts = np.array(starts)+1
 
 #  adds the leftovers to the processors evenly
   procn = 0
