@@ -13,9 +13,6 @@ Options:
 
 """
 from docopt import docopt
-#import matplotlib
-#matplotlib.use('Agg')
-#import matplotlib.pyplot as plt
 import numpy as np
 from astropy import wcs
 from astropy.io import fits
@@ -54,6 +51,9 @@ def wcsf_QCheck(catalog_name,image_name,plot_name,cat,RA_lims,DEC_lims,my_X,my_Y
   #  axis.plot(true_cen_xs,true_cen_ys,'go',markersize=10)
 
   if plot == True:
+    import matplotlib
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
     fig, axis = plt.subplots(figsize=(11, 8))
     for i in range(0,len(xs)):
       axis.plot([xs[i],(xs[i]+x_sep[i]*upscale_factor)],[ys[i],(ys[i]+y_sep[i]*upscale_factor)],'k-')

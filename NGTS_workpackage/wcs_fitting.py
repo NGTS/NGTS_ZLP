@@ -80,13 +80,13 @@ def casu_solve(casuin, thresh=20, verbose=False,catsrc='viz2mass',catpath=False)
   # We need the extra correction here before we do the wcsfit, because the TEL RA and DEC measurements are not
   # always precise enough for the fit to work. This simply shifts CRVALS to align with CRPIX
     try:
-      best_fit = shift_wcs_axis(best_fit,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,iters=1)
+      best_fit = shift_wcs_axis(best_fit,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,iters=3)
 #      best_fit = lmq_fit(best_fit,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,fitlist=['RA_s','DEC_s'])
 #      best_fit = lmq_fit(best_fit,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC)
     except IOError:
       print "Performing initial fit"
       casutools.wcsfit(casuin, catfile_name, verbose=verbose)
-      shift_wcs_axis(casuin, catfile_name, thresh=thresh)
+      best_fit = shift_wcs_axis(casuin, catfile_name, thresh=thresh, iters=3)
       # make mag limited version should go in here
 
     apply_correct(best_fit,casuin,TEL_RA,TEL_DEC)
