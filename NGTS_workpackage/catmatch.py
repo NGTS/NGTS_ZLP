@@ -85,8 +85,6 @@ def apply_correct(dicty,casuin,TEL_RA,TEL_DEC):
   
 def calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,dicty,in_test=2000):
 
-  plate_scale = -3600.0/5.0
-
   cat_RA_raw = cat['ra']
   cat_DEC_raw = cat['dec']
 
