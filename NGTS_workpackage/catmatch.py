@@ -7,6 +7,7 @@ def shift_wcs_axis(dicty,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,ite
 
   pix_coords = [[my_X[i],my_Y[i]] for i in range(0,len(my_X))]
 
+  print dicty['DEC_s'], dicty['RA_s']
   for i in range(0,iters):
     dicty['CRVAL1'] = TEL_RA + dicty['RA_s']
     dicty['CRVAL2'] = TEL_DEC + dicty['DEC_s']
@@ -14,13 +15,14 @@ def shift_wcs_axis(dicty,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,ite
 
     xs,ys,RA_sep,DEC_sep,x_sep,y_sep,sep_list = calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,dicty)
 
-    med_RA = np.median(RA_sep)
-    med_DEC = np.median(DEC_sep)
+    med_RA = np.median(RA_sep[sep_list > np.median(sep_list)])
+    med_DEC = np.median(DEC_sep[sep_list > np.median(sep_list)])
 
     dicty['RA_s'] += med_RA
-    dicty['CRVAL1'] += med_RA
     dicty['DEC_s'] += med_DEC
-    dicty['CRVAL2'] += med_DEC
+    print dicty['DEC_s'], dicty['RA_s'], np.median(sep_list)
+
+  print 'done!'
 
   return dicty
 
@@ -38,6 +40,9 @@ def lmq_fit(best_fit,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,fitlist
 
   x, success = opt.leastsq(lmq_fit_model,priorl,args=(mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TEL_DEC,name_list,best_fit),factor=1.0,epsfcn=0.0000001)
 
+#  x, success = opt.leastsq(lmq_fit_model,priorl,args=(mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TEL_DEC,name_list,best_fit),factor=10.0,epsfcn=0.000001)
+
+
   for i in range(0,len(name_list)):
     best_fit[name_list[i]] = x[i]
 
@@ -47,6 +52,13 @@ def lmq_fit_model(vals,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TE
 
   for i in range(0,len(vals)):
     dicty[name_list[i]] = vals[i]
+
+  if (abs(dicty['RA_s']) > 1.0):
+    return [2e6]*len(vals)
+
+  if (abs(dicty['DEC_s']) > 1.0):
+    return [2e6]*len(vals)
+
 
   dicty['CRVAL1'] = TEL_RA + dicty['RA_s']
   dicty['CRVAL2'] = TEL_DEC + dicty['DEC_s']
@@ -59,7 +71,7 @@ def lmq_fit_model(vals,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TE
 
 
   print vals
-  print np.median(sep_list)
+  print np.median(sep_list), dicty['RA_s'], dicty['DEC_s']
 
   return goodness
   
@@ -111,7 +123,7 @@ def calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,dicty,in_test=2000):
     cat_RA = cat_RA_raw[(cat_RA_raw > min(my_RA)) & (cat_RA_raw < max(my_RA)) & (cat_DEC_raw > min(my_DEC)) & (cat_DEC_raw < max(my_DEC))]
     cat_DEC = cat_DEC_raw[(cat_RA_raw > min(my_RA)) & (cat_RA_raw < max(my_RA)) & (cat_DEC_raw > min(my_DEC)) & (cat_DEC_raw < max(my_DEC))]
   except:
-    return xs,ys,RA_sep,DEC_sep, np.array([1000.0])
+    return xs,ys,RA_sep,DEC_sep,x_sep,y_sep,np.array([1000.0])
 
   my_X = my_X[(my_RA_raw > RA_lims[0][0]) & (my_RA_raw < RA_lims[0][1]) & (my_DEC_raw > DEC_lims[0][0]) & (my_DEC_raw < DEC_lims[0][1])]
   my_Y = my_Y[(my_RA_raw > RA_lims[0][0]) & (my_RA_raw < RA_lims[0][1]) & (my_DEC_raw > DEC_lims[0][0]) & (my_DEC_raw < DEC_lims[0][1])]

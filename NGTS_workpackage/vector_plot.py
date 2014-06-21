@@ -22,7 +22,9 @@ from NGTS_workpackage.catmatch import calc_seps
 
 def wcsf_QCheck(catalog_name,image_name,plot_name,cat,RA_lims,DEC_lims,my_X,my_Y,upscale_factor=500,plot=True):
 
-  plot_dir = 'plots/'
+  print 'about to plot'
+
+  plot_dir = ''
 
   im_header = fitsio.read_header(image_name)
   pix_coords = [[my_X[i],my_Y[i]] for i in range(0,len(my_X))]
@@ -47,6 +49,8 @@ def wcsf_QCheck(catalog_name,image_name,plot_name,cat,RA_lims,DEC_lims,my_X,my_Y
   cen = [[cen_X,cen_Y]]
 
   cen_world = load_wcs_from_keywords(im_header,cen)
+
+  print 'cen is',cen_world
 
   #  axis.plot(true_cen_xs,true_cen_ys,'go',markersize=10)
 
@@ -74,12 +78,13 @@ def wcsf_QCheck(catalog_name,image_name,plot_name,cat,RA_lims,DEC_lims,my_X,my_Y
 
     plt.close()
 
+  print 'done plotting'
+
   with fitsio.FITS(image_name,'rw') as fits:
     fits[0].write_key('wcsf_ns',len(sep_list))
     fits[0].write_key('wcsf_RMS',rms)
     fits[0].write_key('wcsf_RA',cen_world[0][0])
     fits[0].write_key('wcsf_DEC',cen_world[0][1])
-  return sep_list
 
 def iter_poly(xs,RA_sep):
 
