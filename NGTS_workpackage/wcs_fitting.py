@@ -68,9 +68,7 @@ def casu_solve(casuin, thresh=20, verbose=False,catsrc='viz2mass',catpath=False)
     RA_lims = []
     DEC_lims = []
 
-    catcache_path = '/ngts/pipedev/AperturePhot/output/11th_june_output/'
-
-    for line in open(catcache_path+'catcache/index'):
+    for line in open(catpath+'catcache/index'):
       vals = line.strip('\n').split(' ')
       cat_names += [vals[0]]
       RA_lims += [[float(vals[2]),float(vals[3])]]
@@ -80,7 +78,7 @@ def casu_solve(casuin, thresh=20, verbose=False,catsrc='viz2mass',catpath=False)
 
     cat_name = cat_names[n]
 
-    with pf.open(catcache_path+'catcache/'+cat_name) as catd:
+    with pf.open(catpath+'catcache/'+cat_name) as catd:
       catt = catd[1].data.copy()
     cat = {'ra':catt['ra'],'dec':catt['dec'],'Jmag':catt['Jmag']}
 
