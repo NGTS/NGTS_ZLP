@@ -44,13 +44,12 @@ outfile.close()
 filelist = argv['<FILELIST>']
 if filelist:
 # redundant since adding the astrometry package
-# m_solve_images(filelist,argv['--outlist'],nproc=int(argv['--nproc']),thresh=int(argv['--s_thresh']),verbose=argv['--verbose'],catsrc=argv['--catsrc'],catpath=argv['--catpath'])
+  m_solve_images(filelist,argv['--outlist'],nproc=int(argv['--nproc']),thresh=int(argv['--s_thresh']),verbose=argv['--verbose'],catsrc=argv['--catsrc'],catpath=argv['--catpath'])
   m_wcs_photom(filelist,argv['--outlist'],int(argv['--apsize']),argv['<CONFMAP>'],argv['<CATFILE>'],nproc=int(argv['--nproc']),verbose=argv['--verbose'])
   m_condense_data(filelist,int(argv['--nproc']),int(argv['--apsize']),verbose=argv['--verbose'],outdir=argv['--outdir'])
 
 if argv['INPUT']:
   for filename in argv['INPUT']:
-
 #   redundant since adding the astrometry package
-#   casu_solve(filename,argv['--s_thresh'],verbose=argv['--verbose'])
+    casu_solve(filename,argv['--s_thresh'],verbose=argv['--verbose'])
     casu_photom(filename,argv['<CONFMAP>'],argv['<CATFILE>'],argv['--apsize'],verbose=argv['--verbose'])
