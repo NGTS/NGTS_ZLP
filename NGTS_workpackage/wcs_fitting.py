@@ -43,29 +43,35 @@ def casu_solve(casuin, thresh=20, verbose=False,catsrc='viz2mass',catpath=False)
   best_fit = {'CD2_1': 1.5380488570791813e-06, 'CD2_2': 0.0014111274390500408, 'RA_s': -0.52908717651493298, 'CD1_2': -1.6695976562054481e-06, 'CD1_1': 0.0014111916879534069, 'CRVAL2': 49.596298794653762, 'CRPIX1': 1005.9291412514006, 'CRPIX2': 963.82708264715689, 'CRVAL1': 285.36671845522181, 'PV2_1': 1.0, 'PV2_3': 8.9692393356428699, 'PV2_5': 155.22228777185455, 'PV2_7': -33859.107455138263, 'DEC_s': 0.40376250716080447, 'CTYPE2': 'DEC--ZPN', 'CTYPE1': 'RA---ZPN'}	
 
 
-  # best fit (so far) for june 19th
+  # best fit for june 19th
 
-  best_fit = {'CD2_1': -1.763272435228194e-06, 'CD2_2': 0.0013887753673947855, 'RA_s': 0.0051376769131176378, 'CD1_2': 1.6937843402091391e-06, 'CD1_1': 0.0013885358074354759, 'CRVAL2': 49.096226173873745, 'CRPIX1': 1024.4073925114958, 'CRPIX2': 973.5786968881423, 'CRVAL1': 285.90102292994243, 'PV2_1': 1.0, 'PV2_3': 9.0780825035408235, 'PV2_5': 348.76108086340531, 'PV2_7': 21640.644597109309, 'DEC_s': -0.096267427744546094, 'CTYPE2': 'DEC--ZPN', 'CTYPE1': 'RA---ZPN'}
+  best_fit = {'CD2_1': -9.3263106728144037e-07, 'CD2_2': 0.0013885458770754415, 'RA_s': -0.042574725586388078, 'CD1_2': 7.6821287599453613e-07, 'CD1_1': 0.0013884790887784609, 'CRVAL2': 49.099782962962607, 'CRPIX1': 1001.8384609589782, 'CRPIX2': 976.12370523564334, 'CRVAL1': 285.85331052744289, 'PV2_1': 1.0, 'PV2_3': 8.3820912409837796, 'PV2_5': 690.45326416643377, 'PV2_7': -12173.91504945435, 'DEC_s': -0.092710638655683769, 'CTYPE2': 'DEC--ZPN', 'CTYPE1': 'RA---ZPN'} 
 
   # guess the offset here to get rid of a lot of night to night uncertainty, if we assume initial solution to be 'nearly' correct. 
 
-  template = 'jun26_asnet.new'
+  # best fit for june 26th
 
-  hdulist = fitsio.read_header(template)
+  best_fit = {'CD1_2': 7.6821287599453613e-07, 'CD1_1': 0.0013884790887784609, 'CRVAL2': 49.406073432145888, 'CRPIX1': 1001.8384609589782, 'CRPIX2': 976.12370523564334, 'CRVAL1': 285.90880799973672, 'PV2_1': 1.0, 'PV2_3': 8.3820912409837796, 'PV2_5': 690.45326416643377, 'PV2_7': -12173.91504945435, 'DEC_s': 0.21358575317842821, 'CD2_1': -9.3263106728144037e-07, 'CTYPE2': 'DEC--ZPN', 'CTYPE1': 'RA---ZPN', 'CD2_2': 0.0013885458770754415, 'RA_s': 0.012912600340769131}
 
-  cen = [[best_fit['CRPIX1'],best_fit['CRPIX2']]]
 
-  old_world = load_wcs_from_keywords(hdulist,cen)
+
+  hdulist = fitsio.read_header(casuin)
+
+#  cen = [[best_fit['CRPIX1'],best_fit['CRPIX2']]]
+
+#  old_world = load_wcs_from_keywords(hdulist,cen)
 
   TEL_RA = hdulist['TEL_RA']
   TEL_DEC = hdulist['TEL_DEC']
 
-  best_fit['RA_s'] = (old_world[0][0] - TEL_RA)
-  best_fit['DEC_s'] = (old_world[0][1] - TEL_DEC) 
+#  best_fit['RA_s'] = (old_world[0][0] - TEL_RA)
+#  best_fit['DEC_s'] = (old_world[0][1] - TEL_DEC) 
 
   apply_correct(best_fit,casuin,TEL_RA,TEL_DEC) 
 
   catpath = '/ngts/pipedev/AperturePhot/june_19th_test/'
+
+  catpath = '/ngts/pipedev/AperturePhot/output/26th_june_output/'
 
   with tempfile.NamedTemporaryFile(dir='.', suffix='.fits', prefix='catalogue.') as catfile:
     catfile_name = catfile.name
