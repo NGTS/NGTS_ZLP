@@ -40,7 +40,8 @@ def lmq_fit(best_fit,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,fitlist
 
   x, success = opt.leastsq(lmq_fit_model,priorl,args=(mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TEL_DEC,name_list,best_fit),factor=1.0,epsfcn=0.0000001)
 
-#  x, success = opt.leastsq(lmq_fit_model,priorl,args=(mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TEL_DEC,name_list,best_fit),factor=10.0,epsfcn=0.000001)
+#  x, success = opt.leastsq(lmq_fit_model,priorl,args=(mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TEL_DEC,name_list,best_fit),factor=10.0,epsfcn=0.0000001)
+
 
 
   for i in range(0,len(name_list)):
@@ -71,7 +72,7 @@ def lmq_fit_model(vals,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TE
 
 
   print vals
-  print np.median(sep_list), dicty['RA_s'], dicty['DEC_s']
+  print np.median(sep_list)
 
   return goodness
   

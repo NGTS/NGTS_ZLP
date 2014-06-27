@@ -49,17 +49,19 @@ def casu_solve(casuin, thresh=20, verbose=False,catsrc='viz2mass',catpath=False)
 
   # guess the offset here to get rid of a lot of night to night uncertainty, if we assume initial solution to be 'nearly' correct. 
 
-  hdulist = fitsio.read_header(casuin)
+  template = 'jun26_asnet.new'
 
-#  cen = [[best_fit['CRPIX1'],best_fit['CRPIX2']]]
+  hdulist = fitsio.read_header(template)
 
-#  old_world = load_wcs_from_keywords(hdulist,cen)
+  cen = [[best_fit['CRPIX1'],best_fit['CRPIX2']]]
+
+  old_world = load_wcs_from_keywords(hdulist,cen)
 
   TEL_RA = hdulist['TEL_RA']
   TEL_DEC = hdulist['TEL_DEC']
 
-#  best_fit['RA_s'] = (old_world[0][0] - TEL_RA)
-#  best_fit['DEC_s'] = (old_world[0][1] - TEL_DEC) 
+  best_fit['RA_s'] = (old_world[0][0] - TEL_RA)
+  best_fit['DEC_s'] = (old_world[0][1] - TEL_DEC) 
 
   apply_correct(best_fit,casuin,TEL_RA,TEL_DEC) 
 
