@@ -40,10 +40,12 @@ if not argv['--outlist']:
 outfile = open(argv['--outlist'],'w')
 outfile.close()
 
+dist_map = {'CD2_1': -1.4191656988099457e-08, 'CD2_2': 0.0013885222778780631, 'RA_s': 0.055870512902160017, 'CD1_2': -1.8513409749920829e-07, 'CD1_1': 0.0013883723486931344, 'CRVAL2': 49.414386141920922, 'CRPIX1': 1022.0594111585548, 'CRPIX2': 982.11907123259516, 'CRVAL1': 285.95176591229813, 'PV2_1': 1.0, 'PV2_2': 0.0, 'PV2_3': 7.898207770193908, 'PV2_5': 1392.9968242630193, 'PV2_7': -265152.6479961705, 'DEC_s': 0.22189846295346452, 'CTYPE2': 'DEC--ZPN', 'CTYPE1': 'RA---ZPN'}
+
 
 filelist = argv['<FILELIST>']
 if filelist:
-  m_solve_images(filelist,argv['--outlist'],nproc=int(argv['--nproc']),thresh=int(argv['--s_thresh']),verbose=argv['--verbose'],catsrc=argv['--catsrc'],catpath=argv['--catpath'])
+  m_solve_images(filelist,argv['--outlist'],dist_map,nproc=int(argv['--nproc']),thresh=int(argv['--s_thresh']),verbose=argv['--verbose'],catsrc=argv['--catsrc'],catpath=argv['--catpath'])
   m_wcs_photom(filelist,argv['--outlist'],int(argv['--apsize']),argv['<CONFMAP>'],argv['<CATFILE>'],nproc=int(argv['--nproc']),verbose=argv['--verbose'])
 
 if argv['INPUT']:
