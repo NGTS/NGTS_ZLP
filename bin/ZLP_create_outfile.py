@@ -23,15 +23,26 @@ This is the apperture photometry portion of the pipeline. It can be driven eithe
 or on a single file
  
 """
-from docopt import docopt
 import sys
 import linecache
 from numpy import *
 import threading
 from os.path import isfile, join
 from NGTS_workpackage import *
+import argparse
 
-argv = docopt(__doc__)
+def main(argv):
+    filelist = argv.filelist
+    m_condense_data(filelist,argv.nproc,argv.apsize,verbose=argv.verbose,outdir=argv.outdir)
 
-filelist = argv['<FILELIST>']
-m_condense_data(filelist,int(argv['--nproc']),int(argv['--apsize']),verbose=argv['--verbose'],outdir=argv['--outdir'])
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('filelist')
+    parser.add_argument('--outdir', required=True, help='Output directory')
+    parser.add_argument('--nproc', default=1, type=int, help='Parallel process')
+    parser.add_argument('--apsize', default=2, type=float, help='Aperture size')
+    parser.add_argument('--verbose', action='store_true', default=False, help='Verbose mode')
+
+    main(parser.parse_args())
+

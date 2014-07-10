@@ -18,6 +18,7 @@ from vector_plot import wcsf_QCheck
 
 def m_solve_images(filelist,outfile,dist_map,nproc=None, thresh=20.0, verbose=False, catsrc='viz2mass', catpath=False):
   infiles = []
+
   with open(filelist) as infile:
     for line in infile:
       image = line.strip('\n')
@@ -26,12 +27,12 @@ def m_solve_images(filelist,outfile,dist_map,nproc=None, thresh=20.0, verbose=Fa
       if all(status == 'ok' for status in status_checks):
         infiles.append(image)
 
-  fn = partial(casu_solve,dist_map,thresh=thresh, verbose=verbose, catsrc=catsrc, catpath=catpath)
+  fn = partial(casu_solve,dist_map=dist_map,thresh=thresh, verbose=verbose, catsrc=catsrc, catpath=catpath)
 
   pool = ThreadPool(nproc)
   return pool.map(fn, infiles)
 
-def casu_solve(casuin,dist_map,thresh=20, verbose=False,catsrc='viz2mass',catpath=False):
+def casu_solve(casuin,dist_map={},thresh=20, verbose=False,catsrc='viz2mass',catpath=False):
 
 #  validate_headers(casuin)
 
@@ -69,8 +70,8 @@ def casu_solve(casuin,dist_map,thresh=20, verbose=False,catsrc='viz2mass',catpat
 #  dist_map['RA_s'] = (old_world[0][0] - TEL_RA)
 #  dist_map['DEC_s'] = (old_world[0][1] - TEL_DEC) 
 
-  for key in dist_map_fit:
-	print dist_map[key], hdulist[key]
+  for key in dist_map:
+	print dist_map[key], hdulist.get(key)
 
   apply_correct(dist_map,casuin,TEL_RA,TEL_DEC) 
 
@@ -90,17 +91,20 @@ def casu_solve(casuin,dist_map,thresh=20, verbose=False,catsrc='viz2mass',catpat
     RA_lims = []
     DEC_lims = []
 
-    for line in open(catpath+'catcache/index'):
+    for line in open(catpath+'/index'):
       vals = line.strip('\n').split(' ')
       cat_names += [vals[0]]
       RA_lims += [[float(vals[2]),float(vals[3])]]
       DEC_lims += [[float(vals[4]),float(vals[5])]]
 
-    n = 0
+    cen_RA = array([(f[0] + f[1])/2.0 for f in RA_lims])
+    cen_DEC = array([(f[0] + f[1])/2.0 for f in DEC_lims])
 
-    cat_name = cat_names[n]
+    sep = (((TEL_RA - cen_RA)*(np.cos(TEL_DEC*np.pi/180.0)))**2.0 + (TEL_DEC - cen_DEC)**2.0)**0.5
 
-    with pf.open(catpath+'catcache/'+cat_name) as catd:
+    cat_name = cat_names[np.argmin(sep)]
+
+    with pf.open(catpath+'/'+cat_name) as catd:
       catt = catd[1].data.copy()
     cat = {'ra':catt['ra'],'dec':catt['dec'],'Jmag':catt['Jmag']}
 
@@ -114,9 +118,9 @@ def casu_solve(casuin,dist_map,thresh=20, verbose=False,catsrc='viz2mass',catpat
   # We need the extra correction here before we do the wcsfit, because the TEL RA and DEC measurements are not
   # always precise enough for the fit to work. This simply shifts CRVALS to align with CRPIX
     try:
-#      dist_map = shift_wcs_axis(best_fit,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,iters=1)
-      dist_map = lmq_fit(best_fit,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,fitlist=['RA_s','DEC_s'])
-#      dist_map = lmq_fit(best_fit,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC)
+      dist_map = shift_wcs_axis(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,iters=3)
+      dist_map = lmq_fit(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,fitlist=['RA_s','DEC_s'])
+#      dist_map = lmq_fit(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC)
     except IOError:
       print "Performing initial fit"
       casutools.wcsfit(casuin, catfile_name, verbose=verbose)
@@ -131,7 +135,7 @@ def casu_solve(casuin,dist_map,thresh=20, verbose=False,catsrc='viz2mass',catpat
 # Now we're ready to solve wcs
     casutools.wcsfit(casuin, catfile_name, verbose=verbose)
 
-# Do QC checks. plotting disabled for now.
+# Do QC checks. should really break this out.
     plot = True
     wcsf_QCheck(mycat,casuin,casuin.strip('.fits')+'.png',cat,RA_lims,DEC_lims,my_X,my_Y,plot=plot)
 
