@@ -1,0 +1,207 @@
+#!/usr/bin/ipython
+# -*- coding: utf-8 -*-
+import matplotlib
+from pylab import *
+import numpy as np
+from scipy.stats import *
+import matplotlib.pyplot as pl
+import triangle
+import sys
+import time
+from fitsio import write as fwrite
+from fitsio import read as fread
+from fitsio import FITS as fFITS
+import pickle
+from NGTS_workpackage.catmatch import *
+from NGTS_workpackage.vector_plot import wcsf_QCheck
+from astropy.io import fits as pf
+
+def main():
+
+  mycatname = str(sys.argv[1])
+  chain_name = str(sys.argv[2])
+  catsrc = str(sys.argv[3])
+  dummy_name = str(sys.argv[4])
+ 
+  if len(sys.argv) != 4:
+    print 'Usage:'
+    print 'python plot_mcmc_out <mycatname> <chain_name> <catsrc> <image_name>' 
+
+  if sys.argv[-1] == 'jun26':
+    mycatname = 'jun26_cat.fits'
+    chain_name = '2_jun26.fits'
+    catsrc = '/storage/astro2/phrmat/NGTS_june5_astrometry/catcache'
+    dummy_name = 'dummy_jun26.fits'
+
+  if sys.argv[-1] == 'jun19':
+    mycatname = 'new_19th_jun_cat.fits'
+    chain_name = '10_jun19.fits'
+    catsrc = '/storage/astro2/phrmat/NGTS_june5_astrometry/new_19th_catcache'
+    dummy_name = 'dummy_19th.fits'
+
+  if sys.argv[-1] == 'jun11':
+    mycatname = 'jun11_cat.fits'
+    chain_name = '2_jun11.fits'
+    catsrc = '/storage/astro2/phrmat/NGTS_june5_astrometry/catcache_11th'
+    dummy_name = 'jun11.fits'
+
+  auto = True
+
+  maxlength=1e5
+
+  if auto == True:
+    pl.ion()
+
+#  TRIfig = pl.figure(1,figsize=(17,13))
+  TRIfig = pl.figure(1,figsize=(8,6))
+
+  SEPfig = pl.figure(2)
+
+  if auto == True:
+    while True:
+      autoplot(TRIfig,SEPfig,chain_name,mycatname,catsrc,dummy_name,maxlength=maxlength,save=False)
+      time.sleep(2)
+  else:
+      print 'savemode'
+      autoplot(TRIfig,SEPfig,chain_name,mycatname,catsrc,dummy_name,maxlength=maxlength,save=True)
+
+  quit()
+
+def load_chain(chain_name,maxlength=1e6):
+
+  #keeping this seperate for now in case I want to implement burning or something.
+
+  with fFITS(chain_name,'r') as fits:
+    length = fits['MCMC']._info['nrows']
+    print length
+    if length > maxlength:
+      data_dict = fits['MCMC'][length-maxlength:length]
+    else:
+      data_dict = fits['MCMC'][0:length]
+      
+  return data_dict
+
+def autoplot(TRIfig,SEPfig,chain_name,mycatname,catsrc,dummy_name,maxlength=1e6,param_names=[],save=False):
+
+  while True:
+    print 'Attempting to open file: ',chain_name
+    try:
+      chaindata = load_chain(chain_name,maxlength=maxlength)
+      break
+    except:
+      print 'failure!'
+      time.sleep(10)
+
+  lp = chaindata['lp']
+  samples = chaindata['x'][np.isfinite(lp) & (lp != 0.0)]
+  lp = lp[np.isfinite(lp) & (lp != 0.0)]
+
+  result = map(lambda v: (v[1], v[2]-v[1], v[1]-v[0]),
+			      zip(*np.percentile(samples, [16, 50, 84],
+						  axis=0)))
+
+
+  print result
+
+  best = max(lp)
+
+#  opt = array([r[0] for r in result])
+  opt = samples[argmax(lp)]
+
+  cat_names = []
+  RA_lims = []
+  DEC_lims = []
+  for line in open(catsrc+'/index'):
+    vals = line.strip('\n').split(' ')
+    cat_names += [vals[0]]
+    RA_lims += [[float(vals[2]),float(vals[3])]]
+    DEC_lims += [[float(vals[4]),float(vals[5])]]
+
+  n = 0
+
+  cat_name = cat_names[n]
+  cat = pf.open(catsrc+'/'+cat_name)
+
+  with pf.open(dummy_name) as hdulist:
+    XVAL = hdulist[0].header['NAXIS1']/2
+    YVAL = hdulist[0].header['NAXIS2']/2
+    TEL_RA = hdulist[0].header['TEL_RA']
+    TEL_DEC = hdulist[0].header['TEL_DEC']
+
+  mycat = pf.open(mycatname)
+
+  my_X = mycat[1].data['x_coordinate']
+  my_Y = mycat[1].data['y_coordinate']
+  pix_coords = [[my_X[i],my_Y[i]] for i in range(0,len(my_X))]
+
+  with pf.open(catsrc+'/'+cat_name) as catd:
+    catt = catd[1].data.copy()
+  cat = {'ra':catt['ra'],'dec':catt['dec'],'Jmag':catt['Jmag']}
+
+  with pf.open(mycatname) as mycatd:
+    mycatt = mycatd[1].data.copy()
+  mycat = {'Aper_flux_3':mycatt['Aper_flux_3']}
+
+  print len(opt)
+  if len(opt)==12:
+    # 7th order fit
+    dicty = {'CRPIX1': 1.03259815e+03,'CRPIX2': 9.65505144e+02,'CD1_1': 1.41142333e-03,'CD2_2': 1.41109400e-03,'CD1_2': -1.89116218e-06,'CD2_1': 1.53342393e-06 ,'PV2_1': 1.0,'PV2_2':2.0,'PV2_3': 8.68515702e+00,'PV2_5': 2.70336203e+02,'PV2_7': 1.37726138e+04,'RA_s':-0.45807896397,'DEC_s':0.48575139999,'CTYPE1':'RA---ZPN','CTYPE2':'DEC--ZPN'}
+    param_names = ['CRPIX1','CRPIX2','CD1_1','CD2_2','CD1_2','CD2_1','PV2_2','PV2_3','PV2_5','PV2_7','RA_s','DEC_s']
+  elif len(opt)==11:
+    # 7th order fit
+    dicty = {'CRPIX1': 1.03259815e+03,'CRPIX2': 9.65505144e+02,'CD1_1': 1.41142333e-03,'CD2_2': 1.41109400e-03,'CD1_2': -1.89116218e-06,'CD2_1': 1.53342393e-06 ,'PV2_1': 1.0,'PV2_2':0.0,'PV2_3': 8.68515702e+00,'PV2_5': 2.70336203e+02,'PV2_7': 1.37726138e+04,'RA_s':-0.45807896397,'DEC_s':0.48575139999,'CTYPE1':'RA---ZPN','CTYPE2':'DEC--ZPN'}
+    param_names = ['CRPIX1','CRPIX2','CD1_1','CD2_2','CD1_2','CD2_1','PV2_3','PV2_5','PV2_7','RA_s','DEC_s']
+  else:
+    # 5th order fit
+    dicty = {'CRPIX1': 1.03186582e+03,'CRPIX2': 9.65390145e+02,'CD1_1': 1.41143441e-03,'CD2_2': 1.41109881e-03,'CD1_2': -1.91498220e-06,'CD2_1': 1.57312392e-06 ,'PV2_1': 1.0,'PV2_2':0,'PV2_3': 8.71721335e+00,'PV2_5': 2.18288567e+02,'PV2_7': 0,'RA_s':-0.45966596397,'DEC_s':0.48558489999,'CTYPE1':'RA---ZPN','CTYPE2':'DEC--ZPN'}
+    param_names = ['CRPIX1','CRPIX2','CD1_1','CD2_2','CD1_2','CD2_1','PV2_2','PV2_3','PV2_5','RA_s','DEC_s']
+
+  for i in range(0,len(opt)):
+    dicty[param_names[i]] = opt[i]
+
+  dicty['CRVAL1'] = TEL_RA + dicty['RA_s']
+  dicty['CRVAL2'] = TEL_DEC + dicty['DEC_s']
+
+  print ' '
+
+  print dicty
+
+  print ' '
+
+  rms = fit_shift_wcs_axis(dicty,dummy_name,mycat,cat,XVAL,YVAL,TEL_RA,TEL_DEC,RA_lims,DEC_lims,my_X,my_Y,pix_coords,update=True)
+  print median(rms)
+
+  print best, (best/-2000)**0.5
+
+  p_order = len(samples[0])
+
+  SEPfig.clear()
+  SEPfig.add_subplot(1,1,1)
+  hist(rms,50,color="k", histtype="step")
+
+  xlabel('Residuals (arcseconds)')
+  ylabel('N (stars)')
+
+  if save == False:
+    SEPfig.canvas.draw()
+
+  if save == True:
+    SEPfig.savefig('sep.pdf')
+    SEPfig.savefig('sep.png')
+
+  TRIfig.clear()
+  for i in range(1,p_order**2.0 + 1):
+    TRIfig.add_subplot(p_order,p_order,i)
+  triangle.corner(samples,fig=TRIfig,labels=param_names,
+                         show_titles=True, title_args={"fontsize": 12})
+  if save == False:
+    TRIfig.canvas.draw()
+  if save == True:
+    TRIfig.savefig('Triangle.pdf')
+    TRIfig.savefig('Triangle.png')
+
+  plot = True
+
+  wcsf_QCheck(mycat,dummy_name,dummy_name.strip('.fits')+'.png',cat,RA_lims,DEC_lims,my_X,my_Y,plot=plot)
+
+main()
