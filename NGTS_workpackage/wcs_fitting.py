@@ -16,7 +16,7 @@ import astropy.io.fits as pf
 import os
 from vector_plot import wcsf_QCheck
 
-def m_solve_images(filelist,outfile,dist_map,nproc=None, thresh=20.0, verbose=False, catsrc='viz2mass', catpath=False):
+def m_solve_images(filelist,outfile,dist_map,wcsref,nproc=None, thresh=20.0, verbose=False, catsrc='viz2mass', catpath=False):
   infiles = []
 
   with open(filelist) as infile:
@@ -27,12 +27,19 @@ def m_solve_images(filelist,outfile,dist_map,nproc=None, thresh=20.0, verbose=Fa
       if all(status == 'ok' for status in status_checks):
         infiles.append(image)
 
-  fn = partial(casu_solve,dist_map=dist_map,thresh=thresh, verbose=verbose, catsrc=catsrc, catpath=catpath)
+  if not os.path.isdir(catpath):
+    print("Constructing initial wcs cache")
+    catalogue_name = 'initial-catalogue.fits'
+    casutools.imcore(infiles[0], catalogue_name, threshold=thresh, verbose=verbose)
+    casutools.wcsfit(infiles[0], catalogue_name, catsrc='localfits', catpath=wcsref,
+                     verbose=verbose)
+
+  fn = partial(casu_solve,wcsref=wcsref,dist_map=dist_map,thresh=thresh, verbose=verbose, catsrc=catsrc, catpath=catpath)
 
   pool = ThreadPool(nproc)
   return pool.map(fn, infiles)
 
-def casu_solve(casuin,dist_map={},thresh=20, verbose=False,catsrc='viz2mass',catpath=False):
+def casu_solve(casuin,wcsref,dist_map={},thresh=20, verbose=False,catsrc='viz2mass',catpath=False):
 
 #  validate_headers(casuin)
 
@@ -97,12 +104,9 @@ def casu_solve(casuin,dist_map={},thresh=20, verbose=False,catsrc='viz2mass',cat
       RA_lims += [[float(vals[2]),float(vals[3])]]
       DEC_lims += [[float(vals[4]),float(vals[5])]]
 
-    cen_RA = array([(f[0] + f[1])/2.0 for f in RA_lims])
-    cen_DEC = array([(f[0] + f[1])/2.0 for f in DEC_lims])
+    n = 0
 
-    sep = (((TEL_RA - cen_RA)*(np.cos(TEL_DEC*np.pi/180.0)))**2.0 + (TEL_DEC - cen_DEC)**2.0)**0.5
-
-    cat_name = cat_names[np.argmin(sep)]
+    cat_name = cat_names[n]
 
     with pf.open(catpath+'/'+cat_name) as catd:
       catt = catd[1].data.copy()
@@ -123,7 +127,7 @@ def casu_solve(casuin,dist_map={},thresh=20, verbose=False,catsrc='viz2mass',cat
 #      dist_map = lmq_fit(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC)
     except IOError:
       print "Performing initial fit"
-      casutools.wcsfit(casuin, catfile_name, verbose=verbose)
+      casutools.wcsfit(casuin, catfile_name, catpath=wcsref, catsrc=catsrc, verbose=verbose)
       dist_map = shift_wcs_axis(casuin, catfile_name, thresh=thresh, iters=30)
       # make mag limited version should go in here
 
@@ -133,7 +137,7 @@ def casu_solve(casuin,dist_map={},thresh=20, verbose=False,catsrc='viz2mass',cat
     correct_catfile(catfile_name,casuin,nstars=2000)
 
 # Now we're ready to solve wcs
-    casutools.wcsfit(casuin, catfile_name, verbose=verbose)
+    casutools.wcsfit(casuin, catfile_name, catpath=wcsref, catsrc=catsrc, verbose=verbose)
 
 # Do QC checks. should really break this out.
     plot = True
@@ -141,3 +145,4 @@ def casu_solve(casuin,dist_map={},thresh=20, verbose=False,catsrc='viz2mass',cat
 
     return 'ok'
 
+# vim: sw=2

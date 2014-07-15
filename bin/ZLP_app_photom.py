@@ -49,7 +49,7 @@ def main(argv):
 
   filelist = argv.filelist
   if filelist:
-    m_solve_images(filelist,argv.outlist,dist_map,nproc=argv.nproc,thresh=argv.s_thresh,
+    m_solve_images(filelist,argv.outlist,dist_map,argv.wcsref,nproc=argv.nproc,thresh=argv.s_thresh,
                   verbose=argv.verbose,catsrc=argv.catsrc,catpath=argv.catpath)
     m_wcs_photom(filelist,argv.outlist,argv.apsize,argv.confmap,argv.catfile,nproc=argv.nproc,
                 verbose=argv.verbose)
@@ -62,14 +62,15 @@ if __name__ == '__main__':
   parser.add_argument('-f', '--filelist', help='List of files', required=True)
   parser.add_argument('--dist', help='Path to the relevant distortion', required=True)
   parser.add_argument('--outdir', required=True, help='Output directory')
+  parser.add_argument('--wcsref', help='WCS reference frame')
 
   parser.add_argument('--verbose', action='store_true', default=False)
   parser.add_argument('--outlist', help="List of completed files")
   parser.add_argument('--nproc', type=int, default=1, help='Number of processors')
   parser.add_argument('--apsize', type=float, default=2, help='Aperture size')
   parser.add_argument('--s_thresh', type=float, default=7, help='Detection threshold in sigma')
-  parser.add_argument('--catsrc', default='vis2mass', help='Catalogue for wcs solving')
-  parser.add_argument('--catpath', default=False, help='Local casutools catalogue cache')
+  parser.add_argument('--catsrc', default='localfits', help='Catalogue for wcs solving')
+  parser.add_argument('--catpath', default='catcache', help='Local casutools catalogue cache')
 
   main(parser.parse_args())
 # vim: sw=2

@@ -91,7 +91,7 @@ def imcore_list(input_file, listfile, output_file, threshold=2.0, confidence_map
 
     run_command(cmd, verbose=verbose)
 
-def wcsfit(infile, incat, catsrc='viz2mass', site='cds', catpath=False, verbose=False):
+def wcsfit(infile, incat, catsrc, site='cds', catpath=False, verbose=False):
     '''
     Runs the casu task `wcsfit`
     '''
