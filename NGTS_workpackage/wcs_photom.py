@@ -7,9 +7,9 @@ from os.path import isfile, join
 import multiprocessing
 from quality_checks import *
 import casutools
-from multiprocessing.dummy import Pool as ThreadPool
+from multiprocessing import Pool
 from functools import partial
-
+from super_sample import call_find_fwhm 
 
 def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=False):
 
@@ -25,13 +25,21 @@ def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=Fal
       if all(status == 'ok' for status in status_checks):
         infiles.append(image)
 
-  pool = ThreadPool(nproc)
+  pool = Pool(nproc)
 
   fn = partial(wcs_photom, cat_file=cat_file, conf_file=conf_file, appsize=appsize, verbose=verbose)
   pool.map(fn, infiles)
 
   first_image = infiles[0] + '.phot'
-  pf.setval(first_image,'SHIFT',1,value=0)
+  pf.setval(first_image,'SKY_MOVE',1,value=0)
+
+  RA_shift, DEC_shift, tot_shift, RA, DEC = frame_shift(infiles[0],infiles[0])
+  pf.setval(first_image,'RA_MOVE',1,value=RA_shift,comment='RA shift from previous image [arcseconds]')
+  pf.setval(first_image,'DEC_MOVE',1,value=DEC_shift,comment='Dec shift from previous image [arcseconds]')
+  pf.setval(first_image,'SKY_MOVE',1,value=tot_shift,comment='Total movement on sky [arcseconds]')
+
+  pf.setval(first_image,'WCSF_RA',1,value=RA_shift,comment='RA center pix')
+  pf.setval(first_image,'WCSF_DEC',1,value=DEC_shift,comment='Dec center pix')
 
   indexes = arange(1,len(infiles))
   fn = partial(m_frame_shift, infiles)
@@ -45,6 +53,12 @@ def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=Fal
             verbose=verbose)
 
    #    do some quality checks
+
+  factor = 5
+  size = 11
+  stars = 100
+
+  fwhm = call_find_fwhm(image,factor,size,stars,tag=image)
      
   cloud_status = cloud_check(image)
 

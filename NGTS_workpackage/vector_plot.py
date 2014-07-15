@@ -12,7 +12,7 @@ Options:
   -h --help  Show help text
 
 """
-from docopt import docopt
+import argparse
 import numpy as np
 from astropy import wcs
 from astropy.io import fits
@@ -128,7 +128,11 @@ def polynomial(x,y):
 
 if __name__ == '__main__':
 
-  args = docopt(__doc__)
-  med_sep = plot_differences(args['<CATALOG_NAME>'],args['<IMAGE_NAME>'],args['<PLOT_NAME>'])
+  parser = argparse.ArgumentParser()
+  parser.add_argument("catalog_name")
+  parser.add_argument('image_name')
+  parser.add_argument('plot_name')
 
+  args = parser.parse_args()
+  med_sep = plot_differences(args.catalog_name,args.image_name,args.plot_name)
   print 'the median sep is',med_sep,' arcseconds'

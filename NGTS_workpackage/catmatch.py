@@ -38,12 +38,11 @@ def lmq_fit(best_fit,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,fitlist
 
   pix_coords = [[my_X[i],my_Y[i]] for i in range(0,len(my_X))]
 
-  x, success = opt.leastsq(lmq_fit_model,priorl,args=(mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TEL_DEC,name_list,best_fit,shift),factor=factor,epsfcn=epsfcn)
-
   for i in range(0,len(name_list)):
     best_fit[name_list[i]] = x[i]
 
-  world = load_wcs_from_keywords(best_fit,pix_coords)
+  x, success = opt.leastsq(lmq_fit_model,priorl,args=(mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TEL_DEC,name_list,best_fit),factor=10.0,epsfcn=0.00001)
+
 
   xs,ys,RA_sep,DEC_sep,x_sep,y_sep,sep_list = calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,best_fit)
 
@@ -72,6 +71,8 @@ def lmq_fit_model(vals,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TE
 
   world = load_wcs_from_keywords(dicty,pix_coords)
 
+  print dicty
+
   xs,ys,RA_sep,DEC_sep,x_sep,y_sep,sep_list = calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,dicty)
 
   if len(sep_list) < 10:
@@ -86,7 +87,6 @@ def lmq_fit_model(vals,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,pix_coords,TEL_RA,TE
     xs,ys,RA_sep,DEC_sep,x_sep,y_sep,sep_list = calc_seps(mycat,cat,RA_lims,DEC_lims,world,my_X,my_Y,dicty)
 
   goodness = [np.median(sep_list)*2000]*len(vals)
-
 
   print vals
   print np.median(sep_list)
