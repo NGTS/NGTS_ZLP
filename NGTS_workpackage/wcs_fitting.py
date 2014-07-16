@@ -137,7 +137,7 @@ def casu_solve(casuin,wcsref,dist_map={},thresh=20, verbose=False,catsrc='viz2ma
     correct_catfile(catfile_name,casuin,nstars=2000)
 
 # Now we're ready to solve wcs
-#    casutools.wcsfit(casuin, catfile_name, catpath=wcsref, catsrc=catsrc, verbose=verbose)
+    casutools.wcsfit(casuin, catfile_name, catpath=wcsref, catsrc=catsrc, verbose=verbose)
 
 # Do QC checks. should really break this out.
     plot = True
