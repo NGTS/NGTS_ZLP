@@ -38,13 +38,6 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 
 #Take all .phot outputs from casu imstack_ls and condense them into a single file with formatting suitible for reading by sysrem
 
-  min_temp = 0
-  max_clouds = 50
-  max_fwhm = 10
-  min_fwhm = 0.1
-  max_shift = 100
-
-
   flux = []
   flux_err = []
   sky = []
