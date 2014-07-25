@@ -15,6 +15,7 @@ import fitsio
 import astropy.io.fits as pf
 import os
 from vector_plot import wcsf_QCheck
+import numpy as np
 
 def m_solve_images(filelist,outfile,dist_map,wcsref,nproc=None, thresh=20.0, verbose=False, catsrc='viz2mass', catpath=False):
   infiles = []
@@ -78,7 +79,7 @@ def casu_solve(casuin,wcsref,dist_map={},thresh=20, verbose=False,catsrc='viz2ma
 #  dist_map['DEC_s'] = (old_world[0][1] - TEL_DEC) 
 
   for key in dist_map:
-	print dist_map[key], hdulist.get(key)
+	print key, dist_map[key], hdulist.get(key)
 
   apply_correct(dist_map,casuin,TEL_RA,TEL_DEC) 
 
@@ -122,8 +123,8 @@ def casu_solve(casuin,wcsref,dist_map={},thresh=20, verbose=False,catsrc='viz2ma
   # We need the extra correction here before we do the wcsfit, because the TEL RA and DEC measurements are not
   # always precise enough for the fit to work. This simply shifts CRVALS to align with CRPIX
     try:
-      dist_map = shift_wcs_axis(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,iters=3)
-      dist_map = lmq_fit(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,fitlist=['RA_s','DEC_s'])
+      dist_map = shift_wcs_axis(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,iters=10)
+      dist_map = lmq_fit(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,fitlist=['RA_s','DEC_s','CD1_1','CD2_2','CD1_2','CD2_1'])
 #      dist_map = lmq_fit(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC)
     except IOError:
       print "Performing initial fit"

@@ -38,8 +38,8 @@ def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=Fal
   pf.setval(first_image,'DEC_MOVE',1,value=DEC_shift,comment='Dec shift from previous image [arcseconds]')
   pf.setval(first_image,'SKY_MOVE',1,value=tot_shift,comment='Total movement on sky [arcseconds]')
 
-  pf.setval(first_image,'WCSF_RA',1,value=RA_shift,comment='RA center pix')
-  pf.setval(first_image,'WCSF_DEC',1,value=DEC_shift,comment='Dec center pix')
+  pf.setval(first_image,'WCSF_RA',1,value=RA,comment='RA center pix')
+  pf.setval(first_image,'WCSF_DEC',1,value=DEC,comment='Dec center pix')
 
   indexes = arange(1,len(infiles))
   fn = partial(m_frame_shift, infiles)
@@ -63,7 +63,7 @@ def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=Fal
   cloud_status = cloud_check(image)
 
   pixel_fwhm = pf.getval(outname,'SEEING',1)
-  plate_scale = pf.getval(outname,'CD1_1',1)
+  plate_scale = 5.0 
   seeing = round(plate_scale*pixel_fwhm*3600,2)
 
   pf.setval(outname,'CLOUD_S',1,value=round(cloud_status,2),comment='A measure of bulk structure in the image (S/N)')
