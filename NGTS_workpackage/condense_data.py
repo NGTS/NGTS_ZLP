@@ -197,10 +197,11 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   a14 = pf.Column(name='CLOUDS', format='1D', array=CLOUDS)
   a15 = pf.Column(name='SHIFT', format='1D', array=SHIFT)
   a16 = pf.Column(name='EXPOSURE', format='1D', array=exposure)
+  a17 = pf.Column(name='IMAGE_ID',format='1D',array=imid)
 
   hducatalogue=pf.new_table([c1,c2,c3,c4,c5,c6])
 
-  hduimagelist=pf.new_table([a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16])
+  hduimagelist=pf.new_table([a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17])
 
   hduprime = pf.PrimaryHDU(np.array(flux).T)
 
