@@ -190,7 +190,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   a14 = pf.Column(name='CLOUDS', format='1D', array=CLOUDS)
   a15 = pf.Column(name='SHIFT', format='1D', array=SHIFT)
   a16 = pf.Column(name='EXPOSURE', format='1D', array=exposure)
-  a17 = pf.Column(name='IMAGE_ID',format='1D',array=imid)
+  a17 = pf.Column(name='IMAGE_ID',format='1K',array=imid)
 
   hducatalogue=pf.new_table([c1,c2,c3,c4,c5,c6])
 
@@ -239,9 +239,15 @@ def stitch(filelist,outdir='./'):
   for i in range(0,len(hdulist)):
     combine += list(hdulist[i][headername].data.T)
     print shape(combine)
+
+  # Convert bad values to nans
+  combine = array(combine).T
+  ind = combine <= 0
+  combine[ind] = np.nan
+
   fluxmean = mean(combine, axis = 0)
-  hduflux = pf.ImageHDU(array(combine).T)
-  hduprime = pf.PrimaryHDU(array(combine).T)
+  hduflux = pf.ImageHDU(combine)
+  hduprime = pf.PrimaryHDU()
 
   a = []
   headername ='IMAGELIST'
@@ -269,7 +275,9 @@ def stitch(filelist,outdir='./'):
     combine =[]
     for i in range(0,len(hdulist)):
       combine += list(hdulist[i][headername].data.T)
-    dicty[headername] = pf.ImageHDU(array(combine).T)
+    combine = array(combine).T
+    combine[ind] = np.nan
+    dicty[headername] = pf.ImageHDU(combine)
 
   hduimagelist=pf.new_table(a)
   hducatalogue=pf.new_table(c)
