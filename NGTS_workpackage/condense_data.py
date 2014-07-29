@@ -241,7 +241,7 @@ def stitch(filelist,outdir='./'):
     print shape(combine)
   fluxmean = mean(combine, axis = 0)
   hduflux = pf.ImageHDU(array(combine).T)
-  hduprime = pf.PrimaryHDU(array(combine).T)
+  hduprime = pf.PrimaryHDU()
 
   a = []
   headername ='IMAGELIST'
