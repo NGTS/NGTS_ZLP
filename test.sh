@@ -14,12 +14,13 @@ create_filelist(){
 }
 
 run_test() {
+    local readonly nproc="$1"
     local readonly filelist_name=$(create_filelist)
     python ./bin/ZLP_create_outfile.py \
         --outdir ${BASEDIR}/testdata \
         ${filelist_name} \
         --apsize 2 \
-        --nproc 1
+        --nproc "${nproc}"
 }
 
 assert_output() {
@@ -27,18 +28,28 @@ assert_output() {
 import fitsio
 import numpy as np
 with fitsio.FITS("testdata/output.fits") as infile:
-    flux = infile['flux'].read()
+    for hdu in ['flux', 'fluxerr', 'hjd']:
+        data = infile[hdu].read()
 
-assert np.min(flux) == np.nan, "Error with min flux, should be nan, got {}".format(np.min(flux))
-assert np.nanmin(flux) > 0, "Error with nanmin flux, should be > 0, got {}".format(np.nanmin(flux))
+        assert np.isnan(np.min(data)), "Error with min data ({}), should be nan, got {}".format(hdu, np.min(data))
+        assert np.nanmin(data) > 0, "Error with nanmin data ({}), should be > 0, got {}".format(hdu, np.nanmin(data))
 EOF
 }
 
 main() {
     (cd ${BASEDIR}
     setup_environment
-    run_test
-    assert_output
+    for nproc in 1 2 4; do
+        echo -n "Testing ${nproc} processors... "
+        run_test "${nproc}" 2>/dev/null >/dev/null
+        assert_output
+        if [[ "$?" == "0" ]]; then
+            echo "Pass"
+        else
+            echo "Fail"
+            exit 1
+        fi
+    done
     )
 }
 
