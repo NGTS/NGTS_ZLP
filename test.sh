@@ -22,10 +22,23 @@ run_test() {
         --nproc 1
 }
 
+assert_output() {
+    python - <<EOF
+import fitsio
+import numpy as np
+with fitsio.FITS("testdata/output.fits") as infile:
+    flux = infile['flux'].read()
+
+assert np.min(flux) == np.nan, "Error with min flux, should be nan, got {}".format(np.min(flux))
+assert np.nanmin(flux) > 0, "Error with nanmin flux, should be > 0, got {}".format(np.nanmin(flux))
+EOF
+}
+
 main() {
     (cd ${BASEDIR}
     setup_environment
     run_test
+    assert_output
     )
 }
 
