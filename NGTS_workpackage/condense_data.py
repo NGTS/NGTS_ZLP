@@ -21,10 +21,7 @@ def m_condense_data(filelist,nproc,appsize,verbose=False,outdir='./'):
 
   processes = []
   for i in range(0,nproc):
-    p = multiprocessing.Process(target=condense_data, args = (filelist,starts[i],ends[i],i+1,appsize,verbose))
-    processes.append(p)
-  [x.start() for x in processes]
-  [x.join() for x in processes]
+    condense_data(filelist, starts[i], ends[i], i+1, appsize, verbose)
 
   filelist = array([ f for f in listdir(os.getcwd()) if 'output_' in f ])
   numberlist = array([int(f.split('_')[1].split('.')[0]) for f in filelist])
@@ -297,3 +294,5 @@ def stitch(filelist,outdir='./'):
   new_hdulist[8].name = 'CCDY'
 
   new_hdulist.writeto(outname, clobber=True)
+
+# vim: sw=2
