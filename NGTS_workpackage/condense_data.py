@@ -37,6 +37,8 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 
   flux = []
   flux_err = []
+  Skylev = []
+  Skyrms = []
   sky = []
   xpos = []
   ypos = []
@@ -126,6 +128,8 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	fwhm += [fwhm_frame]
 	seeing += [seeing_frame]
 	rawflux = photdata[1].data['Core_flux'].copy()
+	Skylev += [photdata[1].data['Skylev'].copy()]
+	Skyrms += [photdata[1].data['Skyrms'].copy()]
 	correctedflux = gain*rawflux*fluxcorrection/photdata[1].header['EXPOSURE']
 	flux += [correctedflux]
 	rel_err = 1.0/(rawflux*gain/sqrt(rawflux*gain + npix*sky[-1]*gain))
@@ -201,8 +205,10 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   hduypos = pf.ImageHDU(np.array(ypos).T)
   hdutime = pf.ImageHDU(np.array(time).T)
   hdunullq = pf.ImageHDU((np.array(time).T)*0 + 1)
+  hduskylev = pf.ImageHDU(np.array(Skylev).T)
+  hduskyrms = pf.ImageHDU(np.array(Skyrms).T)
 
-  hdulist = pf.HDUList([hduprime] + [hducatalogue] + [hduimagelist] + [hdutime] + [hduflux] + [hdufluxerr] + [hdunullq] + [hduxpos] + [hduypos])
+  hdulist = pf.HDUList([hduprime] + [hducatalogue] + [hduimagelist] + [hdutime] + [hduflux] + [hdufluxerr] + [hdunullq] + [hduxpos] + [hduypos] + [Skylev] + [Skyrms])
 
   hdulist[0].name = 'Primary'
   hdulist[1].name = 'CATALOGUE'
@@ -213,6 +219,8 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   hdulist[6].name = 'QUALITY'
   hdulist[7].name = 'CCDX'
   hdulist[8].name = 'CCDY'
+  hdulist[9].name = 'Skylev'
+  hdulist[10].name = 'Skyrms'
 
   outname = 'output_'+str(thread_no)+'.fits'
 
@@ -264,7 +272,7 @@ def stitch(filelist,outdir='./'):
 
   c[1].array = fluxmean
 
-  headername_list = ['HJD','FLUXERR','QUALITY','CCDX','CCDY']
+  headername_list = ['HJD','FLUXERR','QUALITY','CCDX','CCDY','Skylev','Skyrms']
   dicty = {}
 
   for headername in headername_list:
@@ -281,7 +289,7 @@ def stitch(filelist,outdir='./'):
 
   c1 = pf.Column(name='FLUX_MEAN', format='1D', unit='Counts', array=fluxmean)
 
-  new_hdulist = pf.HDUList([hduprime] + [hducatalogue] + [hduimagelist] + [dicty['HJD']] + [hduflux] + [dicty['FLUXERR']] + [dicty['QUALITY']] + [dicty['CCDX']] + [dicty['CCDY']])
+  new_hdulist = pf.HDUList([hduprime] + [hducatalogue] + [hduimagelist] + [dicty['HJD']] + [hduflux] + [dicty['FLUXERR']] + [dicty['QUALITY']] + [dicty['CCDX']] + [dicty['CCDY']] + [dicty['Skylev']] + [dicty['Skyrms']])
 
   new_hdulist[0].name = 'Primary'
   new_hdulist[1].name = 'CATALOGUE'
@@ -292,6 +300,8 @@ def stitch(filelist,outdir='./'):
   new_hdulist[6].name = 'QUALITY'
   new_hdulist[7].name = 'CCDX'
   new_hdulist[8].name = 'CCDY'
+  new_hdulist[9].name = 'Skylev'
+  new_hdulist[10].name = 'Skyrms'
 
   new_hdulist.writeto(outname, clobber=True)
 
