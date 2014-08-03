@@ -219,8 +219,8 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   hdulist[6].name = 'QUALITY'
   hdulist[7].name = 'CCDX'
   hdulist[8].name = 'CCDY'
-  hdulist[9].name = 'Skylev'
-  hdulist[10].name = 'Skyrms'
+  hdulist[9].name = 'skybkg'
+  hdulist[10].name = 'skyrms'
 
   outname = 'output_'+str(thread_no)+'.fits'
 
@@ -272,7 +272,7 @@ def stitch(filelist,outdir='./'):
 
   c[1].array = fluxmean
 
-  headername_list = ['HJD','FLUXERR','QUALITY','CCDX','CCDY','Skylev','Skyrms']
+  headername_list = ['HJD','FLUXERR','QUALITY','CCDX','CCDY','skybkg','skyrms']
   dicty = {}
 
   for headername in headername_list:
@@ -289,7 +289,7 @@ def stitch(filelist,outdir='./'):
 
   c1 = pf.Column(name='FLUX_MEAN', format='1D', unit='Counts', array=fluxmean)
 
-  new_hdulist = pf.HDUList([hduprime] + [hducatalogue] + [hduimagelist] + [dicty['HJD']] + [hduflux] + [dicty['FLUXERR']] + [dicty['QUALITY']] + [dicty['CCDX']] + [dicty['CCDY']] + [dicty['Skylev']] + [dicty['Skyrms']])
+  new_hdulist = pf.HDUList([hduprime] + [hducatalogue] + [hduimagelist] + [dicty['HJD']] + [hduflux] + [dicty['FLUXERR']] + [dicty['QUALITY']] + [dicty['CCDX']] + [dicty['CCDY']] + [dicty['skybkg']] + [dicty['skyrms']])
 
   new_hdulist[0].name = 'Primary'
   new_hdulist[1].name = 'CATALOGUE'
@@ -300,8 +300,8 @@ def stitch(filelist,outdir='./'):
   new_hdulist[6].name = 'QUALITY'
   new_hdulist[7].name = 'CCDX'
   new_hdulist[8].name = 'CCDY'
-  new_hdulist[9].name = 'Skylev'
-  new_hdulist[10].name = 'Skyrms'
+  new_hdulist[9].name = 'skybkg'
+  new_hdulist[10].name = 'skyrms'
 
   new_hdulist.writeto(outname, clobber=True)
 
