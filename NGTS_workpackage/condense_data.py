@@ -219,8 +219,8 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   hdulist[6].name = 'QUALITY'
   hdulist[7].name = 'CCDX'
   hdulist[8].name = 'CCDY'
-  hdulist[9].name = 'Skybkg'
-  hdulist[10].name = 'Skyrms'
+  hdulist[9].name = 'SKYBKG'
+  hdulist[10].name = 'SKYRMS'
 
   outname = 'output_'+str(thread_no)+'.fits'
 
@@ -272,7 +272,7 @@ def stitch(filelist,outdir='./'):
 
   c[1].array = fluxmean
 
-  headername_list = ['HJD','FLUXERR','QUALITY','CCDX','CCDY','Skybkg','Skyrms']
+  headername_list = ['HJD','FLUXERR','QUALITY','CCDX','CCDY','SKYBKG','SKYRMS']
   dicty = {}
 
   for headername in headername_list:
@@ -300,8 +300,8 @@ def stitch(filelist,outdir='./'):
   new_hdulist[6].name = 'QUALITY'
   new_hdulist[7].name = 'CCDX'
   new_hdulist[8].name = 'CCDY'
-  new_hdulist[9].name = 'Skybkg'
-  new_hdulist[10].name = 'Skyrms'
+  new_hdulist[9].name = 'SKYBKG'
+  new_hdulist[10].name = 'SKYRMS'
 
   new_hdulist.writeto(outname, clobber=True)
 
