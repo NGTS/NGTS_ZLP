@@ -208,7 +208,9 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   hduskylev = pf.ImageHDU(np.array(Skylev).T)
   hduskyrms = pf.ImageHDU(np.array(Skyrms).T)
 
-  hdulist = pf.HDUList([hduprime] + [hducatalogue] + [hduimagelist] + [hdutime] + [hduflux] + [hdufluxerr] + [hdunullq] + [hduxpos] + [hduypos] + [Skylev] + [Skyrms])
+  hdulist = pf.HDUList([hduprime] + [hducatalogue] + [hduimagelist] + [hdutime] + [hduflux] +
+                       [hdufluxerr] + [hdunullq] + [hduxpos] + [hduypos] + [hduskylev] +
+                       [hduskyrms])
 
   hdulist[0].name = 'Primary'
   hdulist[1].name = 'CATALOGUE'
