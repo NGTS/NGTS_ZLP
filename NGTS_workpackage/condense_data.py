@@ -289,7 +289,7 @@ def stitch(filelist,outdir='./'):
 
   c1 = pf.Column(name='FLUX_MEAN', format='1D', unit='Counts', array=fluxmean)
 
-  new_hdulist = pf.HDUList([hduprime] + [hducatalogue] + [hduimagelist] + [dicty['HJD']] + [hduflux] + [dicty['FLUXERR']] + [dicty['QUALITY']] + [dicty['CCDX']] + [dicty['CCDY']] + [dicty['Skybkg']] + [dicty['Skyrms']])
+  new_hdulist = pf.HDUList([hduprime] + [hducatalogue] + [hduimagelist] + [dicty['HJD']] + [hduflux] + [dicty['FLUXERR']] + [dicty['QUALITY']] + [dicty['CCDX']] + [dicty['CCDY']] + [dicty['SKYBKG']] + [dicty['SKYRMS']])
 
   new_hdulist[0].name = 'Primary'
   new_hdulist[1].name = 'CATALOGUE'
