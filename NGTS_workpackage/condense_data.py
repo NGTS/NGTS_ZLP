@@ -67,12 +67,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   #the .copy() addition is necessary when dealing with long filelists - by default python list optimization keeps all files open otherwise,
   #leading to a crash from too many open files
 
-  # an airmass correction term that I fitted myself to the data, might be best to remove this and let sysrem do it itself?
-  k = 0.09624718
-
-  pi =  3.14159265359
-
-  npix = pi*appsize**2.0
+  npix = np.pi*appsize**2.0
 
   first_frame = True
 
@@ -115,8 +110,6 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	centerra +=[photdata[1].header['WCSF_RA']]
 	centerdec +=[photdata[1].header['WCSF_DEC']]
 	# correcting for airmass - the newer fits files have an airmass term, so just use that instead perhaps
-	airmass = 1.0/cos((90.0-ALT[-1])*pi/180.0)
-	fluxcorrection = 10**(airmass*k/2.5)
 	sky += [photdata[1].data['Skylev'].copy()]
 	frame_xpos = photdata[1].data['X_coordinate'].copy()
 	frame_ypos = photdata[1].data['Y_coordinate'].copy()
@@ -130,7 +123,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	rawflux = photdata[1].data['Core_flux'].copy()
 	Skylev += [photdata[1].data['Skylev'].copy()]
 	Skyrms += [photdata[1].data['Skyrms'].copy()]
-	correctedflux = gain*rawflux*fluxcorrection/photdata[1].header['EXPOSURE']
+	correctedflux = gain*rawflux/photdata[1].header['EXPOSURE']
 	flux += [correctedflux]
 	rel_err = 1.0/(rawflux*gain/sqrt(rawflux*gain + npix*sky[-1]*gain))
 	abs_err = rel_err*correctedflux
