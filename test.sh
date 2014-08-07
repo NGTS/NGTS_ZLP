@@ -41,7 +41,9 @@ main() {
     setup_environment
     for nproc in 1 2 4; do
         echo -n "Testing ${nproc} processors... "
+        set +e
         run_test "${nproc}" 2>/dev/null >/dev/null
+        set -e
         assert_output
         if [[ "$?" == "0" ]]; then
             echo "Pass"
