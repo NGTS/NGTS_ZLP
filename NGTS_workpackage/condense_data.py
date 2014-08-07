@@ -37,6 +37,10 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 
   flux = []
   flux_err = []
+
+  flux_grid = [[]]
+  flux_err_grid = [[]]
+
   Skylev = []
   Skyrms = []
   sky = []

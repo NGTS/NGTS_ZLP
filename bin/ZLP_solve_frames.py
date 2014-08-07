@@ -6,7 +6,7 @@
 Zero Level Pipeline apperture photometry 
 
 Usage: 
-  ZLP_app_photom [options] (-c <CONFMAP> | --confmap <CONFMAP>) (-C <CATFILE> | --catfile <CATFILE>) (-f <FILELIST> | --filelist <FILELIST> | INPUT ...)
+  ZLP_app_photom [options] (-C <CATFILE> | --catfile <CATFILE>) (-f <FILELIST> | --filelist <FILELIST> | INPUT ...)
 
 Options:
   -h --help              Show help text
@@ -43,10 +43,8 @@ outfile.close()
 
 filelist = argv['<FILELIST>']
 if filelist:
-# redundant since adding the astrometry package
   m_solve_images(filelist,argv['--outlist'],nproc=int(argv['--nproc']),thresh=int(argv['--s_thresh']),verbose=argv['--verbose'],catsrc=argv['--catsrc'],catpath=argv['--catpath'])
 
 if argv['INPUT']:
   for filename in argv['INPUT']:
-#   redundant since adding the astrometry package
     casu_solve(filename,argv['--s_thresh'],verbose=argv['--verbose'])
