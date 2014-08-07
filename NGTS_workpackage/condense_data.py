@@ -26,7 +26,7 @@ def m_condense_data(filelist,nproc,appsize,verbose=False,outdir='./'):
   filelist = array([ f for f in listdir(os.getcwd()) if 'output_' in f ])
   numberlist = array([int(f.split('_')[1].split('.')[0]) for f in filelist])
   ordered = numberlist.argsort() 
-  stitch(filelist[ordered],outdir)
+  stitch(filelist[ordered],appsize,outdir)
 
   for f in filelist:
     os.system('rm '+f)
@@ -38,8 +38,8 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   flux = []
   flux_err = []
 
-  flux_grid = [[]]
-  flux_err_grid = [[]]
+  flux_grid = []
+  flux_err_grid = []
 
   Skylev = []
   Skyrms = []
@@ -132,6 +132,20 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	rel_err = 1.0/(rawflux*gain/sqrt(rawflux*gain + npix*sky[-1]*gain))
 	abs_err = rel_err*correctedflux
 	flux_err += [abs_err]
+
+	all_appertures = []
+	all_err_apps = []
+	for i in range(1,6):
+		rawflux = photdata[1].data['Core'+str(i)+'_flux'].copy()
+	        correctedflux = gain*rawflux/photdata[1].header['EXPOSURE']
+	        all_appertures += [correctedflux]
+        	rel_err = 1.0/(rawflux*gain/sqrt(rawflux*gain + npix*sky[-1]*gain))
+        	abs_err = rel_err*correctedflux
+        	all_err_apps += [abs_err]
+
+	flux_grid += [all_appertures]
+	flux_err_grid += [all_err_apps]
+
 	T +=[photdata[1].header['CCDTEMP']]
 	coolstat +=[photdata[1].header['COOLSTAT']]
 	mjd = photdata[1].header['MJD']
@@ -144,6 +158,8 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   tarray = np.array(time)
   tmid = tarray[:,0] + ((array(exposure)/2.0)/(3600.0*24.0))
 
+  flux_grid = np.array(flux_grid)
+  error_grid = np.array(flux_err_grid)
 
   #get some data that should be common to all frames
   with pf.open(image+'.phot') as photdata:
@@ -205,9 +221,21 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   hduskylev = pf.ImageHDU(np.array(Skylev).T)
   hduskyrms = pf.ImageHDU(np.array(Skyrms).T)
 
+  hduflux_1 = pf.ImageHDU(flux_grid[:,0].T)
+  hduflux_2 = pf.ImageHDU(flux_grid[:,1].T)
+  hduflux_3 = pf.ImageHDU(flux_grid[:,2].T)
+  hduflux_4 = pf.ImageHDU(flux_grid[:,3].T)
+  hduflux_5 = pf.ImageHDU(flux_grid[:,4].T)
+
+  hduerror_1 = pf.ImageHDU(error_grid[:,0].T)
+  hduerror_2 = pf.ImageHDU(error_grid[:,1].T)
+  hduerror_3 = pf.ImageHDU(error_grid[:,2].T)
+  hduerror_4 = pf.ImageHDU(error_grid[:,3].T)
+  hduerror_5 = pf.ImageHDU(error_grid[:,4].T)
+
   hdulist = pf.HDUList([hduprime] + [hducatalogue] + [hduimagelist] + [hdutime] + [hduflux] +
                        [hdufluxerr] + [hdunullq] + [hduxpos] + [hduypos] + [hduskylev] +
-                       [hduskyrms])
+                       [hduskyrms] + [hduflux_1] + [hduflux_2] + [hduflux_3] + [hduflux_4] + [hduflux_5] + [hduerror_1] + [hduerror_2] + [hduerror_3] + [hduerror_4] + [hduerror_5])
 
   hdulist[0].name = 'Primary'
   hdulist[1].name = 'CATALOGUE'
@@ -220,13 +248,23 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   hdulist[8].name = 'CCDY'
   hdulist[9].name = 'SKYBKG'
   hdulist[10].name = 'SKYRMS'
+  hdulist[11].name = 'FLUX_1'
+  hdulist[12].name = 'FLUX_2'
+  hdulist[13].name = 'FLUX_3'
+  hdulist[14].name = 'FLUX_4'
+  hdulist[15].name = 'FLUX_5'
+  hdulist[16].name = 'ERROR_1'
+  hdulist[17].name = 'ERROR_2'
+  hdulist[18].name = 'ERROR_3'
+  hdulist[19].name = 'ERROR_4'
+  hdulist[20].name = 'ERROR_5'
 
   outname = 'output_'+str(thread_no)+'.fits'
 
   if len(exposure) > 0:
     hdulist.writeto(outname, clobber=True)
 
-def stitch(filelist,outdir='./'):
+def stitch(filelist,appsize,outdir='./'):
 
   #combine the sub output files into a single master file, preserving the data types
 
@@ -271,7 +309,7 @@ def stitch(filelist,outdir='./'):
 
   c[1].array = fluxmean
 
-  headername_list = ['HJD','FLUXERR','QUALITY','CCDX','CCDY','SKYBKG','SKYRMS']
+  headername_list = ['HJD','FLUXERR','QUALITY','CCDX','CCDY','SKYBKG','SKYRMS','FLUX_1','FLUX_2','FLUX_3','FLUX_4','FLUX_5','ERROR_1','ERROR_2','ERROR_3','ERROR_4','ERROR_5']
   dicty = {}
 
   for headername in headername_list:
@@ -288,7 +326,7 @@ def stitch(filelist,outdir='./'):
 
   c1 = pf.Column(name='FLUX_MEAN', format='1D', unit='Counts', array=fluxmean)
 
-  new_hdulist = pf.HDUList([hduprime] + [hducatalogue] + [hduimagelist] + [dicty['HJD']] + [hduflux] + [dicty['FLUXERR']] + [dicty['QUALITY']] + [dicty['CCDX']] + [dicty['CCDY']] + [dicty['SKYBKG']] + [dicty['SKYRMS']])
+  new_hdulist = pf.HDUList([hduprime] + [hducatalogue] + [hduimagelist] + [dicty['HJD']] + [hduflux] + [dicty['FLUXERR']] + [dicty['QUALITY']] + [dicty['CCDX']] + [dicty['CCDY']] + [dicty['SKYBKG']] + [dicty['SKYRMS']] + [dicty['FLUX_1']]  + [dicty['FLUX_2']] + [dicty['FLUX_3']]  + [dicty['FLUX_4']] + [dicty['FLUX_5']]  + [dicty['ERROR_1']]  + [dicty['ERROR_2']] + [dicty['ERROR_3']]  + [dicty['ERROR_4']] + [dicty['ERROR_5']])
 
   new_hdulist[0].name = 'Primary'
   new_hdulist[1].name = 'CATALOGUE'
@@ -301,6 +339,24 @@ def stitch(filelist,outdir='./'):
   new_hdulist[8].name = 'CCDY'
   new_hdulist[9].name = 'SKYBKG'
   new_hdulist[10].name = 'SKYRMS'
+  new_hdulist[11].name = 'FLUX_1'
+  new_hdulist[12].name = 'FLUX_2'
+  new_hdulist[13].name = 'FLUX_3'
+  new_hdulist[14].name = 'FLUX_4'
+  new_hdulist[15].name = 'FLUX_5'
+  new_hdulist[16].name = 'ERROR_1'
+  new_hdulist[17].name = 'ERROR_2'
+  new_hdulist[18].name = 'ERROR_3'
+  new_hdulist[19].name = 'ERROR_4'
+  new_hdulist[20].name = 'ERROR_5'
+
+
+  mult = [1.0,1.0,0.5,np.sqrt(2.0),2.0,2.0*np.sqrt(2.0),4.0,0.5,np.sqrt(2.0),2.0,2.0*np.sqrt(2.0),4.0]
+  ind = [4,5,11,12,13,14,15,16,17,18,19,20]
+
+  for i in range(0,len(mult)):
+    new_hdulist[ind[i]].header['AP_MULT'] = (mult[i],'Multiple of core radius')
+    new_hdulist[ind[i]].header['AP_SIZE'] = (mult[i]*appsize,'Aperture radius [Pixels]')
 
   new_hdulist.writeto(outname, clobber=True)
 

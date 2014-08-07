@@ -38,6 +38,7 @@ def m_solve_images(filelist,outfile,dist_map,wcsref,nproc=None, thresh=20.0, ver
   fn = partial(casu_solve,wcsref=wcsref,dist_map=dist_map,thresh=thresh, verbose=verbose, catsrc=catsrc, catpath=catpath)
 
   pool = ThreadPool(nproc)
+
   return pool.map(fn, infiles)
 
 def casu_solve(casuin,wcsref,dist_map={},thresh=20, verbose=False,catsrc='viz2mass',catpath=False):
@@ -122,15 +123,17 @@ def casu_solve(casuin,wcsref,dist_map={},thresh=20, verbose=False,catsrc='viz2ma
 
   # We need the extra correction here before we do the wcsfit, because the TEL RA and DEC measurements are not
   # always precise enough for the fit to work. This simply shifts CRVALS to align with CRPIX
+
     try:
       dist_map = shift_wcs_axis(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,iters=10)
       dist_map = lmq_fit(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,fitlist=['RA_s','DEC_s','CD1_1','CD2_2','CD1_2','CD2_1'])
 #      dist_map = lmq_fit(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC)
     except IOError:
       print "Performing initial fit"
-      casutools.wcsfit(casuin, catfile_name, catpath=wcsref, catsrc=catsrc, verbose=verbose)
+      casutools.wcsfit(casuin, catfile_name, verbose=verbose)
       dist_map = shift_wcs_axis(casuin, catfile_name, thresh=thresh, iters=30)
-      # make mag limited version should go in here
+      dist_map = lmq_fit(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,fitlist=['RA_s','DEC_s','CD1_1','CD2_2','CD1_2','CD2_1'])
+#      # make mag limited version should go in here
 
     apply_correct(dist_map,casuin,TEL_RA,TEL_DEC)
 
@@ -141,6 +144,7 @@ def casu_solve(casuin,wcsref,dist_map={},thresh=20, verbose=False,catsrc='viz2ma
     casutools.wcsfit(casuin, catfile_name, catpath=wcsref, catsrc=catsrc, verbose=verbose)
 
 # Do QC checks. should really break this out.
+
     plot = True
     wcsf_QCheck(mycat,casuin,casuin.strip('.fits')+'.png',cat,RA_lims,DEC_lims,my_X,my_Y,plot=plot)
 
