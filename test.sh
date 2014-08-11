@@ -23,6 +23,21 @@ run_test() {
 }
 
 assert_output() {
+    assert_nans_present
+    assert_npts_correct
+}
+
+assert_npts_correct() {
+python - <<EOF
+import fitsio
+with fitsio.FITS("testdata/output.fits") as infile:
+    n_images = infile['imagelist'].get_nrows()
+    npts_value = infile['catalogue']['npts'].read()[0]
+    assert npts_value == n_images, '{} != {}'.format(npts_value, n_images)
+EOF
+}
+
+assert_nans_present() {
     python - <<EOF
 import fitsio
 import numpy as np
