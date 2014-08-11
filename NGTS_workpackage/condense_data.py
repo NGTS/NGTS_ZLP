@@ -10,6 +10,7 @@ from os import listdir
 from os.path import isfile, join
 from util import thread_alloc
 from numpy import *
+import fitsio
 
 def m_condense_data(filelist,nproc,appsize,verbose=False,outdir='./'):
 
@@ -26,7 +27,10 @@ def m_condense_data(filelist,nproc,appsize,verbose=False,outdir='./'):
   filelist = array([ f for f in listdir(os.getcwd()) if 'output_' in f ])
   numberlist = array([int(f.split('_')[1].split('.')[0]) for f in filelist])
   ordered = numberlist.argsort() 
-  stitch(filelist[ordered],appsize,outdir)
+
+  outname=os.path.join(outdir, 'output.fits')
+  stitch(filelist[ordered],appsize,outname)
+  compute_final_statistics(outname)
 
   for f in filelist:
     os.system('rm '+f)
@@ -264,11 +268,9 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   if len(exposure) > 0:
     hdulist.writeto(outname, clobber=True)
 
-def stitch(filelist,appsize,outdir='./'):
+def stitch(filelist,appsize,outname):
 
   #combine the sub output files into a single master file, preserving the data types
-
-  outname = outdir + '/output.fits'
 
   hdulist = []
 
@@ -359,5 +361,40 @@ def stitch(filelist,appsize,outdir='./'):
     new_hdulist[ind[i]].header['AP_SIZE'] = (mult[i]*appsize,'Aperture radius [Pixels]')
 
   new_hdulist.writeto(outname, clobber=True)
+
+def compute_final_statistics(fname):
+  '''
+  Given a filename, for each aperture in the file compute the number of points in the lightcurve
+  which are not NaNs
+
+  This function is destructive - it changes the ouptut file
+  '''
+  with fitsio.FITS(fname, 'rw') as outfile:
+      flux = outfile['flux'].read()
+      fluxerr = outfile['fluxerr'].read()
+      original_catalogue = outfile['catalogue']
+      keys = original_catalogue.get_colnames()
+      original_catalogue_data = original_catalogue.read()
+
+      out_catalogue_data = []
+      for (lc, lcerr, cat_row) in zip(flux, fluxerr, original_catalogue_data):
+          ind = np.isfinite(lc)
+          npts = lc[ind].size
+
+          new_data = { key: value for (key, value) in zip(keys, cat_row) }
+          new_data['NPTS'] = npts
+
+          if npts > 0:
+              flux_mean = np.average(lc[ind], weights=1. / lcerr[ind] ** 2)
+              new_data['FLUX_MEAN'] = flux_mean
+          else:
+              new_data['FLUX_MEAN'] = np.nan
+
+          out_catalogue_data.append(new_data)
+
+      out_catalogue_data = { key: np.array([row[key] for row in out_catalogue_data])
+                            for key in keys }
+      original_catalogue.write(out_catalogue_data)
+
 
 # vim: sw=2
