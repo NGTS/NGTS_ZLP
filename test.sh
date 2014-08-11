@@ -2,6 +2,9 @@
 set -e
 
 BASEDIR=$(readlink -f $(dirname $0))
+STDERRFILE=/tmp/test.stderr
+STDOUTFILE=/tmp/test.stdout
+
 
 setup_environment() {
     export PYTHONPATH=${BASEDIR}:${BASEDIR}/testdata:${PYTHONPATH}
@@ -31,9 +34,17 @@ assert_npts_correct() {
 python - <<EOF
 import fitsio
 with fitsio.FITS("testdata/output.fits") as infile:
-    n_images = infile['imagelist'].get_nrows()
-    npts_value = infile['catalogue']['npts'].read()[0]
-    assert npts_value == n_images, '{} != {}'.format(npts_value, n_images)
+    catalogue = infile['catalogue']
+    keys = catalogue.get_colnames()
+    value_ind = keys.index('NPTS')
+    nrows = catalogue.get_nrows()
+    flux = infile['flux'].read()
+    assert flux.shape[0] == nrows
+
+    for (lc, cat_row) in zip(flux, catalogue):
+        value = cat_row[value_ind]
+        target = lc[lc == lc].size
+        assert value == target, (value, target)
 EOF
 }
 
@@ -50,21 +61,27 @@ with fitsio.FITS("testdata/output.fits") as infile:
 EOF
 }
 
+check_for_failure() {
+    if [[ "$?" == "0" ]]; then
+        echo "Pass"
+    else
+        echo "Fail"
+        cat ${STDERRFILE}
+        exit 1
+    fi
+}
+
 main() {
     (cd ${BASEDIR}
     setup_environment
 
     echo -n "Running test... "
     set +e
-    run_test 2>/dev/null >/dev/null
+    run_test 2>${STDERRFILE} >${STDOUTFILE}
+    check_for_failure
     set -e
     assert_output
-    if [[ "$?" == "0" ]]; then
-        echo "Pass"
-    else
-        echo "Fail"
-        exit 1
-    fi
+    check_for_failure
     )
 }
 
