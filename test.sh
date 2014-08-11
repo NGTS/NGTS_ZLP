@@ -14,13 +14,12 @@ create_filelist(){
 }
 
 run_test() {
-    local readonly nproc="$1"
     local readonly filelist_name=$(create_filelist)
     python ./bin/ZLP_create_outfile.py \
         --outdir ${BASEDIR}/testdata \
         ${filelist_name} \
         --apsize 2 \
-        --nproc "${nproc}"
+        --nproc 1
 }
 
 assert_output() {
@@ -39,19 +38,18 @@ EOF
 main() {
     (cd ${BASEDIR}
     setup_environment
-    for nproc in 1 2 4; do
-        echo -n "Testing ${nproc} processors... "
-        set +e
-        run_test "${nproc}" 2>/dev/null >/dev/null
-        set -e
-        assert_output
-        if [[ "$?" == "0" ]]; then
-            echo "Pass"
-        else
-            echo "Fail"
-            exit 1
-        fi
-    done
+
+    echo -n "Running test... "
+    set +e
+    run_test 2>/dev/null >/dev/null
+    set -e
+    assert_output
+    if [[ "$?" == "0" ]]; then
+        echo "Pass"
+    else
+        echo "Fail"
+        exit 1
+    fi
     )
 }
 
