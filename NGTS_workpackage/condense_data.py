@@ -179,7 +179,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 
   meanarray = np.array(meanflux)
 
-  npts = meanarray*0 + len(meanarray)
+  npts = np.ones_like(meanarray) * (maxlen - minlen)
 
   c1 = pf.Column(name='OBJ_ID', format='26A', array=objid)
   c2 = pf.Column(name='FLUX_MEAN', format='1D', unit='Counts', array=meanarray)
