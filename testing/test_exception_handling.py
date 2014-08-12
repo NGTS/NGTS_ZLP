@@ -15,3 +15,5 @@ def test_exception_handling(mock_casu_solve):
 
     handle_errors_in_casu_solve(casuin, wcsref)
 
+    mock_casu_solve.assert_called_with(casuin, wcsref)
+
