@@ -35,11 +35,22 @@ def m_solve_images(filelist,outfile,dist_map,wcsref,nproc=None, thresh=20.0, ver
     casutools.wcsfit(infiles[0], catalogue_name, catsrc='localfits', catpath=wcsref,
                      verbose=verbose)
 
-  fn = partial(casu_solve,wcsref=wcsref,dist_map=dist_map,thresh=thresh, verbose=verbose, catsrc=catsrc, catpath=catpath)
+  fn = partial(handle_errors_in_casu_solve,wcsref=wcsref,dist_map=dist_map,thresh=thresh, verbose=verbose, catsrc=catsrc, catpath=catpath)
 
   pool = ThreadPool(nproc)
 
   return pool.map(fn, infiles)
+
+def handle_errors_in_casu_solve(*args, **kwargs):
+  '''
+  Catch any exceptions that may be thrown by the image solving routine to
+  prevent the pipeline from crashing
+  '''
+  try:
+    return casu_solve(*args, **kwargs)
+  except Exception as err:
+    print "Exception handled in `casu_solve`: {}".format(str(err))
+
 
 def casu_solve(casuin,wcsref,dist_map={},thresh=20, verbose=False,catsrc='viz2mass',catpath=False):
 
