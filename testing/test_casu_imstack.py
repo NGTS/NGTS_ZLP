@@ -1,4 +1,6 @@
 import mock
+import sys
+sys.path.extend(['.', 'testdata'])
 from NGTS_workpackage import casutools
 import os
 
