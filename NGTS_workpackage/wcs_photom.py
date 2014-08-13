@@ -11,6 +11,8 @@ from multiprocessing import Pool
 from functools import partial
 from super_sample import call_find_fwhm 
 
+from NGTS_workpackage.wcs_status import wcs_succeeded
+
 def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=False):
 
   os.system('cp '+filelist+' '+outlist)
@@ -46,7 +48,9 @@ def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=Fal
   pool.map(fn,indexes)
 
 def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=False):
-  
+  if not wcs_succeeded(image):
+    return 'failed'
+
   outname = image + '.phot'
 
   casutools.imcore_list(image, cat_file, outname, confidence_map=conf_file,rcore=appsize, noell=True,
@@ -71,3 +75,5 @@ def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=Fal
   pf.setval(outname,'SEEING',1,value=seeing,comment='[arcseconds] Average FWHM')
 
   return 'ok'
+
+# vim: sw=2
