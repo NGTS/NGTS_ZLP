@@ -1,5 +1,7 @@
 import fitsio
 
+__all__ = ['wcs_succeeded', 'set_wcs_status', 'filter_wcs_successes']
+
 HEADER_KEY = 'wcscompl'
 
 def wcs_succeeded(fname):
