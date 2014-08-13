@@ -16,6 +16,7 @@ import astropy.io.fits as pf
 import os
 from vector_plot import wcsf_QCheck
 import numpy as np
+from wcs_status import set_wcs_status
 
 def m_solve_images(filelist,outfile,dist_map,wcsref,nproc=None, thresh=20.0, verbose=False, catsrc='viz2mass', catpath=False):
   infiles = []
@@ -41,16 +42,19 @@ def m_solve_images(filelist,outfile,dist_map,wcsref,nproc=None, thresh=20.0, ver
 
   return pool.map(fn, infiles)
 
-def handle_errors_in_casu_solve(*args, **kwargs):
+def handle_errors_in_casu_solve(casuin, *args, **kwargs):
   '''
   Catch any exceptions that may be thrown by the image solving routine to
   prevent the pipeline from crashing
   '''
   try:
-    return casu_solve(*args, **kwargs)
+    return_value = casu_solve(casuin, *args, **kwargs)
   except Exception as err:
     print "Exception handled in `casu_solve`: {}".format(str(err))
-
+    set_wcs_status(casuin, succeeded=False)
+  else:
+    set_wcs_status(casuin, succeeded=True)
+    return return_value
 
 def casu_solve(casuin,wcsref,dist_map={},thresh=20, verbose=False,catsrc='viz2mass',catpath=False):
 
