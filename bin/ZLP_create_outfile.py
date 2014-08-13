@@ -36,7 +36,7 @@ import tempfile
 def main(argv):
     filelist = argv.filelist
     with tempfile.NamedTemporaryFile(suffix='.txt', prefix='filelist.') as tfile:
-        filter_wcs_successes(filelist, tfile.name, hdu='apm-binarytable')
+        filter_wcs_successes(filelist, tfile.name)
         tfile.seek(0)
         m_condense_data(tfile.name,argv.nproc,argv.apsize,verbose=argv.verbose,
                         outdir=argv.outdir)
