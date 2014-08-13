@@ -7,7 +7,7 @@ def wcs_succeeded(fname):
     Return true if the wcs has succeeded for a file
     '''
     header = fitsio.read_header(fname)
-    return HEADER_KEY in header and header[HEADER_KEY]
+    return HEADER_KEY not in header or header[HEADER_KEY]
 
 def set_wcs_status(fname, succeeded):
     '''

@@ -39,7 +39,7 @@ def test_failed_fits_file(failed_fits_file):
 def test_file_without_key(blank_fits):
     header = fitsio.read_header(blank_fits)
     assert 'wcscompl' not in header
-    assert not wcs_succeeded(blank_fits)
+    assert wcs_succeeded(blank_fits)
 
 def test_setting_key_failed(blank_fits):
     old_header = fitsio.read_header(blank_fits)
