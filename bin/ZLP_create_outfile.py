@@ -29,11 +29,17 @@ from numpy import *
 import threading
 from os.path import isfile, join
 from NGTS_workpackage import *
+from NGTS_workpackage.wcs_status import filter_wcs_successes
 import argparse
+import tempfile
 
 def main(argv):
     filelist = argv.filelist
-    m_condense_data(filelist,argv.nproc,argv.apsize,verbose=argv.verbose,outdir=argv.outdir)
+    with tempfile.NamedTemporaryFile(suffix='.txt', prefix='filelist.') as tfile:
+        filter_wcs_successes(filelist, tfile.name, hdu='apm-binarytable')
+        tfile.seek(0)
+        m_condense_data(tfile.name,argv.nproc,argv.apsize,verbose=argv.verbose,
+                        outdir=argv.outdir)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

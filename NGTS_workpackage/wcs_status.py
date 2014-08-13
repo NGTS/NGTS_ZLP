@@ -17,3 +17,16 @@ def set_wcs_status(fname, succeeded, hdu=0):
     '''
     with fitsio.FITS(fname, 'rw') as outfile:
         outfile[hdu].write_key(HEADER_KEY, succeeded, comment='WCS succeeded?')
+
+
+def filter_wcs_successes(filelist, out_filelist, hdu=0):
+    '''
+    Given a filelist, create a new filelist consisting of only files that have succeeded
+    during the wcs step
+    '''
+    with open(filelist) as infile:
+        with open(out_filelist, 'w') as outfile:
+            for line in infile:
+                fname = line.strip()
+                if wcs_succeeded(fname, hdu=hdu):
+                    outfile.write(line)
