@@ -68,15 +68,18 @@ def cloud_check(image_name):
   return SNimage
 
 def m_frame_shift(imagelist,index):
-  image1 = imagelist[index-1]
-  image2 = imagelist[index]
-  RA_shift, DEC_shift, tot_shift, RA, DEC = frame_shift(image1,image2)
-  pf.setval(image2+'.phot','RA_MOVE',1,value=RA_shift,comment='RA shift from previous image [arcseconds]')
-  pf.setval(image2+'.phot','DEC_MOVE',1,value=DEC_shift,comment='Dec shift from previous image [arcseconds]')
-  pf.setval(image2+'.phot','SKY_MOVE',1,value=tot_shift,comment='Total movement on sky [arcseconds]')
+  try:
+    image1 = imagelist[index-1]
+    image2 = imagelist[index]
+    RA_shift, DEC_shift, tot_shift, RA, DEC = frame_shift(image1,image2)
+    pf.setval(image2+'.phot','RA_MOVE',1,value=RA_shift,comment='RA shift from previous image [arcseconds]')
+    pf.setval(image2+'.phot','DEC_MOVE',1,value=DEC_shift,comment='Dec shift from previous image [arcseconds]')
+    pf.setval(image2+'.phot','SKY_MOVE',1,value=tot_shift,comment='Total movement on sky [arcseconds]')
 
-  pf.setval(image2+'.phot','WCSF_RA',1,value=RA_shift,comment='RA center pix')
-  pf.setval(image2+'.phot','WCSF_DEC',1,value=DEC_shift,comment='Dec center pix')
+    pf.setval(image2+'.phot','WCSF_RA',1,value=RA_shift,comment='RA center pix')
+    pf.setval(image2+'.phot','WCSF_DEC',1,value=DEC_shift,comment='Dec center pix')
+  except Exception as err:
+    print "Exception handled in m_frame_shift: {}".format(str(err))
  
 def frame_shift(image1,image2):
 
@@ -99,3 +102,5 @@ def frame_shift(image1,image2):
   print tot_shift
 
   return RA_shift, DEC_shift, tot_shift, RA, DEC
+
+# vim: sw=2

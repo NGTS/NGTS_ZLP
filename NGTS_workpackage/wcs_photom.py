@@ -29,7 +29,7 @@ def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=Fal
 
   pool = Pool(nproc)
 
-  fn = partial(wcs_photom, cat_file=cat_file, conf_file=conf_file, appsize=appsize, verbose=verbose)
+  fn = partial(handle_errors_in_wcs_photom, cat_file=cat_file, conf_file=conf_file, appsize=appsize, verbose=verbose)
   pool.map(fn, infiles)
 
   first_image = infiles[0] + '.phot'
@@ -46,6 +46,12 @@ def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=Fal
   indexes = arange(1,len(infiles))
   fn = partial(m_frame_shift, infiles)
   pool.map(fn,indexes)
+
+def handle_errors_in_wcs_photom(image, *args, **kwargs):
+  try:
+    return wcs_photom(image, *args, **kwargs)
+  except Exception as err:
+    print "Exception handled in wcs_photom: {}".format(str(err))
 
 def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=False):
   if not wcs_succeeded(image):
