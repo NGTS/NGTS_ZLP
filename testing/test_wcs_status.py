@@ -52,3 +52,19 @@ def test_setting_key_succeeded(blank_fits):
     assert 'wcscompl' not in old_header
     set_wcs_status(blank_fits, succeeded=True)
     assert wcs_succeeded(blank_fits)
+
+def test_second_hdu(blank_fits):
+    with fitsio.FITS(blank_fits, 'rw') as outfile:
+        outfile.write(np.zeros((2, 2)))
+
+        assert len(outfile) == 2
+
+    set_wcs_status(blank_fits, succeeded=True, hdu=1)
+
+    with fitsio.FITS(blank_fits) as infile:
+        hdu = infile[1]
+        header = hdu.read_header()
+
+        assert header['wcscompl'] == True
+
+    assert wcs_succeeded(blank_fits, hdu=1)
