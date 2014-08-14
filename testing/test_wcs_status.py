@@ -3,6 +3,7 @@ sys.path.extend(['.', 'testdata'])
 import fitsio
 import pytest
 import numpy as np
+import mock
 
 from NGTS_workpackage.wcs_status import wcs_succeeded, set_wcs_status
 
