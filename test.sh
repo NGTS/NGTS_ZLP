@@ -80,6 +80,7 @@ main() {
     run_test 2>${STDERRFILE} >${STDOUTFILE}
     check_for_failure
     set -e
+    echo -n "Running test... "
     assert_output
     check_for_failure
     )
