@@ -284,10 +284,7 @@ def stitch(filelist,appsize,outname):
     combine += list(hdulist[i][headername].data.T)
     print shape(combine)
 
-  # Convert bad values to nans
   combine = array(combine).T
-  ind = combine <= 0
-  combine[ind] = np.nan
 
   fluxmean = mean(combine, axis = 0)
   hduflux = pf.ImageHDU(combine)
@@ -320,7 +317,6 @@ def stitch(filelist,appsize,outname):
     for i in range(0,len(hdulist)):
       combine += list(hdulist[i][headername].data.T)
     combine = array(combine).T
-    combine[ind] = np.nan
     dicty[headername] = pf.ImageHDU(combine)
 
   hduimagelist=pf.new_table(a)

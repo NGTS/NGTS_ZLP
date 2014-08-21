@@ -26,7 +26,6 @@ run_test() {
 }
 
 assert_output() {
-    assert_nans_present
     assert_npts_correct
 }
 
@@ -48,6 +47,7 @@ with fitsio.FITS("testdata/output.fits") as infile:
 EOF
 }
 
+# XXX Deprecated, do not use
 assert_nans_present() {
     python - <<EOF
 import fitsio
