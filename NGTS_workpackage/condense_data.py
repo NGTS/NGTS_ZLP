@@ -86,18 +86,15 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
     if all([status == 'ok' for status in status_checks]):
       with pf.open(image+'.phot') as photdata:
         gain = photdata[1].header['GAINFACT']  
-        try:
-	  ambient = photdata[1].header['WXTEMP']
-        except:
-	  ambient = 30.0
-
+        ambient = photdata[1].header.get('WXTEMP', 30.0)
         cloud_status = photdata[1].header['CLOUD_S']
         fwhm_frame = photdata[1].header['FWHM']
         frame_shift = photdata[1].header['SKY_MOVE']
-	seeing_frame = photdata[1].header['SEEING']
+        seeing_frame = photdata[1].header['SEEING']
 
         imid += [photdata[1].header['IMAGE_ID']]
         SHIFT += [frame_shift]
+
 	CLOUDS += [cloud_status]
 	SKY_MED += [photdata[1].header['SKYLEVEL']]
 	ALT +=[photdata[1].header['TEL_ALT']]
