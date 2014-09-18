@@ -63,7 +63,7 @@ def cum_guassian_func(p,x):
 
 def cloud_check(image_name):
   with pf.open(image_name) as imagedata:
-    gain = imagedata[0].header['GAINFACT']
+    gain = 1.
     SNimage = (mean(imagedata[0].data)/std(imagedata[0].data))*sqrt(gain)
   return SNimage
 

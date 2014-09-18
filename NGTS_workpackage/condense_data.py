@@ -85,7 +85,6 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
     image = line.split(' ')[0]
     if all([status == 'ok' for status in status_checks]):
       with pf.open(image+'.phot') as photdata:
-        gain = photdata[1].header['GAINFACT']  
         ambient = photdata[1].header.get('WXTEMP', 30.0)
         cloud_status = photdata[1].header['CLOUD_S']
         fwhm_frame = photdata[1].header['FWHM']
@@ -128,9 +127,9 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	rawflux = photdata[1].data['Core_flux'].copy()
 	Skylev += [photdata[1].data['Skylev'].copy()]
 	Skyrms += [photdata[1].data['Skyrms'].copy()]
-	correctedflux = gain*rawflux/photdata[1].header['EXPOSURE']
+	correctedflux = rawflux
 	flux += [correctedflux]
-	rel_err = 1.0/(rawflux*gain/sqrt(rawflux*gain + npix*sky[-1]*gain))
+	rel_err = 1.0/(rawflux/sqrt(rawflux + npix*sky[-1]))
 	abs_err = rel_err*correctedflux
 	flux_err += [abs_err]
 
@@ -138,9 +137,9 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	all_err_apps = []
 	for i in range(1,6):
 		rawflux = photdata[1].data['Core'+str(i)+'_flux'].copy()
-	        correctedflux = gain*rawflux/photdata[1].header['EXPOSURE']
+	        correctedflux = rawflux
 	        all_appertures += [correctedflux]
-        	rel_err = 1.0/(rawflux*gain/sqrt(rawflux*gain + npix*sky[-1]*gain))
+        	rel_err = 1.0/(rawflux/sqrt(rawflux + npix*sky[-1]))
         	abs_err = rel_err*correctedflux
         	all_err_apps += [abs_err]
 
