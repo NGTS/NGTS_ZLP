@@ -26,7 +26,7 @@ def m_condense_data(filelist,nproc,appsize,verbose=False,outdir='./'):
 
   filelist = array([ f for f in listdir(os.getcwd()) if 'output_' in f ])
   numberlist = array([int(f.split('_')[1].split('.')[0]) for f in filelist])
-  ordered = numberlist.argsort() 
+  ordered = numberlist.argsort()
 
   outname=os.path.join(outdir, 'output.fits')
   stitch(filelist[ordered],appsize,outname)
@@ -94,64 +94,64 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
         imid += [photdata[1].header['IMAGE_ID']]
         SHIFT += [frame_shift]
 
-	CLOUDS += [cloud_status]
-	SKY_MED += [photdata[1].header['SKYLEVEL']]
-	ALT +=[photdata[1].header['TEL_ALT']]
-	AZ +=[photdata[1].header['TEL_AZ']]
-	TEL_RA +=[photdata[1].header['TEL_RA']]
-	TEL_DEC +=[photdata[1].header['TEL_DEC']]
-	exposure += [photdata[1].header['EXPOSURE']]
-	try:
-	  ADU_DEV +=[photdata[1].header['ADU_DEV']]
-	  skylevel +=[photdata[1].header['skylevel']]
-	  meanbias += [photdata[1].header['BIASMEAN']]
-	except:
-	  imagedata = pf.open(line)
-	  ADU_DEV +=[std(imagedata[0].data)]
-	  skylevel +=[median(imagedata[0].data)]	  
-	  biasstrip = append(imagedata[0].data[:,:20],imagedata[0].data[:,-20:])
-	  meanbias += [mean(biasstrip)]
-	centerra +=[photdata[1].header['WCSF_RA']]
-	centerdec +=[photdata[1].header['WCSF_DEC']]
-	# correcting for airmass - the newer fits files have an airmass term, so just use that instead perhaps
-	sky += [photdata[1].data['Skylev'].copy()]
-	frame_xpos = photdata[1].data['X_coordinate'].copy()
-	frame_ypos = photdata[1].data['Y_coordinate'].copy()
-	xpos += [frame_xpos]
-	ypos += [frame_ypos]
-	utc = photdata[1].header['OBSSTART'].split('T')
-	yr, month, day = utc[0].split('-')
-	hr, min, sec = utc[1].split(':')
-	fwhm += [fwhm_frame]
-	seeing += [seeing_frame]
-	rawflux = photdata[1].data['Core_flux'].copy()
-	Skylev += [photdata[1].data['Skylev'].copy()]
-	Skyrms += [photdata[1].data['Skyrms'].copy()]
-	correctedflux = rawflux
-	flux += [correctedflux]
-	rel_err = 1.0/(rawflux/sqrt(rawflux + npix*sky[-1]))
-	abs_err = rel_err*correctedflux
-	flux_err += [abs_err]
+    CLOUDS += [cloud_status]
+    SKY_MED += [photdata[1].header['SKYLEVEL']]
+    ALT +=[photdata[1].header['TEL_ALT']]
+    AZ +=[photdata[1].header['TEL_AZ']]
+    TEL_RA +=[photdata[1].header['TEL_RA']]
+    TEL_DEC +=[photdata[1].header['TEL_DEC']]
+    exposure += [photdata[1].header['EXPOSURE']]
+    try:
+      ADU_DEV +=[photdata[1].header['ADU_DEV']]
+      skylevel +=[photdata[1].header['skylevel']]
+      meanbias += [photdata[1].header['BIASMEAN']]
+    except:
+      imagedata = pf.open(line)
+      ADU_DEV +=[std(imagedata[0].data)]
+      skylevel +=[median(imagedata[0].data)]
+      biasstrip = append(imagedata[0].data[:,:20],imagedata[0].data[:,-20:])
+      meanbias += [mean(biasstrip)]
+    centerra +=[photdata[1].header['WCSF_RA']]
+    centerdec +=[photdata[1].header['WCSF_DEC']]
+    # correcting for airmass - the newer fits files have an airmass term, so just use that instead perhaps
+    sky += [photdata[1].data['Skylev'].copy()]
+    frame_xpos = photdata[1].data['X_coordinate'].copy()
+    frame_ypos = photdata[1].data['Y_coordinate'].copy()
+    xpos += [frame_xpos]
+    ypos += [frame_ypos]
+    utc = photdata[1].header['OBSSTART'].split('T')
+    yr, month, day = utc[0].split('-')
+    hr, min, sec = utc[1].split(':')
+    fwhm += [fwhm_frame]
+    seeing += [seeing_frame]
+    rawflux = photdata[1].data['Core_flux'].copy()
+    Skylev += [photdata[1].data['Skylev'].copy()]
+    Skyrms += [photdata[1].data['Skyrms'].copy()]
+    correctedflux = rawflux
+    flux += [correctedflux]
+    rel_err = 1.0/(rawflux/sqrt(rawflux + npix*sky[-1]))
+    abs_err = rel_err*correctedflux
+    flux_err += [abs_err]
 
-	all_appertures = []
-	all_err_apps = []
-	for i in range(1,6):
-		rawflux = photdata[1].data['Core'+str(i)+'_flux'].copy()
-	        correctedflux = rawflux
-	        all_appertures += [correctedflux]
-        	rel_err = 1.0/(rawflux/sqrt(rawflux + npix*sky[-1]))
-        	abs_err = rel_err*correctedflux
-        	all_err_apps += [abs_err]
+    all_appertures = []
+    all_err_apps = []
+    for i in range(1,6):
+        rawflux = photdata[1].data['Core'+str(i)+'_flux'].copy()
+            correctedflux = rawflux
+            all_appertures += [correctedflux]
+            rel_err = 1.0/(rawflux/sqrt(rawflux + npix*sky[-1]))
+            abs_err = rel_err*correctedflux
+            all_err_apps += [abs_err]
 
-	flux_grid += [all_appertures]
-	flux_err_grid += [all_err_apps]
+    flux_grid += [all_appertures]
+    flux_err_grid += [all_err_apps]
 
-	T +=[photdata[1].header['CCDTEMP']]
-	coolstat +=[photdata[1].header['COOLSTAT']]
-	mjd = photdata[1].header['MJD']
-	time +=[[mjd]*len(flux[0])]
-	if verbose == True:
-	  print shape(time), line.split(' ')[0]+'.phot', thread_no
+    T +=[photdata[1].header['CCDTEMP']]
+    coolstat +=[photdata[1].header['COOLSTAT']]
+    mjd = photdata[1].header['MJD']
+    time +=[[mjd]*len(flux[0])]
+    if verbose == True:
+      print shape(time), line.split(' ')[0]+'.phot', thread_no
     else:
       print 'frame bad'
   # generate time of mid exposure array
