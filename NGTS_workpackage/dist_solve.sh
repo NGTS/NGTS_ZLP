@@ -13,4 +13,4 @@ CATSRC=$4
 
 imcore ${CASUIN} noconf ${MYCATNAME} 2 2
 
-python emcee_catmatch.py ${CASUIN} ${MYCATNAME} ${CHAIN_NAME} ${CATSRC}
+python $(dirname $0)/emcee_catmatch.py ${CASUIN} ${MYCATNAME} ${CHAIN_NAME} ${CATSRC}
