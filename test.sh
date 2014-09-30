@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
-BASEDIR=$(readlink -f $(dirname $0))
+abspath() {
+    python -c "import os; print os.path.realpath('${1}')"
+}
+
+BASEDIR=$(abspath $(dirname $0))
 STDERRFILE=/tmp/test.stderr
 STDOUTFILE=/tmp/test.stdout
 
