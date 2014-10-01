@@ -368,25 +368,21 @@ def compute_final_statistics(fname):
       keys = original_catalogue.get_colnames()
       original_catalogue_data = original_catalogue.read()
 
-      out_catalogue_data = []
+      out_npts, out_flux_mean = [], []
       for (lc, lcerr, cat_row) in zip(flux, fluxerr, original_catalogue_data):
           ind = np.isfinite(lc)
           npts = lc[ind].size
 
-          new_data = { key: value for (key, value) in zip(keys, cat_row) }
-          new_data['NPTS'] = npts
-
           if npts > 0:
               flux_mean = np.average(lc[ind], weights=1. / lcerr[ind] ** 2)
-              new_data['FLUX_MEAN'] = flux_mean
           else:
-              new_data['FLUX_MEAN'] = np.nan
+              flux_mean = np.nan
 
-          out_catalogue_data.append(new_data)
+          out_npts.append(npts)
+          out_flux_mean.append(flux_mean)
 
-      out_catalogue_data = { key: np.array([row[key] for row in out_catalogue_data])
-                            for key in keys }
-      original_catalogue.write(out_catalogue_data)
-
+      original_catalogue_data['NPTS'] = np.array(out_npts)
+      original_catalogue_data['FLUX_MEAN'] = np.array(out_flux_mean)
+      original_catalogue.write(original_catalogue_data)
 
 # vim: sw=2
