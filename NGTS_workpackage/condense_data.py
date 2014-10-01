@@ -71,6 +71,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   exposure = []
   seeing = []
   imid = []
+  hjd_hist = []
 
   #the .copy() addition is necessary when dealing with long filelists - by default python list optimization keeps all files open otherwise,
   #leading to a crash from too many open files
@@ -129,6 +130,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	Skyrms += [photdata[1].data['Skyrms'].copy()]
 	correctedflux = rawflux
 	flux += [correctedflux]
+	hjd_hist += [photdata[1].data['hjd'].copy()]
 	rel_err = 1.0/(rawflux/sqrt(rawflux + npix*sky[-1]))
 	abs_err = rel_err*correctedflux
 	flux_err += [abs_err]
@@ -172,6 +174,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 
   fluxarray = np.array(flux).T
   flux_err_array = np.array(flux_err).T
+  hjdarray = np.array(hjd_hist).T
 
   meanflux =[]
   for index in range (0,len(fluxarray[:,0])):
@@ -216,7 +219,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   hdufluxerr = pf.ImageHDU(flux_err_array)
   hduxpos = pf.ImageHDU(np.array(xpos).T)
   hduypos = pf.ImageHDU(np.array(ypos).T)
-  hdutime = pf.ImageHDU(np.array(time).T)
+  hdutime = pf.ImageHDU(hjdarray)
   hdunullq = pf.ImageHDU((np.array(time).T)*0 + 1)
   hduskylev = pf.ImageHDU(np.array(Skylev).T)
   hduskyrms = pf.ImageHDU(np.array(Skyrms).T)
@@ -385,4 +388,4 @@ def compute_final_statistics(fname):
       original_catalogue_data['FLUX_MEAN'] = np.array(out_flux_mean)
       original_catalogue.write(original_catalogue_data)
 
-# vim: sw=2
+# vim: sw=2 noexpandtab
