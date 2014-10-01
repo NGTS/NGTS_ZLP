@@ -212,7 +212,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 
   hduprime = pf.PrimaryHDU(np.array(flux).T)
 
-  hduflux = pf.ImageHDU(np.array(flux).T)
+  hduflux = pf.ImageHDU(fluxarray)
   hdufluxerr = pf.ImageHDU(flux_err_array)
   hduxpos = pf.ImageHDU(np.array(xpos).T)
   hduypos = pf.ImageHDU(np.array(ypos).T)
