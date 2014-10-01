@@ -12,6 +12,7 @@ from functools import partial
 from super_sample import call_find_fwhm 
 
 from NGTS_workpackage.wcs_status import wcs_succeeded
+from NGTS_workpackage.hjd_correction import append_hjd_column
 
 def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=False):
 
@@ -79,6 +80,9 @@ def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=Fal
   pf.setval(outname,'CLOUD_S',1,value=round(cloud_status,2),comment='A measure of bulk structure in the image (S/N)')
   pf.setval(outname,'FWHM',1,value=pixel_fwhm,comment='[pixels] Average FWHM')
   pf.setval(outname,'SEEING',1,value=seeing,comment='[arcseconds] Average FWHM')
+
+  # Compute the HJD values
+  append_hjd_column(outname)
 
   return 'ok'
 
