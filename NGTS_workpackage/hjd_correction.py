@@ -9,7 +9,7 @@ def compute_hjd(jd, ra, dec, sun_ra, sun_dec):
     c = (1 * cds.c).si.value
 
     ra_rad, dec_rad, sun_ra_rad, sun_dec_rad = [
-        np.radians(data) for data in [
+        np.radians(data).astype(np.float64) for data in [
             ra, dec, sun_ra, sun_dec
         ]
     ]
@@ -18,14 +18,16 @@ def compute_hjd(jd, ra, dec, sun_ra, sun_dec):
     second_term = np.cos(dec_rad) * np.cos(sun_dec_rad) * np.cos(ra_rad - sun_ra_rad)
     correction_seconds = (r / c) * (first_term + second_term)
 
-    return jd - correction_seconds / 86400.
+    return (jd - correction_seconds / 86400.).astype(np.float64)
 
 def compute_hjd_column(fname):
     with fitsio.FITS(fname) as infile:
         catalogue = infile[1]
         header = catalogue.read_header()
 
-        ra, dec = [catalogue[key].read() for key in ['ra', 'dec']]
+        ra, dec = [
+            catalogue[key].read().astype(np.float64) for key in ['ra', 'dec']
+        ]
 
     mjd, sun_ra, sun_dec = [header[key] for key in ['mjd', 'sun_ra', 'sun_dec']]
 

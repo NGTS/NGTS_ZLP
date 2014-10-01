@@ -5,7 +5,7 @@ import os
 import pytest
 import fitsio
 import shutil
-from numpy import allclose
+from numpy import allclose, dtype, float64
 
 ref_jd = 2456834.3842939814
 ref_ra = 210.150833
@@ -53,6 +53,14 @@ def test_update_file_column_present(backup_file):
     after_column_names = get_column_names(backup_file)
     assert 'hjd' in after_column_names
 
+def test_update_file_column_dtype(backup_file):
+    append_hjd_column(backup_file, column_name='hjd')
+
+    with fitsio.FITS(backup_file) as infile:
+        column = infile[1]['hjd'].read()
+
+    assert column.dtype.type == dtype(float64)
+
 def test_update_file_values_correct(backup_file):
     append_hjd_column(backup_file)
 
@@ -67,4 +75,4 @@ def test_update_file_values_correct(backup_file):
     mjd = header['mjd']
 
     hjd_values = compute_hjd(mjd, ra, dec, sun_ra, sun_dec)
-    assert allclose(hjd_column_data, hjd_values)
+    assert allclose(hjd_column_data, hjd_values, atol=0, rtol=1E-12)
