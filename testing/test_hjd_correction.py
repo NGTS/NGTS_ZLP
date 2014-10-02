@@ -58,22 +58,33 @@ def test_update_file_column_present(backup_file):
     assert 'hjd' in after_column_names
 
 
+def test_default_column_name(backup_file):
+    target = 'hjd_correction'
+    before_column_names = get_column_names(backup_file)
+    assert target not in before_column_names
+
+    append_hjd_correction_column(backup_file)
+
+    after_column_names = get_column_names(backup_file)
+    assert target in after_column_names and 'hjd' not in after_column_names
+
+
 def test_update_file_column_dtype(backup_file):
-    append_hjd_correction_column(backup_file, column_name='hjd')
+    append_hjd_correction_column(backup_file, column_name='hjd_correction')
 
     with fitsio.FITS(backup_file) as infile:
-        column = infile[1]['hjd'].read()
+        column = infile[1]['hjd_correction'].read()
 
     assert column.dtype.type == dtype(float64)
 
 
 def test_update_file_values_correct(backup_file):
-    append_hjd_correction_column(backup_file)
+    append_hjd_correction_column(backup_file, column_name='hjd_correction')
 
     with fitsio.FITS(backup_file) as infile:
         catalogue = infile[1]
         ra, dec = [catalogue[key].read() for key in ['ra', 'dec']]
-        hjd_column_data = catalogue['hjd'].read()
+        hjd_column_data = catalogue['hjd_correction'].read()
 
         header = catalogue.read_header()
 

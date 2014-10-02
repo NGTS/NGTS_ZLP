@@ -44,7 +44,7 @@ def compute_hjd_correction_column(fname):
     return compute_hjd_correction(mjd, ra, dec, sun_ra, sun_dec)
 
 
-def append_hjd_correction_column(fname, column_name='hjd'):
+def append_hjd_correction_column(fname, column_name='hjd_correction'):
     hjd_data = compute_hjd_correction_column(fname)
 
     with fitsio.FITS(fname, 'rw') as outfile:
