@@ -6,6 +6,12 @@ import itertools
 
 
 def compute_hjd_correction(jd, ra, dec, sun_ra, sun_dec):
+    '''
+    Compute the correction that needs to be *added* to the julian day
+    to return the HJD for that position.
+
+    e.g. HJD = JD + compute_hjd_correction(...)
+    '''
     r = u.AU.to(u.m)
     c = (1 * cds.c).si.value
 
