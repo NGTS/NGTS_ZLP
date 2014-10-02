@@ -20,7 +20,7 @@ def compute_hjd(jd, ra, dec, sun_ra, sun_dec):
         dec_rad) * np.cos(sun_dec_rad) * np.cos(ra_rad - sun_ra_rad)
     correction_seconds = (r / c) * (first_term + second_term)
 
-    return (jd - correction_seconds / 86400.).astype(np.float64)
+    return -(correction_seconds / 86400.).astype(np.float64)
 
 
 def compute_hjd_column(fname):

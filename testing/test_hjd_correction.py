@@ -7,12 +7,6 @@ import fitsio
 import shutil
 from numpy import allclose, dtype, float64
 
-ref_jd = 2456834.3842939814
-ref_ra = 210.150833
-ref_dec = -60.002286
-sun_ra = 94.6073456
-sun_dec = 23.365036
-
 
 def get_column_names(fname):
     with fitsio.FITS(fname) as infile:
@@ -37,14 +31,20 @@ def backup_file(example_file, tmpdir):
 
 
 def test_hjd_computation():
+    ref_jd = 2456834.4
+    ref_ra = 14. * 15.
+    ref_dec = -60.0
+    sun_ra = 6.30860 * 15.
+    sun_dec = 23.37027
+
     result = compute_hjd(ref_jd, ref_ra, ref_dec, sun_ra, sun_dec)
-    expected = 2456834.38785
-    assert allclose(result, expected)
+    expected = 2456834.403118045 - 2456834.399988426
+    assert allclose(result, expected, rtol=1E-2, atol=0)
 
 
 def test_read_from_file(example_file):
     hjd_column_data = compute_hjd_column(example_file)
-    assert allclose(hjd_column_data[0], 56833.8861)
+    assert allclose(hjd_column_data[0], 0.0018173871387605742)
 
 
 def test_update_file_column_present(backup_file):
@@ -80,4 +80,4 @@ def test_update_file_values_correct(backup_file):
     mjd = header['mjd']
 
     hjd_values = compute_hjd(mjd, ra, dec, sun_ra, sun_dec)
-    assert allclose(hjd_column_data, hjd_values, atol=0, rtol=1E-12)
+    assert allclose(hjd_column_data, hjd_values)
