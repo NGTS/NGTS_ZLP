@@ -1,5 +1,6 @@
 from NGTS_workpackage.hjd_correction import (
-    compute_hjd, compute_hjd_column, append_hjd_column
+    compute_hjd_correction, compute_hjd_correction_column,
+    append_hjd_correction_column
 )
 import os
 import pytest
@@ -37,13 +38,13 @@ def test_hjd_computation():
     sun_ra = 6.30860 * 15.
     sun_dec = 23.37027
 
-    result = compute_hjd(ref_jd, ref_ra, ref_dec, sun_ra, sun_dec)
+    result = compute_hjd_correction(ref_jd, ref_ra, ref_dec, sun_ra, sun_dec)
     expected = 2456834.403118045 - 2456834.399988426
     assert allclose(result, expected, rtol=1E-2, atol=0)
 
 
 def test_read_from_file(example_file):
-    hjd_column_data = compute_hjd_column(example_file)
+    hjd_column_data = compute_hjd_correction_column(example_file)
     assert allclose(hjd_column_data[0], 0.0018173871387605742)
 
 
@@ -51,14 +52,14 @@ def test_update_file_column_present(backup_file):
     before_column_names = get_column_names(backup_file)
     assert 'hjd' not in before_column_names
 
-    append_hjd_column(backup_file, column_name='hjd')
+    append_hjd_correction_column(backup_file, column_name='hjd')
 
     after_column_names = get_column_names(backup_file)
     assert 'hjd' in after_column_names
 
 
 def test_update_file_column_dtype(backup_file):
-    append_hjd_column(backup_file, column_name='hjd')
+    append_hjd_correction_column(backup_file, column_name='hjd')
 
     with fitsio.FITS(backup_file) as infile:
         column = infile[1]['hjd'].read()
@@ -67,7 +68,7 @@ def test_update_file_column_dtype(backup_file):
 
 
 def test_update_file_values_correct(backup_file):
-    append_hjd_column(backup_file)
+    append_hjd_correction_column(backup_file)
 
     with fitsio.FITS(backup_file) as infile:
         catalogue = infile[1]
@@ -79,5 +80,5 @@ def test_update_file_values_correct(backup_file):
     sun_ra, sun_dec = [header[key] for key in ['sun_ra', 'sun_dec']]
     mjd = header['mjd']
 
-    hjd_values = compute_hjd(mjd, ra, dec, sun_ra, sun_dec)
+    hjd_values = compute_hjd_correction(mjd, ra, dec, sun_ra, sun_dec)
     assert allclose(hjd_column_data, hjd_values)

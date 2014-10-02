@@ -5,7 +5,7 @@ import fitsio
 import itertools
 
 
-def compute_hjd(jd, ra, dec, sun_ra, sun_dec):
+def compute_hjd_correction(jd, ra, dec, sun_ra, sun_dec):
     r = u.AU.to(u.m)
     c = (1 * cds.c).si.value
 
@@ -23,7 +23,7 @@ def compute_hjd(jd, ra, dec, sun_ra, sun_dec):
     return -(correction_seconds / 86400.).astype(np.float64)
 
 
-def compute_hjd_column(fname):
+def compute_hjd_correction_column(fname):
     with fitsio.FITS(fname) as infile:
         catalogue = infile[1]
         header = catalogue.read_header()
@@ -35,11 +35,11 @@ def compute_hjd_column(fname):
     mjd, sun_ra, sun_dec = [header[key]
                             for key in ['mjd', 'sun_ra', 'sun_dec']]
 
-    return compute_hjd(mjd, ra, dec, sun_ra, sun_dec)
+    return compute_hjd_correction(mjd, ra, dec, sun_ra, sun_dec)
 
 
-def append_hjd_column(fname, column_name='hjd'):
-    hjd_data = compute_hjd_column(fname)
+def append_hjd_correction_column(fname, column_name='hjd'):
+    hjd_data = compute_hjd_correction_column(fname)
 
     with fitsio.FITS(fname, 'rw') as outfile:
         outfile[1].insert_column(column_name, hjd_data)
