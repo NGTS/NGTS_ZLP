@@ -12,3 +12,4 @@ match_proc*.fits
 stds_proc*.fits
 *.fits
 !testing/hjd_example_catalogue.fits
+tmp/*
