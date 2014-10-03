@@ -18,6 +18,15 @@ from vector_plot import wcsf_QCheck
 import numpy as np
 from wcs_status import set_wcs_status
 
+def initialise_wcs_cache(fname, catpath, wcsref, thresh, verbose):
+  if not os.path.isdir(catpath):
+    print("Constructing initial wcs cache")
+    catalogue_name = 'initial-catalogue.fits'
+    casutools.imcore(fname, catalogue_name, threshold=thresh, verbose=verbose)
+    casutools.wcsfit(fname, catalogue_name, catsrc='localfits', catpath=wcsref,
+                     verbose=verbose)
+
+
 def m_solve_images(filelist,outfile,dist_map,wcsref,nproc=None, thresh=20.0, verbose=False, catsrc='viz2mass', catpath=False):
   infiles = []
 
@@ -29,12 +38,7 @@ def m_solve_images(filelist,outfile,dist_map,wcsref,nproc=None, thresh=20.0, ver
       if all(status == 'ok' for status in status_checks):
         infiles.append(image)
 
-  if not os.path.isdir(catpath):
-    print("Constructing initial wcs cache")
-    catalogue_name = 'initial-catalogue.fits'
-    casutools.imcore(infiles[0], catalogue_name, threshold=thresh, verbose=verbose)
-    casutools.wcsfit(infiles[0], catalogue_name, catsrc='localfits', catpath=wcsref,
-                     verbose=verbose)
+  initialise_wcs_cache(infiles[0], catpath, wcsref, thresh, verbose)
 
   fn = partial(handle_errors_in_casu_solve,wcsref=wcsref,dist_map=dist_map,thresh=thresh, verbose=verbose, catsrc=catsrc, catpath=catpath)
 
