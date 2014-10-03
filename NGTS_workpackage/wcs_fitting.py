@@ -18,8 +18,8 @@ from vector_plot import wcsf_QCheck
 import numpy as np
 from wcs_status import set_wcs_status
 
-def initialise_wcs_cache(fname, catpath, wcsref, thresh, verbose):
-  if not os.path.isdir(catpath):
+def initialise_wcs_cache(fname, catpath, wcsref, thresh, verbose, force=False):
+  if force or not os.path.isdir(catpath):
     print("Constructing initial wcs cache")
     catalogue_name = 'initial-catalogue.fits'
     casutools.imcore(fname, catalogue_name, threshold=thresh, verbose=verbose)
