@@ -60,7 +60,7 @@ def main(args):
     )
 
     initialise_wcs_cache(fname, catpath, args.wcsref,
-                         thresh=20.0, verbose=False)
+                         thresh=20.0, verbose=False, force=True)
     casu_solve(fname, args.wcsref, dist_map=dist_map, catpath=catpath)
 
 
