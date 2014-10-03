@@ -6,3 +6,7 @@ venv
 build
 dist
 testdata
+catcache
+initial-catalogue.fits
+match_proc*.fits
+stds_proc*.fits
