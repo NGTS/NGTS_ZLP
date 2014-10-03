@@ -130,7 +130,6 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	Skyrms += [photdata[1].data['Skyrms'].copy()]
 	correctedflux = rawflux
 	flux += [correctedflux]
-	hjd_hist += [photdata[1].data['hjd'].copy()]
 	rel_err = 1.0/(rawflux/sqrt(rawflux + npix*sky[-1]))
 	abs_err = rel_err*correctedflux
 	flux_err += [abs_err]
@@ -151,6 +150,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	T +=[photdata[1].header['CCDTEMP']]
 	coolstat +=[photdata[1].header['COOLSTAT']]
 	mjd = photdata[1].header['MJD']
+	hjd_hist += [mjd + photdata[1].data['hjd_correction'].copy()]
 	time +=[[mjd]*len(flux[0])]
 	if verbose == True:
 	  print shape(time), line.split(' ')[0]+'.phot', thread_no
