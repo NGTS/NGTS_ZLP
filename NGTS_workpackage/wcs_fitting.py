@@ -165,7 +165,7 @@ def casu_solve(casuin,wcsref,dist_map={},thresh=20, verbose=False,catsrc='viz2ma
 # Do QC checks. should really break this out.
 
     plot = True
-    wcsf_QCheck(mycat,casuin,casuin.strip('.fits')+'.png',cat,RA_lims,DEC_lims,my_X,my_Y,plot=plot)
+    wcsf_QCheck(mycat,casuin,os.path.basename(casuin).strip('.fits')+'.png',cat,RA_lims,DEC_lims,my_X,my_Y,plot=plot)
 
     return 'ok'
 

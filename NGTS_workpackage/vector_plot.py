@@ -17,6 +17,7 @@ import numpy as np
 from astropy import wcs
 from astropy.io import fits
 import fitsio
+import os
 from NGTS_workpackage.catmatch import load_wcs_from_keywords
 from NGTS_workpackage.catmatch import calc_seps
 
@@ -24,7 +25,7 @@ def wcsf_QCheck(catalog_name,image_name,plot_name,cat,RA_lims,DEC_lims,my_X,my_Y
 
   print 'about to plot'
 
-  plot_dir = ''
+  plot_dir = os.path.dirname(image_name)
 
   im_header = fitsio.read_header(image_name)
   pix_coords = [[my_X[i],my_Y[i]] for i in range(0,len(my_X))]
@@ -74,7 +75,7 @@ def wcsf_QCheck(catalog_name,image_name,plot_name,cat,RA_lims,DEC_lims,my_X,my_Y
     axis.set_ylabel(r'Y')
     axis.set_title(r'RMS: '+str(rms)+'"')
     fig.tight_layout()
-    fig.savefig(plot_dir+plot_name, bbox_inches='tight')
+    fig.savefig(os.path.join(plot_dir, plot_name), bbox_inches='tight')
 
     plt.close()
 
