@@ -6,6 +6,7 @@ from NGTS_workpackage.wcs_fitting import (initialise_wcs_cache,
                                           casu_solve,
                                           )
 import fitsio
+import shutil
 import os
 try:
     import cPickle as pickle
@@ -45,7 +46,11 @@ def main(args):
     with open(args.solution) as infile:
         dist_map = pickle.load(infile)
 
-    catpath = 'catcache'
+    catpath = os.path.join(
+        os.getcwd(),
+        'catcache')
+    if os.path.isdir(catpath):
+        shutil.rmtree(catpath)
 
     if not args.reduced:
         fname = remove_overscan_strips(args.filename)
