@@ -1,5 +1,6 @@
 #!/usr/bin/env ipython
 # -*- coding: utf-8 -*-
+
 import matplotlib
 from pylab import *
 import numpy as np
@@ -15,37 +16,33 @@ import pickle
 from NGTS_workpackage.catmatch import *
 from NGTS_workpackage.vector_plot import wcsf_QCheck
 from astropy.io import fits as pf
+import argparse
 
-def main():
-
-  mycatname = str(sys.argv[1])
-  chain_name = str(sys.argv[2])
-  catsrc = str(sys.argv[3])
-  dummy_name = str(sys.argv[4])
+def main(args):
+  mycatname = args.mycatname
+  chain_name = args.chain_name
+  catsrc = args.catsrc
+  dummy_name = args.dummy_name
  
-  if len(sys.argv) != 4:
-    print 'Usage:'
-    print 'python plot_mcmc_out <mycatname> <chain_name> <catsrc> <image_name>' 
-
-  if sys.argv[-1] == 'jun26':
+  if dummy_name == 'jun26':
     mycatname = 'jun26_cat.fits'
     chain_name = '2_jun26.fits'
     catsrc = '/storage/astro2/phrmat/NGTS_june5_astrometry/catcache'
     dummy_name = 'dummy_jun26.fits'
 
-  if sys.argv[-1] == 'jun19':
+  elif dummy_name == 'jun19':
     mycatname = 'new_19th_jun_cat.fits'
     chain_name = '10_jun19.fits'
     catsrc = '/storage/astro2/phrmat/NGTS_june5_astrometry/new_19th_catcache'
     dummy_name = 'dummy_19th.fits'
 
-  if sys.argv[-1] == 'jun11':
+  elif dummy_name == 'jun11':
     mycatname = 'jun11_cat.fits'
     chain_name = '2_jun11.fits'
     catsrc = '/storage/astro2/phrmat/NGTS_june5_astrometry/catcache_11th'
     dummy_name = 'jun11.fits'
 
-  auto = True
+  auto = not args.no_auto
 
   maxlength=1e5
 
@@ -204,4 +201,11 @@ def autoplot(TRIfig,SEPfig,chain_name,mycatname,catsrc,dummy_name,maxlength=1e6,
 
   wcsf_QCheck(mycat,dummy_name,dummy_name.strip('.fits')+'.png',cat,RA_lims,DEC_lims,my_X,my_Y,plot=plot)
 
-main()
+if __name__ == '__main__':
+  parser = argparse.ArgumentParser()
+  parser.add_argument('mycatname')
+  parser.add_argument('chain_name')
+  parser.add_argument('catsrc')
+  parser.add_argument('--dummy_name', required=False)
+  parser.add_argument('--no-auto', action='store_true')
+  main(parser.parse_args())
