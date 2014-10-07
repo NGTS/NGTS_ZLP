@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from NGTS_workpackage.catmatch import *
 from emcee_tools import run_emcee
