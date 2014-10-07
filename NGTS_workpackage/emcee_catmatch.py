@@ -123,5 +123,7 @@ def lnprior(dicty,rms):
       return 0.0
   return -np.inf
 
-main()
+if __name__ == '__main__':
+  main()
+
 # vim: sw=2
