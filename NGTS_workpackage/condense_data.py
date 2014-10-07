@@ -72,6 +72,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   seeing = []
   imid = []
   hjd_hist = []
+  airmass = []
 
   #the .copy() addition is necessary when dealing with long filelists - by default python list optimization keeps all files open otherwise,
   #leading to a crash from too many open files
@@ -101,6 +102,7 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	AZ +=[photdata[1].header['TEL_AZ']]
 	TEL_RA +=[photdata[1].header['TEL_RA']]
 	TEL_DEC +=[photdata[1].header['TEL_DEC']]
+	airmass += [photdata[1].header.get('AIRMASS')]
 	exposure += [photdata[1].header['EXPOSURE']]
 	try:
 	  ADU_DEV +=[photdata[1].header['ADU_DEV']]
@@ -208,10 +210,11 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
   a15 = pf.Column(name='SHIFT', format='1D', array=SHIFT)
   a16 = pf.Column(name='EXPOSURE', format='1D', array=exposure)
   a17 = pf.Column(name='IMAGE_ID',format='1K',array=imid)
+  a18 = pf.Column(name='AIRMASS', format='1D', array=airmass)
 
   hducatalogue=pf.new_table([c1,c2,c3,c4,c5,c6])
 
-  hduimagelist=pf.new_table([a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17])
+  hduimagelist=pf.new_table([a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18])
 
   hduprime = pf.PrimaryHDU(np.array(flux).T)
 
