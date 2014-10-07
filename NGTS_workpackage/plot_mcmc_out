@@ -184,6 +184,6 @@ if __name__ == '__main__':
   parser.add_argument('mycatname')
   parser.add_argument('chain_name')
   parser.add_argument('catsrc')
-  parser.add_argument('--dummy_name', required=False)
+  parser.add_argument('dummy_name')
   parser.add_argument('--auto', action='store_true', default=False)
   main(parser.parse_args())
