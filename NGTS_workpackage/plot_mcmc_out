@@ -21,7 +21,8 @@ def main(args):
   chain_name = args.chain_name
   catsrc = args.catsrc
   dummy_name = args.dummy_name
-  auto = not args.no_auto
+
+  auto = args.auto
 
   maxlength=1e5
 
@@ -186,5 +187,5 @@ if __name__ == '__main__':
   parser.add_argument('chain_name')
   parser.add_argument('catsrc')
   parser.add_argument('--dummy_name', required=False)
-  parser.add_argument('--no-auto', action='store_true')
+  parser.add_argument('--auto', action='store_true', default=False)
   main(parser.parse_args())
