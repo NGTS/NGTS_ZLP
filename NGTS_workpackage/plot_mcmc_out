@@ -1,4 +1,4 @@
-#!/usr/bin/ipython
+#!/usr/bin/env ipython
 # -*- coding: utf-8 -*-
 import matplotlib
 from pylab import *
