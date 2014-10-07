@@ -190,7 +190,7 @@ def autoplot(TRIfig,SEPfig,chain_name,mycatname,catsrc,dummy_name,maxlength=1e6,
     SEPfig.savefig('sep.png')
 
   TRIfig.clear()
-  for i in range(1,p_order**2.0 + 1):
+  for i in arange(1,p_order**2.0 + 1):
     TRIfig.add_subplot(p_order,p_order,i)
   triangle.corner(samples,fig=TRIfig,labels=param_names,
                          show_titles=True, title_args={"fontsize": 12})
