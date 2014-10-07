@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from NGTS_workpackage.catmatch import *
-from tml.emcee_tools import run_emcee
+from emcee_tools import run_emcee
 import numpy as np
 import fitsio
 import astropy.io.fits as pf
