@@ -21,25 +21,6 @@ def main(args):
   chain_name = args.chain_name
   catsrc = args.catsrc
   dummy_name = args.dummy_name
- 
-  if dummy_name == 'jun26':
-    mycatname = 'jun26_cat.fits'
-    chain_name = '2_jun26.fits'
-    catsrc = '/storage/astro2/phrmat/NGTS_june5_astrometry/catcache'
-    dummy_name = 'dummy_jun26.fits'
-
-  elif dummy_name == 'jun19':
-    mycatname = 'new_19th_jun_cat.fits'
-    chain_name = '10_jun19.fits'
-    catsrc = '/storage/astro2/phrmat/NGTS_june5_astrometry/new_19th_catcache'
-    dummy_name = 'dummy_19th.fits'
-
-  elif dummy_name == 'jun11':
-    mycatname = 'jun11_cat.fits'
-    chain_name = '2_jun11.fits'
-    catsrc = '/storage/astro2/phrmat/NGTS_june5_astrometry/catcache_11th'
-    dummy_name = 'jun11.fits'
-
   auto = not args.no_auto
 
   maxlength=1e5
