@@ -7,14 +7,15 @@ import numpy as np
 import fitsio
 import astropy.io.fits as pf
 import sys
+import argparse
 
 
-def main():
+def main(args):
 
-  casuin = sys.argv[1]
-  mycatname = sys.argv[2]
-  chain_name = sys.argv[3]
-  catsrc = sys.argv[4]
+  casuin = args.casuin
+  mycatname = args.mycatname
+  chain_name = args.chain_name
+  catsrc = args.catsrc
 
   resume = False
   nwalkers = 1000
@@ -125,6 +126,11 @@ def lnprior(dicty,rms):
   return -np.inf
 
 if __name__ == '__main__':
-  main()
+  parser = argparse.ArgumentParser()
+  parser.add_argument('casuin')
+  parser.add_argument('mycatname')
+  parser.add_argument('chain_name')
+  parser.add_argument('catsrc')
+  main(parser.parse_args())
 
 # vim: sw=2
