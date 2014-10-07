@@ -163,7 +163,6 @@ def autoplot(TRIfig,SEPfig,chain_name,mycatname,catsrc,dummy_name,maxlength=1e6,
     SEPfig.canvas.draw()
 
   if save == True:
-    SEPfig.savefig('sep.pdf')
     SEPfig.savefig('sep.png')
 
   TRIfig.clear()
@@ -174,7 +173,6 @@ def autoplot(TRIfig,SEPfig,chain_name,mycatname,catsrc,dummy_name,maxlength=1e6,
   if save == False:
     TRIfig.canvas.draw()
   if save == True:
-    TRIfig.savefig('Triangle.pdf')
     TRIfig.savefig('Triangle.png')
 
   plot = True
