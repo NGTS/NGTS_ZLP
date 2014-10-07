@@ -123,3 +123,4 @@ def lnprior(dicty,rms):
   return -np.inf
 
 main()
+# vim: sw=2
