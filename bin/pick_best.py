@@ -26,7 +26,7 @@ def pickle_best(chain_name, image, outname, maxlength=1e6):
     print 'rms:', round((best / -2000) ** 0.5, 2), 'arcseconds'
 
     with fitsio.FITS(image) as hdulist:
-        header = hdulist[0].read_headerr()
+        header = hdulist[0].read_header()
 
     XVAL = header['NAXIS1'] / 2
     YVAL = header['NAXIS2'] / 2
