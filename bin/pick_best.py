@@ -11,7 +11,8 @@ def pickle_best(chain_name, image, outname, maxlength=1e6):
 
     chaindata, length = load_chain(chain_name, maxlength=maxlength)
 
-    print 'Picking the best solution from the last ', int(maxlength), ' links of a ', length, ' long chain.'
+    print ('Picking the best solution from the last ', int(maxlength),
+           ' links of a ', length, ' long chain.')
 
     lp = chaindata['lp']
     samples = chaindata['x'][np.isfinite(lp) & (lp != 0.0)]
@@ -33,20 +34,36 @@ def pickle_best(chain_name, image, outname, maxlength=1e6):
 
     if len(opt) == 12:
         # 7th order fit
-        dist_map = {'CRPIX1': 1.03259815e+03, 'CRPIX2': 9.65505144e+02, 'CD1_1': 1.41142333e-03, 'CD2_2': 1.41109400e-03, 'CD1_2': -1.89116218e-06, 'CD2_1': 1.53342393e-06, 'PV2_1': 1.0,
-                    'PV2_2': 2.0, 'PV2_3': 8.68515702e+00, 'PV2_5': 2.70336203e+02, 'PV2_7': 1.37726138e+04, 'RA_s': -0.45807896397, 'DEC_s': 0.48575139999, 'CTYPE1': 'RA---ZPN', 'CTYPE2': 'DEC--ZPN'}
+        dist_map = {'CRPIX1': 1.03259815e+03, 'CRPIX2': 9.65505144e+02,
+                    'CD1_1': 1.41142333e-03, 'CD2_2': 1.41109400e-03,
+                    'CD1_2': -1.89116218e-06, 'CD2_1': 1.53342393e-06,
+                    'PV2_1': 1.0, 'PV2_2': 2.0, 'PV2_3': 8.68515702e+00,
+                    'PV2_5': 2.70336203e+02, 'PV2_7': 1.37726138e+04,
+                    'RA_s': -0.45807896397, 'DEC_s': 0.48575139999,
+                    'CTYPE1': 'RA---ZPN', 'CTYPE2': 'DEC--ZPN'}
         param_names = ['CRPIX1', 'CRPIX2', 'CD1_1', 'CD2_2', 'CD1_2',
-                       'CD2_1', 'PV2_2', 'PV2_3', 'PV2_5', 'PV2_7', 'RA_s', 'DEC_s']
+                       'CD2_1', 'PV2_2', 'PV2_3', 'PV2_5', 'PV2_7',
+                       'RA_s', 'DEC_s']
     elif len(opt) == 11:
         # 7th order fit
-        dist_map = {'CRPIX1': 1.03259815e+03, 'CRPIX2': 9.65505144e+02, 'CD1_1': 1.41142333e-03, 'CD2_2': 1.41109400e-03, 'CD1_2': -1.89116218e-06, 'CD2_1': 1.53342393e-06, 'PV2_1': 1.0,
-                    'PV2_2': 0.0, 'PV2_3': 8.68515702e+00, 'PV2_5': 2.70336203e+02, 'PV2_7': 1.37726138e+04, 'RA_s': -0.45807896397, 'DEC_s': 0.48575139999, 'CTYPE1': 'RA---ZPN', 'CTYPE2': 'DEC--ZPN'}
+        dist_map = {'CRPIX1': 1.03259815e+03, 'CRPIX2': 9.65505144e+02,
+                    'CD1_1': 1.41142333e-03, 'CD2_2': 1.41109400e-03,
+                    'CD1_2': -1.89116218e-06, 'CD2_1': 1.53342393e-06,
+                    'PV2_1': 1.0, 'PV2_2': 0.0, 'PV2_3': 8.68515702e+00,
+                    'PV2_5': 2.70336203e+02, 'PV2_7': 1.37726138e+04,
+                    'RA_s': -0.45807896397, 'DEC_s': 0.48575139999,
+                    'CTYPE1': 'RA---ZPN', 'CTYPE2': 'DEC--ZPN'}
         param_names = ['CRPIX1', 'CRPIX2', 'CD1_1', 'CD2_2', 'CD1_2',
                        'CD2_1', 'PV2_3', 'PV2_5', 'PV2_7', 'RA_s', 'DEC_s']
     else:
         # 5th order fit
-        dist_map = {'CRPIX1': 1.03186582e+03, 'CRPIX2': 9.65390145e+02, 'CD1_1': 1.41143441e-03, 'CD2_2': 1.41109881e-03, 'CD1_2': -1.91498220e-06, 'CD2_1': 1.57312392e-06, 'PV2_1':
-                    1.0, 'PV2_2': 0, 'PV2_3': 8.71721335e+00, 'PV2_5': 2.18288567e+02, 'PV2_7': 0, 'RA_s': -0.45966596397, 'DEC_s': 0.48558489999, 'CTYPE1': 'RA---ZPN', 'CTYPE2': 'DEC--ZPN'}
+        dist_map = {'CRPIX1': 1.03186582e+03, 'CRPIX2': 9.65390145e+02,
+                    'CD1_1': 1.41143441e-03, 'CD2_2': 1.41109881e-03,
+                    'CD1_2': -1.91498220e-06, 'CD2_1': 1.57312392e-06,
+                    'PV2_1': 1.0, 'PV2_2': 0, 'PV2_3': 8.71721335e+00,
+                    'PV2_5': 2.18288567e+02, 'PV2_7': 0,
+                    'RA_s': -0.45966596397, 'DEC_s': 0.48558489999,
+                    'CTYPE1': 'RA---ZPN', 'CTYPE2': 'DEC--ZPN'}
         param_names = ['CRPIX1', 'CRPIX2', 'CD1_1', 'CD2_2', 'CD1_2',
                        'CD2_1', 'PV2_2', 'PV2_3', 'PV2_5', 'RA_s', 'DEC_s']
 
@@ -76,7 +93,8 @@ def load_chain(chain_name, maxlength=1e6):
     return data_dict, length
 
 if __name__ == "__main__":
-    description = 'Pickle best solution from MCMC chain, ready for pipeline usage.'
+    description = ('Pickle best solution from MCMC chain, ready for pipeline '
+                   'usage.')
 
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('chain_name', help='Name of the mcmc chain (output '
