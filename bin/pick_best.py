@@ -5,21 +5,7 @@ import numpy as np
 from astropy.io import fits as pf
 import pickle
 import os
-
-"""
-Pickle best solution from MCMC chain, ready for pipeline usage.
-
-Usage:
-  Pick_best.py <chain_name> <image> <outname>
-
-input:
-
-  chain_name          Name of the mcmc chain (output of emcee_catmatch.py)
-  image               image solved to make mcmc chain
-  outname             Where to save the best solution (do it somewhere that pipeline sees)
-
-
-"""
+import argparse
 
 def pickle_best(chain_name,image,outname,maxlength=1e6):
 
@@ -80,17 +66,20 @@ def load_chain(chain_name,maxlength=1e6):
   return data_dict, length
 
 if __name__ == "__main__":
+  description = 'Pickle best solution from MCMC chain, ready for pipeline usage.'
 
-  if len(sys.argv) != 4:
-    print 'Usage: Pick_best.py <chain_name> <image> <outname>'
-    quit()
+  parser = argparse.ArgumentParser(description=description)
+  parser.add_argument('chain_name', help='Name of the mcmc chain (output '
+                      'of emcee_catmatch.py)')
+  parser.add_argument('image', help='image solved to make mcmc chain')
+  parser.add_argument('outname', help='Where to save the best solution ('
+                      'do it somewhere that pipeline sees)')
+  parser.add_argument('-m', '--max_length', help='Maximum length of chain '
+                      'to include', required=False, default=1E6, type=float)
+  args = parser.parse_args()
 
-  chain_name = os.path.abspath(sys.argv[1])
+  chain_name = os.path.abspath(args.chain_name)
+  image = os.path.abspath(args.image)
+  outname = os.path.abspath(args.outname)
 
-  image = os.path.abspath(sys.argv[2])
-
-  outname = os.path.abspath(sys.argv[3])
-
-  maxlength = 1e5
-
-  pickle_best(chain_name,image,outname,maxlength=1e6)
+  pickle_best(chain_name,image,outname,maxlength=args.max_length)
