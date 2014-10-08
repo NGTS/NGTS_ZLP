@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
-from fitsio import FITS
+import fitsio
 import numpy as np
-from astropy.io import fits as pf
 import pickle
 import os
 import argparse
@@ -24,11 +23,13 @@ def pickle_best(chain_name, image, outname, maxlength=1e6):
 
     print 'rms:', round((best / -2000) ** 0.5, 2), 'arcseconds'
 
-    with pf.open(image) as hdulist:
-        XVAL = hdulist[0].header['NAXIS1'] / 2
-        YVAL = hdulist[0].header['NAXIS2'] / 2
-        TEL_RA = hdulist[0].header['TEL_RA']
-        TEL_DEC = hdulist[0].header['TEL_DEC']
+    with fitsio.FITS(image) as hdulist:
+        header = hdulist[0].read_headerr()
+
+    XVAL = header['NAXIS1'] / 2
+    YVAL = header['NAXIS2'] / 2
+    TEL_RA = header['TEL_RA']
+    TEL_DEC = header['TEL_DEC']
 
     if len(opt) == 12:
         # 7th order fit
@@ -65,7 +66,7 @@ def load_chain(chain_name, maxlength=1e6):
     # keeping this seperate for now in case I want to implement burning or
     # something.
 
-    with FITS(chain_name, 'r') as fits:
+    with fitsio.FITS(chain_name, 'r') as fits:
         length = fits['MCMC']._info['nrows']
         if length > maxlength:
             data_dict = fits['MCMC'][length - maxlength:length]
