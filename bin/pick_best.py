@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import sys
 import fitsio
 import numpy as np
 import pickle
