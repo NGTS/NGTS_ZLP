@@ -8,13 +8,14 @@ import fitsio
 import astropy.io.fits as pf
 import sys
 import argparse
+import multiprocessing as mp
 
 
 def main(args):
     resume = False
     nwalkers = 1000
     nruns = 1e7
-    nthreads = 16
+    nthreads = mp.cpu_count()
     burns = 0
     start_size = 1e-2
 
