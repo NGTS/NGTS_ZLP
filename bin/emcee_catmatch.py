@@ -11,12 +11,6 @@ import argparse
 
 
 def main(args):
-
-  casuin = args.casuin
-  mycatname = args.mycatname
-  chain_name = args.chain_name
-  catsrc = args.catsrc
-
   resume = False
   nwalkers = 1000
   nruns = 1e7
@@ -24,7 +18,7 @@ def main(args):
   burns = 0
   start_size = 1e-2
 
-  hdulist = fitsio.read_header(casuin)
+  hdulist = fitsio.read_header(args.casuin)
   XVAL = hdulist['NAXIS1']/2
   YVAL = hdulist['NAXIS2']/2
   TEL_RA = hdulist['TEL_RA']
@@ -33,7 +27,7 @@ def main(args):
   cat_names = []
   RA_lims = []
   DEC_lims = []
-  for line in open(catsrc+'/index'):
+  for line in open(args.catsrc+'/index'):
     vals = line.strip('\n').split(' ')
     cat_names += [vals[0]]
     RA_lims += [[float(vals[2]),float(vals[3])]]
@@ -46,11 +40,11 @@ def main(args):
 
   cat_name = cat_names[np.argmin(sep)]
 
-  with pf.open(catsrc+'/'+cat_name) as catd:
+  with pf.open(args.catsrc+'/'+cat_name) as catd:
     catt = catd[1].data.copy()
   cat = {'ra':catt['ra'],'dec':catt['dec'],'Jmag':catt['Jmag']}
 
-  with fitsio.FITS(mycatname) as mycatt:
+  with fitsio.FITS(args.mycatname) as mycatt:
     mycat = {'Aper_flux_3':mycatt[1]['Aper_flux_3'][:]}  
     my_X = mycatt[1]['x_coordinate'][:]
     my_Y = mycatt[1]['y_coordinate'][:]
@@ -73,7 +67,7 @@ def main(args):
   dicty['RA_s'] = (old_world[0][0] - TEL_RA)
   dicty['DEC_s'] = (old_world[0][1] - TEL_DEC) 
 
-  apply_correct(dicty,casuin,TEL_RA,TEL_DEC) 
+  apply_correct(dicty,args.casuin,TEL_RA,TEL_DEC) 
 
   prior = []
   for i in name_list:
@@ -90,9 +84,9 @@ def main(args):
   for i in [6,7,8,9]:
     start_size[i] = 1e-3
 
-  args = [casuin,mycat,cat,XVAL,YVAL,TEL_RA,TEL_DEC,RA_lims,DEC_lims,my_X,my_Y,pix_coords,name_list,dicty]
+  args = [args.casuin,mycat,cat,XVAL,YVAL,TEL_RA,TEL_DEC,RA_lims,DEC_lims,my_X,my_Y,pix_coords,name_list,dicty]
 
-  run_emcee(prior,lnprob,args,nwalkers,nruns,start_size,chain_name,burns,nthreads=nthreads,w=True,resume=resume)
+  run_emcee(prior,lnprob,args,nwalkers,nruns,start_size,args.chain_name,burns,nthreads=nthreads,w=True,resume=resume)
 
 def lnprob(x,casuin,mycat,cat,XVAL,YVAL,TEL_RA,TEL_DEC,RA_lims,DEC_lims,my_X,my_Y,pix_coords,name_list,dicty):
 
