@@ -18,6 +18,13 @@ from vector_plot import wcsf_QCheck
 import numpy as np
 from wcs_status import set_wcs_status
 
+class NullPool(object):
+  def __init__(self, *args, **kwargs):
+    pass
+
+  def map(self, fn, args):
+    return map(fn, args)
+
 def initialise_wcs_cache(fname, catpath, wcsref, thresh, verbose, force=False):
   if force or not os.path.isdir(catpath):
     print("Constructing initial wcs cache")
