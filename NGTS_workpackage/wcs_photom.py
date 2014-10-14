@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+from __future__ import division, print_function, absolute_import
+
 from astropy.io import fits as pf
 import os
+import sys
 import linecache
 import threading
 from os.path import isfile, join
@@ -52,7 +55,8 @@ def handle_errors_in_wcs_photom(image, *args, **kwargs):
   try:
     return wcs_photom(image, *args, **kwargs)
   except Exception as err:
-    print "Exception handled in wcs_photom: {}".format(str(err))
+    print("Exception handled in wcs_photom: {}".format(str(err)),
+        file=sys.stderr)
 
 def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=False):
   if not wcs_succeeded(image):
