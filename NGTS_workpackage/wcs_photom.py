@@ -10,11 +10,11 @@ from os.path import isfile, join
 import multiprocessing
 from multiprocessing import Pool
 from functools import partial
-from super_sample import call_find_fwhm 
 
 from NGTS_workpackage.wcs_status import wcs_succeeded
 from NGTS_workpackage.hjd_correction import append_hjd_correction_column
 from NGTS_workpackage.quality_checks import *
+from NGTS_workpackage.super_sample import call_find_fwhm
 from NGTS_workpackage import casutools
 
 def m_wcs_photom(filelist,outlist,appsize,conf_file,cat_file,nproc=1,verbose=False):
