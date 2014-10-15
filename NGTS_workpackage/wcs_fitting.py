@@ -47,7 +47,7 @@ def m_solve_images(filelist,outfile,dist_map,wcsref,nproc=None, thresh=20.0, ver
 
   initialise_wcs_cache(infiles[0], catpath, wcsref, thresh, verbose)
 
-  fn = partial(casu_solve,wcsref=wcsref,dist_map=dist_map,thresh=thresh, verbose=verbose, catsrc=catsrc, catpath=catpath)
+  fn = partial(handle_errors_in_casu_solve,wcsref=wcsref,dist_map=dist_map,thresh=thresh, verbose=verbose, catsrc=catsrc, catpath=catpath)
 
   pool = ThreadPool(nproc)
 
