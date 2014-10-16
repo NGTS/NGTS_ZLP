@@ -30,8 +30,7 @@ def initialise_wcs_cache(fname, catpath, wcsref, thresh, verbose, force=False):
     print("Constructing initial wcs cache")
     catalogue_name = 'initial-catalogue.fits'
     casutools.imcore(fname, catalogue_name, threshold=thresh, verbose=verbose)
-    casutools.wcsfit(fname, catalogue_name, catsrc='localfits', catpath=wcsref,
-                     verbose=verbose)
+    casutools.wcsfit(fname, catalogue_name, catpath=wcsref, verbose=verbose)
 
 
 def m_solve_images(filelist,outfile,dist_map,wcsref,nproc=None, thresh=20.0, verbose=False, catsrc='viz2mass', catpath=False):
@@ -156,7 +155,7 @@ def casu_solve(casuin,wcsref,dist_map={},thresh=20, verbose=False,catsrc='viz2ma
 #      dist_map = lmq_fit(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC)
     except IOError:
       print "Performing initial fit"
-      casutools.wcsfit(casuin, catfile_name, verbose=verbose)
+      casutools.wcsfit(casuin, catfile_name, catpath=wcsref, verbose=verbose)
       dist_map = shift_wcs_axis(casuin, catfile_name, thresh=thresh, iters=30)
       dist_map = lmq_fit(dist_map,mycat,cat,RA_lims,DEC_lims,my_X,my_Y,TEL_RA,TEL_DEC,fitlist=['RA_s','DEC_s','CD1_1','CD2_2','CD1_2','CD2_1'])
 #      # make mag limited version should go in here
@@ -167,7 +166,7 @@ def casu_solve(casuin,wcsref,dist_map={},thresh=20, verbose=False,catsrc='viz2ma
     correct_catfile(catfile_name,casuin,nstars=2000)
 
 # Now we're ready to solve wcs
-    casutools.wcsfit(casuin, catfile_name, catpath=wcsref, catsrc=catsrc, verbose=verbose)
+    casutools.wcsfit(casuin, catfile_name, catpath=wcsref, verbose=verbose)
 
 # Do QC checks. should really break this out.
 
