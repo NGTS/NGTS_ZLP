@@ -12,7 +12,10 @@ main() {
         emcee-testdata/casuin.fits \
         emcee-testdata/mycatname.cat \
         emcee-testdata/chain_name.fits \
-        emcee-testdata/catcache
+        emcee-testdata/catcache \
+        --nwalkers 30 \
+        --nruns 2 \
+        --nthreads 1
 }
 
 main

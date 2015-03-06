@@ -23,11 +23,11 @@ def extract_coordinate_limits(filename):
 
 
 def main(args):
-    nwalkers = 1000
-    nruns = 1e7
-    nthreads = mp.cpu_count()
-    burns = 0
-    start_size = 1e-2
+    nwalkers = args.nwalkers
+    nruns = args.nruns
+    nthreads = mp.cpu_count() if args.nthreads is None else args.nthreads
+    burns = args.burns
+    start_size = args.start_size
 
     hdulist = fits.getheader(args.casuin)
     XVAL = hdulist['NAXIS1'] / 2
@@ -164,4 +164,11 @@ if __name__ == '__main__':
     parser.add_argument('mycatname')
     parser.add_argument('chain_name')
     parser.add_argument('catsrc')
+    parser.add_argument('--nwalkers', required=False, type=int, default=1000)
+    parser.add_argument('--nruns', required=False, type=int, default=1E7)
+    parser.add_argument('--nthreads', required=False, type=int,
+            default=None)
+    parser.add_argument('--burns', required=False, type=int, default=0)
+    parser.add_argument('--start-size', required=False, type=float,
+            default=1E-2)
     main(parser.parse_args())
