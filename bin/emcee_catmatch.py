@@ -115,9 +115,7 @@ def main(args):
 
     apply_correct(dicty, args.casuin, TEL_RA, TEL_DEC)
 
-    prior = []
-    for i in name_list:
-        prior += [hdulist[i]]
+    prior = [hdulist[name] for name in name_list]
 
     prior[-1] = hdulist['CRVAL2'] - TEL_DEC
     prior[-2] = hdulist['CRVAL1'] - TEL_RA
