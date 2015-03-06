@@ -131,7 +131,8 @@ def main(args):
         shuffle = (10 ** (start_size * (np.random.rand(ndim) - 0.5)))
         p0 += [list(shuffle * prior)]
 
-    sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=prob_args)
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=prob_args,
+            threads=nthreads)
     sampler.run_mcmc(p0, nruns)
 
 
