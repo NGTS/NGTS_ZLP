@@ -9,6 +9,19 @@ import astropy.io.fits as pf
 import sys
 import argparse
 import multiprocessing as mp
+import os
+
+
+
+def extract_coordinate_limits(filename):
+    cat_names, RA_lims, DEC_lims = [], [], []
+    with open(filename) as infile:
+        for line in infile:
+            vals = line.strip('\n').split(' ')
+            cat_names += [vals[0]]
+            RA_lims += [[float(vals[2]), float(vals[3])]]
+            DEC_lims += [[float(vals[4]), float(vals[5])]]
+    return cat_names, RA_lims, DEC_lims
 
 
 def main(args):
@@ -24,14 +37,8 @@ def main(args):
     TEL_RA = hdulist['TEL_RA']
     TEL_DEC = hdulist['TEL_DEC']
 
-    cat_names = []
-    RA_lims = []
-    DEC_lims = []
-    for line in open(args.catsrc + '/index'):
-        vals = line.strip('\n').split(' ')
-        cat_names += [vals[0]]
-        RA_lims += [[float(vals[2]), float(vals[3])]]
-        DEC_lims += [[float(vals[4]), float(vals[5])]]
+    cat_names, RA_lims, DEC_lims = extract_coordinate_limits(
+            os.path.join(args.catsrc, 'index'))
 
     cen_RA = np.array([(f[0] + f[1]) / 2.0 for f in RA_lims])
     cen_DEC = np.array([(f[0] + f[1]) / 2.0 for f in DEC_lims])
