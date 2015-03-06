@@ -9,6 +9,7 @@ import sys
 import argparse
 import multiprocessing as mp
 import os
+import emcee
 
 
 def extract_coordinate_limits(filename):
@@ -43,15 +44,16 @@ def find_nearest_catalogue(sourcedir, tel_ra, tel_dec):
 
     return os.path.join(sourcedir, cat_name), RA_lims, DEC_lims
 
+
 def extract_catalogue_data(cat_name):
     with fits.open(cat_name) as infile:
         data = infile[1].data
 
     return {
-            'ra': data['ra'],
-            'dec': data['dec'],
-            'Jmag': data['Jmag'],
-            }
+        'ra': data['ra'],
+        'dec': data['dec'],
+        'Jmag': data['Jmag'],
+    }
 
 
 def main(args):
@@ -67,7 +69,7 @@ def main(args):
     TEL_DEC = hdulist['TEL_DEC']
 
     cat_name, RA_lims, DEC_lims = find_nearest_catalogue(
-            args.catsrc, TEL_RA, TEL_DEC)
+        args.catsrc, TEL_RA, TEL_DEC)
     cat = extract_catalogue_data(cat_name)
 
     with fits.open(args.mycatname) as mycatt:
@@ -131,9 +133,14 @@ def main(args):
     prob_args = [args.casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC,
                  RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty]
 
-    run_emcee(prior, lnprob, prob_args, nwalkers, nruns, start_size,
-              args.chain_name, burns, nthreads=nthreads, w=True,
-              resume=False)
+    ndim = len(prior)
+    p0 = []
+    for i in range(0, nwalkers):
+        shuffle = (10 ** (start_size * (np.random.rand(ndim) - 0.5)))
+        p0 += [list(shuffle * prior)]
+
+    sampler = emcee.EnsembleSampler(nwalkers, ndim, lnprob, args=prob_args)
+    sampler.run_mcmc(p0, nruns)
 
 
 def lnprob(x, casuin, mycat, cat,
