@@ -45,16 +45,26 @@ def find_nearest_catalogue(sourcedir, tel_ra, tel_dec):
     return os.path.join(sourcedir, cat_name), RA_lims, DEC_lims
 
 
-def extract_catalogue_data(cat_name, minimum_mag=15.):
+def extract_catalogue_data(cat_name, tel_ra, tel_dec, bright_mag=10, faint_mag=15):
+    max_delta_coordinate = 2
+    mag_key = 'Jmag'
     with fits.open(cat_name) as infile:
         data = infile[1].data
 
-    ind = data['Jmag'] < minimum_mag
+    ra = data['ra']
+    dec = data['dec']
+    mag = data[mag_key]
+
+    ind = (mag < faint_mag) & (mag > bright_mag)
+    ind &= ((ra > tel_ra - max_delta_coordinate) &
+            (ra < tel_ra + max_delta_coordinate))
+    ind &= ((dec > tel_dec - max_delta_coordinate) &
+            (dec < tel_dec + max_delta_coordinate))
 
     return {
-        'ra': data['ra'][ind],
-        'dec': data['dec'][ind],
-        'Jmag': data['Jmag'][ind],
+        'ra': ra[ind],
+        'dec': dec[ind],
+        mag_key: mag[ind],
     }
 
 
@@ -72,7 +82,7 @@ def main(args):
 
     cat_name, RA_lims, DEC_lims = find_nearest_catalogue(
         args.catsrc, TEL_RA, TEL_DEC)
-    cat = extract_catalogue_data(cat_name)
+    cat = extract_catalogue_data(cat_name, TEL_RA, TEL_DEC)
 
     with fits.open(args.mycatname) as mycatt:
         catdata = mycatt[1].data
