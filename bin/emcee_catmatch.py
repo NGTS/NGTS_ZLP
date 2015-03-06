@@ -29,6 +29,21 @@ def compute_separation(tel_ra, tel_dec, centre_ra, centre_dec):
     return sep
 
 
+def find_nearest_catalogue(sourcedir, tel_ra, tel_dec):
+    cat_names, RA_lims, DEC_lims = extract_coordinate_limits(
+        os.path.join(sourcedir, 'index'))
+
+    cen_RA = np.array([(f[0] + f[1]) / 2.0 for f in RA_lims])
+    cen_DEC = np.array([(f[0] + f[1]) / 2.0 for f in DEC_lims])
+
+    # Find the nearest catalogue
+    sep = compute_separation(tel_ra, tel_dec, cen_RA, cen_DEC)
+
+    cat_name = cat_names[np.argmin(sep)]
+
+    return cat_name, RA_lims, DEC_lims
+
+
 def main(args):
     nwalkers = args.nwalkers
     nruns = args.nruns
@@ -41,15 +56,8 @@ def main(args):
     TEL_RA = hdulist['TEL_RA']
     TEL_DEC = hdulist['TEL_DEC']
 
-    cat_names, RA_lims, DEC_lims = extract_coordinate_limits(
-        os.path.join(args.catsrc, 'index'))
-
-    cen_RA = np.array([(f[0] + f[1]) / 2.0 for f in RA_lims])
-    cen_DEC = np.array([(f[0] + f[1]) / 2.0 for f in DEC_lims])
-
-    sep = compute_separation(TEL_RA, TEL_DEC, cen_RA, cen_DEC)
-
-    cat_name = cat_names[np.argmin(sep)]
+    cat_name, RA_lims, DEC_lims = find_nearest_catalogue(
+            args.catsrc, TEL_RA, TEL_DEC)
 
     with fits.open(args.catsrc + '/' + cat_name) as catd:
         catt = catd[1].data.copy()
