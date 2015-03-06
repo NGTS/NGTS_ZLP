@@ -108,10 +108,10 @@ def main(args):
     for i in [6, 7, 8, 9]:
         start_size[i] = 1e-3
 
-    args = [args.casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC,
+    prob_args = [args.casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC,
             RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty]
 
-    run_emcee(prior, lnprob, args, nwalkers, nruns, start_size,
+    run_emcee(prior, lnprob, prob_args, nwalkers, nruns, start_size,
               args.chain_name, burns, nthreads=nthreads, w=True,
               resume=False)
 
