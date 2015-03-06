@@ -22,6 +22,13 @@ def extract_coordinate_limits(filename):
     return cat_names, RA_lims, DEC_lims
 
 
+def compute_separation(tel_ra, tel_dec, centre_ra, centre_dec):
+    first = (tel_ra - centre_ra) * np.cos(np.radians(tel_dec))
+    second = (tel_dec - centre_dec)
+    sep = np.sqrt(first ** 2 + second ** 2)
+    return sep
+
+
 def main(args):
     nwalkers = args.nwalkers
     nruns = args.nruns
@@ -40,8 +47,7 @@ def main(args):
     cen_RA = np.array([(f[0] + f[1]) / 2.0 for f in RA_lims])
     cen_DEC = np.array([(f[0] + f[1]) / 2.0 for f in DEC_lims])
 
-    sep = (((TEL_RA - cen_RA) * (np.cos(TEL_DEC * np.pi / 180.0)))
-           ** 2.0 + (TEL_DEC - cen_DEC) ** 2.0) ** 0.5
+    sep = compute_separation(TEL_RA, TEL_DEC, cen_RA, cen_DEC)
 
     cat_name = cat_names[np.argmin(sep)]
 
@@ -108,7 +114,7 @@ def main(args):
         start_size[i] = 1e-3
 
     prob_args = [args.casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC,
-            RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty]
+                 RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty]
 
     run_emcee(prior, lnprob, prob_args, nwalkers, nruns, start_size,
               args.chain_name, burns, nthreads=nthreads, w=True,
@@ -127,7 +133,7 @@ def lnprob(x, casuin, mycat, cat,
 
     try:
         rms = fit_shift_wcs_axis(dicty, casuin, mycat, cat, XVAL, YVAL,
-                TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords)
+                                 TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords)
     except:
         return -np.inf
 
@@ -166,6 +172,6 @@ if __name__ == '__main__':
     parser.add_argument('--nwalkers', required=False, type=int, default=1000)
     parser.add_argument('--nruns', required=False, type=int, default=1E7)
     parser.add_argument('--nthreads', required=False, type=int,
-            default=None)
+                        default=None)
     parser.add_argument('--burns', required=False, type=int, default=0)
     main(parser.parse_args())
