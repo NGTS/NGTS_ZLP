@@ -45,14 +45,16 @@ def find_nearest_catalogue(sourcedir, tel_ra, tel_dec):
     return os.path.join(sourcedir, cat_name), RA_lims, DEC_lims
 
 
-def extract_catalogue_data(cat_name):
+def extract_catalogue_data(cat_name, minimum_mag=15.):
     with fits.open(cat_name) as infile:
         data = infile[1].data
 
+    ind = data['Jmag'] < minimum_mag
+
     return {
-        'ra': data['ra'],
-        'dec': data['dec'],
-        'Jmag': data['Jmag'],
+        'ra': data['ra'][ind],
+        'dec': data['dec'][ind],
+        'Jmag': data['Jmag'][ind],
     }
 
 
@@ -75,7 +77,12 @@ def main(args):
     with fits.open(args.mycatname) as mycatt:
         catdata = mycatt[1].data
 
-    mycat = {'Aper_flux_3': catdata['Aper_flux_3']}
+    # Only choose the bright objects
+    flux_key = 'Aper_flux_3'
+    ind = (catdata[flux_key] > 1E3) & (catdata[flux_key] < 1E5)
+    catdata = catdata[ind]
+
+    mycat = {flux_key: catdata[flux_key]}
     my_X = catdata['x_coordinate']
     my_Y = catdata['y_coordinate']
     pix_coords = [[my_X[i], my_Y[i]] for i in range(0, len(my_X))]
