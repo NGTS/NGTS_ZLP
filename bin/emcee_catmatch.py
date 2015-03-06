@@ -120,9 +120,6 @@ def lnprob(x, casuin, mycat, cat,
            XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims,
            my_X, my_Y, pix_coords, name_list, dicty):
 
-    if not np.isfinite(lp):
-        return -np.inf
-
     for i in range(0, len(x)):
         dicty[name_list[i]] = x[i]
 
@@ -138,6 +135,9 @@ def lnprob(x, casuin, mycat, cat,
     likelihood = -2000 * ((np.median(rms)) ** 2.0)
 
     lp = lnprior(dicty, rms)
+    if not np.isfinite(lp):
+        return -np.inf
+
     lnoutput = lp + likelihood
 
     print lnoutput, np.median(rms)
