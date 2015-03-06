@@ -28,7 +28,7 @@ def run_emcee(x,lnprob,args,nwalkers,nruns,fudge,chain_name,burns,pool=None,nthr
 
   iterations = int(nruns/nwalkers)
 
-  if pool != None:
+  if pool is not None:
     sampler = EnsembleSampler(nwalkers,ndim,lnprob,args=args,pool=pool)
   else:
     sampler = EnsembleSampler(nwalkers,ndim,lnprob,args=args,threads=nthreads)
@@ -46,7 +46,8 @@ def run_emcee(x,lnprob,args,nwalkers,nruns,fudge,chain_name,burns,pool=None,nthr
 	      output[namearray[i]] = np.array([blob])
 	    if np.isfinite(logl[k]):
 	      fits['MCMC'].append(output)
-  pool.close()
+  if pool is not None:
+    pool.close()
 
 def resume_file(chain_name,ndim,nwalkers):
 
