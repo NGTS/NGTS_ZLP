@@ -27,7 +27,6 @@ def main(args):
     nruns = args.nruns
     nthreads = mp.cpu_count() if args.nthreads is None else args.nthreads
     burns = args.burns
-    start_size = args.start_size
 
     hdulist = fits.getheader(args.casuin)
     XVAL = hdulist['NAXIS1'] / 2
@@ -169,6 +168,4 @@ if __name__ == '__main__':
     parser.add_argument('--nthreads', required=False, type=int,
             default=None)
     parser.add_argument('--burns', required=False, type=int, default=0)
-    parser.add_argument('--start-size', required=False, type=float,
-            default=1E-2)
     main(parser.parse_args())
