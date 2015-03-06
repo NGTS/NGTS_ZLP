@@ -135,5 +135,3 @@ if __name__ == '__main__':
     parser.add_argument('chain_name')
     parser.add_argument('catsrc')
     main(parser.parse_args())
-
-# vim: sw=2
