@@ -49,8 +49,9 @@ def main(argv):
 
   filelist = argv.filelist
   if filelist:
-    m_solve_images(filelist,argv.outlist,dist_map,argv.wcsref,nproc=argv.nproc,thresh=argv.s_thresh,
-                  verbose=argv.verbose,catsrc=argv.catsrc,catpath=argv.catpath)
+    if not argv.norunwcs:
+      m_solve_images(filelist,argv.outlist,dist_map,argv.wcsref,nproc=argv.nproc,thresh=argv.s_thresh,
+                    verbose=argv.verbose,catsrc=argv.catsrc,catpath=argv.catpath)
     m_wcs_photom(filelist,argv.outlist,argv.apsize,argv.confmap,argv.catfile,nproc=argv.nproc,
                 verbose=argv.verbose)
 
@@ -71,6 +72,8 @@ if __name__ == '__main__':
   parser.add_argument('--s_thresh', type=float, default=7, help='Detection threshold in sigma')
   parser.add_argument('--catsrc', default='localfits', help='Catalogue for wcs solving')
   parser.add_argument('--catpath', default='catcache', help='Local casutools catalogue cache')
+  parser.add_argument('--norunwcs', action='store_true', default=False,
+      help='Do not astrometrically solve the images')
 
   main(parser.parse_args())
 # vim: sw=2
