@@ -41,7 +41,17 @@ def find_nearest_catalogue(sourcedir, tel_ra, tel_dec):
 
     cat_name = cat_names[np.argmin(sep)]
 
-    return cat_name, RA_lims, DEC_lims
+    return os.path.join(sourcedir, cat_name), RA_lims, DEC_lims
+
+def extract_catalogue_data(cat_name):
+    with fits.open(cat_name) as infile:
+        data = infile[1].data
+
+    return {
+            'ra': data['ra'],
+            'dec': data['dec'],
+            'Jmag': data['Jmag'],
+            }
 
 
 def main(args):
@@ -58,10 +68,7 @@ def main(args):
 
     cat_name, RA_lims, DEC_lims = find_nearest_catalogue(
             args.catsrc, TEL_RA, TEL_DEC)
-
-    with fits.open(args.catsrc + '/' + cat_name) as catd:
-        catt = catd[1].data.copy()
-    cat = {'ra': catt['ra'], 'dec': catt['dec'], 'Jmag': catt['Jmag']}
+    cat = extract_catalogue_data(cat_name)
 
     with fits.open(args.mycatname) as mycatt:
         catdata = mycatt[1].data
