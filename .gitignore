@@ -14,3 +14,5 @@ stds_proc*.fits
 !testing/hjd_example_catalogue.fits
 tmp/*
 *.swp
+!emcee-testdata/casuin.fits
+!emcee-testdata/chain_name.fits
