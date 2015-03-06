@@ -16,3 +16,4 @@ tmp/*
 *.swp
 !emcee-testdata/casuin.fits
 !emcee-testdata/chain_name.fits
+!emcee-testdata/catcache
