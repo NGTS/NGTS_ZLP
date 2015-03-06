@@ -124,12 +124,6 @@ def main(args):
 
     start_size = np.array([1e-3] * len(prior))
 
-    for i in [2, 3, 4, 5]:
-        start_size[i] = 1e-3
-
-    for i in [6, 7, 8, 9]:
-        start_size[i] = 1e-3
-
     prob_args = [args.casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC,
                  RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty]
 
