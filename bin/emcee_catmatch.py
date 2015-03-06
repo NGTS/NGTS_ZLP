@@ -12,7 +12,6 @@ import multiprocessing as mp
 
 
 def main(args):
-    resume = False
     nwalkers = 1000
     nruns = 1e7
     nthreads = mp.cpu_count()
@@ -53,8 +52,22 @@ def main(args):
     pix_coords = [[my_X[i], my_Y[i]] for i in range(0, len(my_X))]
 
     # 7th order fit
-    dicty = {'CRPIX1': 1.03259815e+03, 'CRPIX2': 9.65505144e+02, 'CD1_1': 1.41142333e-03, 'CD2_2': 1.41109400e-03, 'CD1_2': -1.89116218e-06, 'CD2_1': 1.53342393e-06, 'PV2_1':
-             1.0, 'PV2_3': 8.68515702e+00, 'PV2_5': 2.70336203e+02, 'PV2_7': 1.37726138e+04, 'RA_s': -0.45807896397, 'DEC_s': 0.48575139999, 'CTYPE1': 'RA---ZPN', 'CTYPE2': 'DEC--ZPN'}
+    dicty = {
+        'CRPIX1': 1.03259815e+03,
+        'CRPIX2': 9.65505144e+02,
+        'CD1_1': 1.41142333e-03,
+        'CD2_2': 1.41109400e-03,
+        'CD1_2': -1.89116218e-06,
+        'CD2_1': 1.53342393e-06,
+        'PV2_1': 1.0,
+        'PV2_3': 8.68515702e+00,
+        'PV2_5': 2.70336203e+02,
+        'PV2_7': 1.37726138e+04,
+        'RA_s': -0.45807896397,
+        'DEC_s': 0.48575139999,
+        'CTYPE1': 'RA---ZPN',
+        'CTYPE2': 'DEC--ZPN',
+    }
     name_list = ['CRPIX1', 'CRPIX2', 'CD1_1', 'CD2_2', 'CD1_2',
                  'CD2_1', 'PV2_3', 'PV2_5', 'PV2_7', 'RA_s', 'DEC_s']
 
@@ -92,10 +105,16 @@ def main(args):
             RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty]
 
     run_emcee(prior, lnprob, args, nwalkers, nruns, start_size,
-              args.chain_name, burns, nthreads=nthreads, w=True, resume=resume)
+              args.chain_name, burns, nthreads=nthreads, w=True,
+              resume=False)
 
 
-def lnprob(x, casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty):
+def lnprob(x, casuin, mycat, cat,
+           XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims,
+           my_X, my_Y, pix_coords, name_list, dicty):
+
+    if not np.isfinite(lp):
+        return -np.inf
 
     for i in range(0, len(x)):
         dicty[name_list[i]] = x[i]
@@ -109,13 +128,10 @@ def lnprob(x, casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims
     except:
         return -np.inf
 
-    likelyhood = -2000 * ((np.median(rms)) ** 2.0)
+    likelihood = -2000 * ((np.median(rms)) ** 2.0)
 
     lp = lnprior(dicty, rms)
-    lnoutput = lp + likelyhood
-
-    if not np.isfinite(lp):
-        return -np.inf
+    lnoutput = lp + likelihood
 
     print lnoutput, np.median(rms)
 
