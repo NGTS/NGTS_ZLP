@@ -4,13 +4,11 @@
 from NGTS_workpackage.catmatch import *
 from NGTS_workpackage.emcee_tools import run_emcee
 import numpy as np
-import fitsio
-import astropy.io.fits as pf
+from astropy.io import fits
 import sys
 import argparse
 import multiprocessing as mp
 import os
-
 
 
 def extract_coordinate_limits(filename):
@@ -31,14 +29,14 @@ def main(args):
     burns = 0
     start_size = 1e-2
 
-    hdulist = fitsio.read_header(args.casuin)
+    hdulist = fits.getheader(args.casuin)
     XVAL = hdulist['NAXIS1'] / 2
     YVAL = hdulist['NAXIS2'] / 2
     TEL_RA = hdulist['TEL_RA']
     TEL_DEC = hdulist['TEL_DEC']
 
     cat_names, RA_lims, DEC_lims = extract_coordinate_limits(
-            os.path.join(args.catsrc, 'index'))
+        os.path.join(args.catsrc, 'index'))
 
     cen_RA = np.array([(f[0] + f[1]) / 2.0 for f in RA_lims])
     cen_DEC = np.array([(f[0] + f[1]) / 2.0 for f in DEC_lims])
@@ -48,14 +46,16 @@ def main(args):
 
     cat_name = cat_names[np.argmin(sep)]
 
-    with pf.open(args.catsrc + '/' + cat_name) as catd:
+    with fits.open(args.catsrc + '/' + cat_name) as catd:
         catt = catd[1].data.copy()
     cat = {'ra': catt['ra'], 'dec': catt['dec'], 'Jmag': catt['Jmag']}
 
-    with fitsio.FITS(args.mycatname) as mycatt:
-        mycat = {'Aper_flux_3': mycatt[1]['Aper_flux_3'][:]}
-        my_X = mycatt[1]['x_coordinate'][:]
-        my_Y = mycatt[1]['y_coordinate'][:]
+    with fits.open(args.mycatname) as mycatt:
+        catdata = mycatt[1].data
+
+    mycat = {'Aper_flux_3': catdata['Aper_flux_3']}
+    my_X = catdata['x_coordinate']
+    my_Y = catdata['y_coordinate']
     pix_coords = [[my_X[i], my_Y[i]] for i in range(0, len(my_X))]
 
     # 7th order fit
