@@ -128,7 +128,7 @@ def lnprob(x, casuin, mycat, cat,
 
     try:
         rms = fit_shift_wcs_axis(dicty, casuin, mycat, cat, XVAL, YVAL,
-                                 TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords)
+                TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords)
     except:
         return -np.inf
 
