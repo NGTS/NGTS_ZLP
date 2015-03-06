@@ -124,8 +124,15 @@ def lnprob(x, casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims
 
 def lnprior(dicty, rms):
 
-    if np.all((len(rms) > 1000) and (0.0012 < dicty['CD1_1'] < 0.0025) and (0.0012 < dicty['CD1_1'] < 0.0025) and ((abs(dicty['CD2_1']) < 1e-4)) and (abs(dicty['CD1_2']) < 1e-4) and (abs(dicty['RA_s']) < 1.0) and (abs(dicty['DEC_s'] < 1.0))):
+    if ((len(rms) > 1000) and
+            (0.0012 < dicty['CD1_1'] < 0.0025) and
+            (0.0012 < dicty['CD1_1'] < 0.0025) and
+            ((abs(dicty['CD2_1']) < 1e-4)) and
+            (abs(dicty['CD1_2']) < 1e-4) and
+            (abs(dicty['RA_s']) < 1.0) and
+            (abs(dicty['DEC_s'] < 1.0))):
         return 0.0
+
     return -np.inf
 
 if __name__ == '__main__':
