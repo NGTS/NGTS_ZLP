@@ -11,6 +11,7 @@ from os.path import isfile, join
 from util import thread_alloc
 from numpy import *
 import fitsio
+import sys
 
 def m_condense_data(filelist,nproc,appsize,verbose=False,outdir='./'):
 
@@ -158,8 +159,8 @@ def condense_data(filelist,minlen,maxlen,thread_no,appsize,verbose):
 	  if verbose == True:
 	    print shape(time), line.split(' ')[0]+'.phot', thread_no
       except Exception as err:
-	raise RuntimeError("Error analysing file: {}, original error: {}"
-		    .format(image + '.phot', str(err)))
+	sys.stderr.write('Error analysing file {}, original error: {}\n'.format(
+	  image + '.phot', str(err)))
     else:
       print 'frame bad'
   # generate time of mid exposure array
