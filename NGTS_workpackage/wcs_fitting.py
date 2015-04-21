@@ -83,7 +83,7 @@ def handle_errors_in_casu_solve(casuin, *args, **kwargs):
 
 
 def casu_solve(casuin, wcsref,
-               dist_map={},
+               dist_map,
                thresh=20,
                verbose=False,
                catsrc='viz2mass',
