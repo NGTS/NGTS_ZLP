@@ -101,8 +101,7 @@ def casu_solve(casuin, wcsref,
     for key in dist_map:
         print key, dist_map[key], hdulist.get(key)
 
-    apply_correct(dist_map, casuin, TEL_RA, TEL_DEC)
-
+    apply_correct(dist_map, casuin)
 
     with tempfile.NamedTemporaryFile(dir='.',
                                      suffix='.fits',
@@ -130,7 +129,7 @@ def casu_solve(casuin, wcsref,
             catt = catd[1].data.copy()
         cat = {'ra': catt['ra'], 'dec': catt['dec'], 'Jmag': catt['Jmag']}
 
-        apply_correct(dist_map, casuin, TEL_RA, TEL_DEC)
+        apply_correct(dist_map, casuin)
 
         with fitsio.FITS(catfile_name) as mycatt:
             mycat = {'Aper_flux_3': mycatt[1]['Aper_flux_3'][:]}
@@ -155,7 +154,7 @@ def casu_solve(casuin, wcsref,
                 dist_map, mycat, cat, RA_lims, DEC_lims, my_X, my_Y, TEL_RA, TEL_DEC,
                 fitlist=['RA_s', 'DEC_s', 'CD1_1', 'CD2_2', 'CD1_2', 'CD2_1'])
 
-        apply_correct(dist_map, casuin, TEL_RA, TEL_DEC)
+        apply_correct(dist_map, casuin)
 
         # wcs keywords may have changed since imcore was done, so we have to update the RA and DEC values.
         correct_catfile(catfile_name, casuin, nstars=2000)

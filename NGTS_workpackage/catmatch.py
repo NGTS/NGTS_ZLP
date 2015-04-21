@@ -107,11 +107,7 @@ def fit_shift_wcs_axis(dicty, casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC,
     return np.array(sep_list)
 
 
-def apply_correct(dicty, casuin, TEL_RA, TEL_DEC):
-
-    dicty['CRVAL1'] = TEL_RA + dicty['RA_s']
-    dicty['CRVAL2'] = TEL_DEC + dicty['DEC_s']
-
+def apply_correct(dicty, casuin):
     with fitsio.FITS(casuin, 'rw') as fits:
         for key in dicty:
             fits[0].write_key(key, dicty[key])
