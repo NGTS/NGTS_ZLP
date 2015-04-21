@@ -31,20 +31,19 @@ class NullPool(object):
 Catalogue = namedtuple('Catalogue', ['cat_name', 'ra_lims', 'dec_lims'])
 
 
-def initialise_wcs_cache(fname, catpath, wcsref, thresh, verbose, force=False):
-    if force or not os.path.isdir(catpath):
-        print("Constructing initial wcs cache")
-        catalogue_name = 'initial-catalogue.fits'
-        casutools.imcore(fname, catalogue_name, threshold=thresh, verbose=verbose)
-        casutools.wcsfit(fname, catalogue_name, catpath=wcsref, verbose=verbose)
+def initialise_wcs_cache(fname, wcsref, thresh, verbose, force=False):
+    print("Constructing initial wcs cache")
+    catalogue_name = 'initial-catalogue.fits'
+    casutools.imcore(fname, catalogue_name, threshold=thresh, verbose=verbose)
+    casutools.wcsfit(fname, catalogue_name, catpath=wcsref, verbose=verbose)
 
 
 def m_solve_images(filelist, outfile, dist_map, wcsref,
                    nproc=None,
                    thresh=20.0,
                    verbose=False,
-                   catsrc='viz2mass',
-                   catpath=False):
+                   catsrc='viz2mass')
+
     infiles = []
 
     with open(filelist) as infile:
@@ -55,15 +54,14 @@ def m_solve_images(filelist, outfile, dist_map, wcsref,
             if all(status == 'ok' for status in status_checks):
                 infiles.append(image)
 
-    initialise_wcs_cache(infiles[0], catpath, wcsref, thresh, verbose)
+    initialise_wcs_cache(infiles[0], wcsref, thresh, verbose)
 
     fn = partial(handle_errors_in_casu_solve,
                  wcsref=wcsref,
                  dist_map=dist_map,
                  thresh=thresh,
                  verbose=verbose,
-                 catsrc=catsrc,
-                 catpath=catpath)
+                 catsrc=catsrc)
 
     pool = ThreadPool(nproc)
 
