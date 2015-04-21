@@ -16,6 +16,7 @@ import os
 from vector_plot import wcsf_QCheck
 import numpy as np
 from wcs_status import set_wcs_status
+from collections import namedtuple
 
 
 class NullPool(object):
@@ -26,6 +27,7 @@ class NullPool(object):
     def map(self, fn, args):
         return map(fn, args)
 
+Catalogue = namedtuple('Catalogue', ['cat_name', 'ra_lims', 'dec_lims'])
 
 def initialise_wcs_cache(fname, catpath, wcsref, thresh, verbose, force=False):
     if force or not os.path.isdir(catpath):
@@ -84,12 +86,12 @@ def handle_errors_in_casu_solve(casuin, *args, **kwargs):
 def casu_solve(casuin, wcsref, dist_map,
                thresh=20,
                verbose=False,
-               catsrc='viz2mass',
-               catpath=False):
+               catsrc='viz2mass'):
 
     hdulist = fits.getheader(casuin)
 
     apply_correct(dist_map, casuin)
+    catpath = os.path.join(os.getcwd(), 'catcache')
 
     with tempfile.NamedTemporaryFile(dir='.',
                                      suffix='.fits',
@@ -104,9 +106,42 @@ def casu_solve(casuin, wcsref, dist_map,
 
         catfile.seek(0)
 
+        catalogue = compute_frame_limits(catpath)
+        cat = reference_catalogue_objects(catalogue, catpath)
+
+        with fits.open(catfile_name) as mycatt:
+            mycatt_data = mycatt[1].data
+            mycat = {'Aper_flux_3': mycatt_data['Aper_flux_3']}
+            my_X = mycatt_data['x_coordinate']
+            my_Y = mycatt_data['y_coordinate']
+
         # Do QC checks. should really break this out.
-        # wcsf_QCheck(mycat, casuin, os.path.basename(casuin).strip('.fits') + '.png', cat,
-        #             RA_lims, DEC_lims, my_X, my_Y,
-        #             plot=True)
+        wcsf_QCheck(mycat, casuin, os.path.basename(casuin).strip('.fits') + '.png', cat,
+                    catalogue.ra_lims, catalogue.dec_lims, my_X, my_Y,
+                    plot=True)
 
         return 'ok'
+
+
+def reference_catalogue_objects(catalogue, catpath):
+    cat_name = os.path.join(catpath, catalogue.cat_name)
+
+    with fits.open(cat_name) as catd:
+        catt = catd[1].data.copy()
+
+    return {'ra': catt['ra'], 'dec': catt['dec'], 'Jmag': catt['Jmag']}
+
+
+def compute_frame_limits(catpath):
+    index_filename = os.path.join(catpath, 'index')
+    cat_names = []
+    RA_lims = []
+    DEC_lims = []
+
+    for line in open(index_filename):
+        vals = line.strip('\n').split(' ')
+        cat_names += [vals[0]]
+        RA_lims += [[float(vals[2]), float(vals[3])]]
+        DEC_lims += [[float(vals[4]), float(vals[5])]]
+
+    return Catalogue(cat_names[0], RA_lims, DEC_lims)
