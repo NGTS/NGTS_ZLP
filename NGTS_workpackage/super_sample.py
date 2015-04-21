@@ -541,5 +541,3 @@ if __name__ == '__main__':
 
     super_sample(args.filelist, args.factor, args.size, args.stars,
                  args.binning, args.outname)
-
-# vim: sw=2

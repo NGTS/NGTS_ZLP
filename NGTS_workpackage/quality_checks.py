@@ -121,5 +121,3 @@ def frame_shift(image1, image2):
     print tot_shift
 
     return RA_shift, DEC_shift, tot_shift, RA, DEC
-
-# vim: sw=2

@@ -118,5 +118,3 @@ def wcs_photom(image,
     append_hjd_correction_column(outname)
 
     return 'ok'
-
-# vim: sw=2

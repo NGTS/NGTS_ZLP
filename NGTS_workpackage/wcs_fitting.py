@@ -214,5 +214,3 @@ def casu_solve(casuin, wcsref,
                     plot=plot)
 
         return 'ok'
-
-# vim: sw=2

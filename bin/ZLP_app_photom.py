@@ -105,4 +105,3 @@ if __name__ == '__main__':
                         help='Do not astrometrically solve the images')
 
     main(parser.parse_args())
-# vim: sw=2

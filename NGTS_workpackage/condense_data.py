@@ -427,5 +427,3 @@ def compute_final_statistics(fname):
         original_catalogue_data['NPTS'] = np.array(out_npts)
         original_catalogue_data['FLUX_MEAN'] = np.array(out_flux_mean)
         original_catalogue.write(original_catalogue_data)
-
-# vim: sw=2 noexpandtab
