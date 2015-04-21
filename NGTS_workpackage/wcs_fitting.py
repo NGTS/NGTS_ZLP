@@ -92,13 +92,6 @@ def casu_solve(casuin, wcsref,
 
     hdulist = fitsio.read_header(casuin)
 
-    TEL_RA = hdulist['TEL_RA']
-    TEL_DEC = hdulist['TEL_DEC']
-
-
-    for key in dist_map:
-        print key, dist_map[key], hdulist.get(key)
-
     apply_correct(dist_map, casuin)
 
     with tempfile.NamedTemporaryFile(dir='.',
@@ -109,61 +102,12 @@ def casu_solve(casuin, wcsref,
         casutools.imcore(casuin, catfile_name, threshold=thresh, verbose=verbose)
         catfile.seek(0)
 
-        cat_names = []
-        RA_lims = []
-        DEC_lims = []
-
-        for line in open(catpath + '/index'):
-            vals = line.strip('\n').split(' ')
-            cat_names += [vals[0]]
-            RA_lims += [[float(vals[2]), float(vals[3])]]
-            DEC_lims += [[float(vals[4]), float(vals[5])]]
-
-        n = 0
-
-        cat_name = cat_names[n]
-
-        with pf.open(catpath + '/' + cat_name) as catd:
-            catt = catd[1].data.copy()
-        cat = {'ra': catt['ra'], 'dec': catt['dec'], 'Jmag': catt['Jmag']}
-
-        apply_correct(dist_map, casuin)
-
-        with fitsio.FITS(catfile_name) as mycatt:
-            mycat = {'Aper_flux_3': mycatt[1]['Aper_flux_3'][:]}
-            my_X = mycatt[1]['x_coordinate'][:]
-            my_Y = mycatt[1]['y_coordinate'][:]
-
-        # We need the extra correction here before we do the wcsfit, because the TEL RA and DEC measurements are not
-        # always precise enough for the fit to work. This simply shifts CRVALS to align with CRPIX
-
-        try:
-            dist_map = shift_wcs_axis(dist_map, mycat, cat, RA_lims, DEC_lims, my_X,
-                                      my_Y, TEL_RA, TEL_DEC,
-                                      iters=10)
-            dist_map = lmq_fit(
-                dist_map, mycat, cat, RA_lims, DEC_lims, my_X, my_Y, TEL_RA, TEL_DEC,
-                fitlist=['RA_s', 'DEC_s', 'CD1_1', 'CD2_2', 'CD1_2', 'CD2_1'])
-        except IOError:
-            print "Performing initial fit"
-            casutools.wcsfit(casuin, catfile_name, catpath=wcsref, verbose=verbose)
-            dist_map = shift_wcs_axis(casuin, catfile_name, thresh=thresh, iters=30)
-            dist_map = lmq_fit(
-                dist_map, mycat, cat, RA_lims, DEC_lims, my_X, my_Y, TEL_RA, TEL_DEC,
-                fitlist=['RA_s', 'DEC_s', 'CD1_1', 'CD2_2', 'CD1_2', 'CD2_1'])
-
-        apply_correct(dist_map, casuin)
-
-        # wcs keywords may have changed since imcore was done, so we have to update the RA and DEC values.
-        correct_catfile(catfile_name, casuin, nstars=2000)
-
         # Now we're ready to solve wcs
         casutools.wcsfit(casuin, catfile_name, catpath=wcsref, verbose=verbose)
 
         # Do QC checks. should really break this out.
-        plot = True
         wcsf_QCheck(mycat, casuin, os.path.basename(casuin).strip('.fits') + '.png', cat,
                     RA_lims, DEC_lims, my_X, my_Y,
-                    plot=plot)
+                    plot=True)
 
         return 'ok'
