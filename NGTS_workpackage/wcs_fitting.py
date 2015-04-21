@@ -115,7 +115,8 @@ def casu_solve(casuin, wcsref, dist_map, thresh=20, verbose=False, catsrc='viz2m
             my_Y = mycatt_data['y_coordinate']
 
         # Do QC checks. should really break this out.
-        wcsf_QCheck(mycat, casuin, os.path.basename(casuin).strip('.fits') + '.png', cat,
+        wcsf_QCheck(mycat, casuin,
+                    os.path.basename(casuin).replace('.fits', '') + '.png', cat,
                     catalogue.ra_lims, catalogue.dec_lims, my_X, my_Y,
                     plot=True)
 
