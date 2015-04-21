@@ -45,44 +45,29 @@ def main(argv):
 
     if not argv.norunwcs:
         m_solve_images(argv.filelist, argv.outlist, dist_map, argv.wcsref,
-                        nproc=argv.nproc,
-                        thresh=argv.s_thresh,
-                        verbose=argv.verbose,
-                        catsrc=argv.catsrc,
-                        catpath=argv.catpath)
-    m_wcs_photom(argv.filelist, argv.outlist, argv.apsize, argv.confmap,
-                    argv.catfile,
-                    nproc=argv.nproc,
-                    verbose=argv.verbose)
+                       nproc=argv.nproc,
+                       thresh=argv.s_thresh,
+                       verbose=argv.verbose,
+                       catsrc=argv.catsrc,
+                       catpath=argv.catpath)
+    m_wcs_photom(argv.filelist, argv.outlist, argv.apsize, argv.confmap, argv.catfile,
+                 nproc=argv.nproc,
+                 verbose=argv.verbose)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--confmap",
-                        help="Confidence map",
-                        required=True)
-    parser.add_argument("-C", '--catfile',
-                        help='Input catalogue',
-                        required=True)
-    parser.add_argument('-f', '--filelist',
-                        help='List of files',
-                        required=True)
-    parser.add_argument('--dist',
-                        help='Path to the relevant distortion',
-                        required=True)
+    parser.add_argument("-c", "--confmap", help="Confidence map", required=True)
+    parser.add_argument("-C", '--catfile', help='Input catalogue', required=True)
+    parser.add_argument('-f', '--filelist', help='List of files', required=True)
+    parser.add_argument('--dist', help='Path to the relevant distortion', required=True)
     parser.add_argument('--outdir', required=True, help='Output directory')
     parser.add_argument('--wcsref', help='WCS reference frame')
 
     parser.add_argument('--verbose', action='store_true', default=False)
     parser.add_argument('--outlist', help="List of completed files")
-    parser.add_argument('--nproc',
-                        type=int,
-                        default=1,
-                        help='Number of processors')
-    parser.add_argument('--apsize',
-                        type=float,
-                        default=2,
-                        help='Aperture size')
+    parser.add_argument('--nproc', type=int, default=1, help='Number of processors')
+    parser.add_argument('--apsize', type=float, default=2, help='Aperture size')
     parser.add_argument('--s_thresh',
                         type=float,
                         default=7,
