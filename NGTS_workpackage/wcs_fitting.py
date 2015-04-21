@@ -42,7 +42,7 @@ def m_solve_images(filelist, outfile, dist_map, wcsref,
                    nproc=None,
                    thresh=20.0,
                    verbose=False,
-                   catsrc='viz2mass')
+                   catsrc='viz2mass'):
 
     infiles = []
 
