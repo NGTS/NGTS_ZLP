@@ -49,8 +49,7 @@ def main(argv):
                        nproc=argv.nproc,
                        thresh=argv.s_thresh,
                        verbose=argv.verbose,
-                       catsrc=argv.catsrc,
-                       catpath=argv.catpath)
+                       catsrc=argv.catsrc)
     m_wcs_photom(argv.filelist, argv.outlist, argv.apsize, argv.confmap, argv.catfile,
                  nproc=argv.nproc,
                  verbose=argv.verbose)
