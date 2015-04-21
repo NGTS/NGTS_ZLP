@@ -29,7 +29,7 @@ from numpy import *
 import threading
 from os.path import isfile, join
 from NGTS_workpackage import *
-import pickle
+import json
 import argparse
 
 
@@ -41,7 +41,8 @@ def main(argv):
     outfile = open(argv.outlist, 'w')
     outfile.close()
 
-    dist_map = pickle.load(open(argv.dist, 'r'))
+    with open(argv.dist) as infile:
+        dist_map = json.load(infile)
 
     if not argv.norunwcs:
         m_solve_images(argv.filelist, argv.outlist, dist_map, argv.wcsref,
