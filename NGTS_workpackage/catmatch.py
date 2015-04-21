@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from astropy import wcs
+from astropy.io import fits
 import numpy as np
 import fitsio
 
@@ -108,9 +109,9 @@ def fit_shift_wcs_axis(dicty, casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC,
 
 
 def apply_correct(dicty, casuin):
-    with fitsio.FITS(casuin, 'rw') as fits:
+    with fits.open(casuin, mode='update') as infile:
         for key in dicty:
-            fits[0].write_key(key, dicty[key])
+            infile[0].header[key] = dicty[key]
 
 
 def calc_seps(mycat, cat, RA_lims, DEC_lims, world, my_X, my_Y, dicty,
