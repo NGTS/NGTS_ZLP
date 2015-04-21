@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
  
 Zero Level Pipeline apperture photometry 
@@ -32,19 +31,30 @@ from NGTS_workpackage import *
 import argparse
 import tempfile
 
+
 def main(argv):
     filelist = argv.filelist
-    m_condense_data(filelist,argv.nproc,argv.apsize,verbose=argv.verbose,
+    m_condense_data(filelist, argv.nproc, argv.apsize,
+                    verbose=argv.verbose,
                     outdir=argv.outdir)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('filelist')
     parser.add_argument('--outdir', required=True, help='Output directory')
-    parser.add_argument('--nproc', default=1, type=int, help='Parallel process')
-    parser.add_argument('--apsize', default=2, type=float, help='Aperture size')
-    parser.add_argument('--verbose', action='store_true', default=False, help='Verbose mode')
+    parser.add_argument('--nproc',
+                        default=1,
+                        type=int,
+                        help='Parallel process')
+    parser.add_argument('--apsize',
+                        default=2,
+                        type=float,
+                        help='Aperture size')
+    parser.add_argument('--verbose',
+                        action='store_true',
+                        default=False,
+                        help='Verbose mode')
 
     main(parser.parse_args())
-

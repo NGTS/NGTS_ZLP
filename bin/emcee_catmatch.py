@@ -37,8 +37,8 @@ def main(args):
     cen_RA = np.array([(f[0] + f[1]) / 2.0 for f in RA_lims])
     cen_DEC = np.array([(f[0] + f[1]) / 2.0 for f in DEC_lims])
 
-    sep = (((TEL_RA - cen_RA) * (np.cos(TEL_DEC * np.pi / 180.0)))
-           ** 2.0 + (TEL_DEC - cen_DEC) ** 2.0) ** 0.5
+    sep = (((TEL_RA - cen_RA) * (np.cos(TEL_DEC * np.pi / 180.0))) ** 2.0 +
+           (TEL_DEC - cen_DEC) ** 2.0) ** 0.5
 
     cat_name = cat_names[np.argmin(sep)]
 
@@ -53,10 +53,24 @@ def main(args):
     pix_coords = [[my_X[i], my_Y[i]] for i in range(0, len(my_X))]
 
     # 7th order fit
-    dicty = {'CRPIX1': 1.03259815e+03, 'CRPIX2': 9.65505144e+02, 'CD1_1': 1.41142333e-03, 'CD2_2': 1.41109400e-03, 'CD1_2': -1.89116218e-06, 'CD2_1': 1.53342393e-06, 'PV2_1':
-             1.0, 'PV2_3': 8.68515702e+00, 'PV2_5': 2.70336203e+02, 'PV2_7': 1.37726138e+04, 'RA_s': -0.45807896397, 'DEC_s': 0.48575139999, 'CTYPE1': 'RA---ZPN', 'CTYPE2': 'DEC--ZPN'}
-    name_list = ['CRPIX1', 'CRPIX2', 'CD1_1', 'CD2_2', 'CD1_2',
-                 'CD2_1', 'PV2_3', 'PV2_5', 'PV2_7', 'RA_s', 'DEC_s']
+    dicty = {
+        'CRPIX1': 1.03259815e+03,
+        'CRPIX2': 9.65505144e+02,
+        'CD1_1': 1.41142333e-03,
+        'CD2_2': 1.41109400e-03,
+        'CD1_2': -1.89116218e-06,
+        'CD2_1': 1.53342393e-06,
+        'PV2_1': 1.0,
+        'PV2_3': 8.68515702e+00,
+        'PV2_5': 2.70336203e+02,
+        'PV2_7': 1.37726138e+04,
+        'RA_s': -0.45807896397,
+        'DEC_s': 0.48575139999,
+        'CTYPE1': 'RA---ZPN',
+        'CTYPE2': 'DEC--ZPN'
+    }
+    name_list = ['CRPIX1', 'CRPIX2', 'CD1_1', 'CD2_2', 'CD1_2', 'CD2_1',
+                 'PV2_3', 'PV2_5', 'PV2_7', 'RA_s', 'DEC_s']
 
     dicty['CRVAL1'] = TEL_RA + dicty['RA_s']
     dicty['CRVAL2'] = TEL_DEC + dicty['DEC_s']
@@ -88,14 +102,18 @@ def main(args):
     for i in [6, 7, 8, 9]:
         start_size[i] = 1e-3
 
-    args = [args.casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC,
-            RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty]
+    args = [args.casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims,
+            DEC_lims, my_X, my_Y, pix_coords, name_list, dicty]
 
     run_emcee(prior, lnprob, args, nwalkers, nruns, start_size,
-              args.chain_name, burns, nthreads=nthreads, w=True, resume=resume)
+              args.chain_name, burns,
+              nthreads=nthreads,
+              w=True,
+              resume=resume)
 
 
-def lnprob(x, casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty):
+def lnprob(x, casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims,
+           DEC_lims, my_X, my_Y, pix_coords, name_list, dicty):
 
     for i in range(0, len(x)):
         dicty[name_list[i]] = x[i]
@@ -104,8 +122,9 @@ def lnprob(x, casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims
     dicty['CRVAL2'] = TEL_DEC + dicty['DEC_s']
 
     try:
-        rms = fit_shift_wcs_axis(dicty, casuin, mycat, cat, XVAL, YVAL,
-                                 TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords)
+        rms = fit_shift_wcs_axis(dicty, casuin, mycat, cat, XVAL, YVAL, TEL_RA,
+                                 TEL_DEC, RA_lims, DEC_lims, my_X, my_Y,
+                                 pix_coords)
     except:
         return -np.inf
 
@@ -124,9 +143,14 @@ def lnprob(x, casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims
 
 def lnprior(dicty, rms):
 
-    if np.all((len(rms) > 1000) and (0.0012 < dicty['CD1_1'] < 0.0025) and (0.0012 < dicty['CD1_1'] < 0.0025) and ((abs(dicty['CD2_1']) < 1e-4)) and (abs(dicty['CD1_2']) < 1e-4) and (abs(dicty['RA_s']) < 1.0) and (abs(dicty['DEC_s'] < 1.0))):
+    if np.all((len(rms) > 1000) and (0.0012 < dicty['CD1_1'] < 0.0025) and
+              (0.0012 < dicty['CD1_1'] < 0.0025) and (
+                  (abs(dicty['CD2_1']) < 1e-4)) and
+              (abs(dicty['CD1_2']) < 1e-4) and (abs(dicty['RA_s']) < 1.0) and
+              (abs(dicty['DEC_s'] < 1.0))):
         return 0.0
     return -np.inf
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -6,9 +6,9 @@ Functions require the associated tools to be available on the
 system.
 '''
 
-
 import subprocess as sp
 from threading import Lock
+
 
 def find_imstack():
     '''
@@ -23,6 +23,7 @@ def find_imstack():
         else:
             return name
 
+
 def construct_filelist_argument(filelist):
     '''
     Wrapper around constructing a filelist
@@ -31,6 +32,8 @@ def construct_filelist_argument(filelist):
 
 
 lock = Lock()
+
+
 def run_command(cmd, verbose=False):
     '''
     Wraps subprocess to run the command
@@ -43,29 +46,35 @@ def run_command(cmd, verbose=False):
 
     sp.check_call(str_cmd)
 
-def imstack(filelist, confidence_map, outstack='outstack.fits', outconf='outconf.fits',
-        verbose=False, catalogues=''):
+
+def imstack(filelist, confidence_map,
+            outstack='outstack.fits',
+            outconf='outconf.fits',
+            verbose=False,
+            catalogues=''):
     '''
     Runs the casu task `imstack`
     '''
-    cmd = [find_imstack(),
-            construct_filelist_argument(filelist),
-            confidence_map,
-            catalogues,
-            outstack,
-            outconf]
+    cmd = [find_imstack(), construct_filelist_argument(filelist),
+           confidence_map, catalogues, outstack, outconf]
 
     run_command(cmd, verbose=verbose)
 
 
-def imcore(input_file, output_table, ipix=2, threshold=2.0, confidence_map='noconf', rcore=2,
-        filtfwhm=1, ellfile=False, casu_verbose=False, verbose=False):
+def imcore(input_file, output_table,
+           ipix=2,
+           threshold=2.0,
+           confidence_map='noconf',
+           rcore=2,
+           filtfwhm=1,
+           ellfile=False,
+           casu_verbose=False,
+           verbose=False):
     '''
     Runs the casu task `imcore`
     '''
     cmd = ['imcore', input_file, confidence_map, output_table, ipix, threshold,
-            '--filtfwhm', filtfwhm,
-            '--rcore', rcore]
+           '--filtfwhm', filtfwhm, '--rcore', rcore]
 
     if casu_verbose:
         cmd.append('--verbose')
@@ -75,13 +84,19 @@ def imcore(input_file, output_table, ipix=2, threshold=2.0, confidence_map='noco
 
     run_command(cmd, verbose=verbose)
 
-def imcore_list(input_file, listfile, output_file, threshold=2.0, confidence_map='noconf',
-        rcore=5, casu_verbose=False, noell=True, verbose=False):
+
+def imcore_list(input_file, listfile, output_file,
+                threshold=2.0,
+                confidence_map='noconf',
+                rcore=5,
+                casu_verbose=False,
+                noell=True,
+                verbose=False):
     '''
     Runs the casu task `imcore_list`
     '''
     cmd = ['imcore_list', input_file, confidence_map, listfile, output_file,
-            threshold, '--rcore', rcore]
+           threshold, '--rcore', rcore]
 
     if noell:
         cmd.append('--noell')
@@ -91,12 +106,12 @@ def imcore_list(input_file, listfile, output_file, threshold=2.0, confidence_map
 
     run_command(cmd, verbose=verbose)
 
+
 def wcsfit(infile, incat, catpath, verbose=False):
     '''
     Runs the casu task `wcsfit`. Local fits reference is required
     '''
-    cmd = ['wcsfit', infile, incat,
-           '--catsrc', 'localfits',
-           '--catpath', catpath]
+    cmd = ['wcsfit', infile, incat, '--catsrc', 'localfits', '--catpath',
+           catpath]
 
     run_command(cmd, verbose=verbose)
