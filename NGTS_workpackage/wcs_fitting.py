@@ -27,7 +27,9 @@ class NullPool(object):
     def map(self, fn, args):
         return map(fn, args)
 
+
 Catalogue = namedtuple('Catalogue', ['cat_name', 'ra_lims', 'dec_lims'])
+
 
 def initialise_wcs_cache(fname, catpath, wcsref, thresh, verbose, force=False):
     if force or not os.path.isdir(catpath):
@@ -83,10 +85,7 @@ def handle_errors_in_casu_solve(casuin, *args, **kwargs):
         return return_value
 
 
-def casu_solve(casuin, wcsref, dist_map,
-               thresh=20,
-               verbose=False,
-               catsrc='viz2mass'):
+def casu_solve(casuin, wcsref, dist_map, thresh=20, verbose=False, catsrc='viz2mass'):
 
     hdulist = fits.getheader(casuin)
 
