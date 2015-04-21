@@ -43,19 +43,17 @@ def main(argv):
 
     dist_map = pickle.load(open(argv.dist, 'r'))
 
-    filelist = argv.filelist
-    if filelist:
-        if not argv.norunwcs:
-            m_solve_images(filelist, argv.outlist, dist_map, argv.wcsref,
-                           nproc=argv.nproc,
-                           thresh=argv.s_thresh,
-                           verbose=argv.verbose,
-                           catsrc=argv.catsrc,
-                           catpath=argv.catpath)
-        m_wcs_photom(filelist, argv.outlist, argv.apsize, argv.confmap,
-                     argv.catfile,
-                     nproc=argv.nproc,
-                     verbose=argv.verbose)
+    if not argv.norunwcs:
+        m_solve_images(argv.filelist, argv.outlist, dist_map, argv.wcsref,
+                        nproc=argv.nproc,
+                        thresh=argv.s_thresh,
+                        verbose=argv.verbose,
+                        catsrc=argv.catsrc,
+                        catpath=argv.catpath)
+    m_wcs_photom(argv.filelist, argv.outlist, argv.apsize, argv.confmap,
+                    argv.catfile,
+                    nproc=argv.nproc,
+                    verbose=argv.verbose)
 
 
 if __name__ == '__main__':
