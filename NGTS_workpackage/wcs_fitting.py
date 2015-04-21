@@ -92,8 +92,6 @@ def casu_solve(casuin, wcsref,
 
     hdulist = fitsio.read_header(casuin)
 
-    cen = [[dist_map['CRPIX1'], dist_map['CRPIX2']]]
-
     TEL_RA = hdulist['TEL_RA']
     TEL_DEC = hdulist['TEL_DEC']
 
