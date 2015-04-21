@@ -27,7 +27,7 @@ def m_wcs_photom(filelist, outlist, appsize, conf_file, cat_file,
     infiles = []
     with open(filelist) as infile:
         for line in infile:
-            image = line.strip('\n')
+            image = line.strip()
 
             status_checks = ['ok', 'ok']
 

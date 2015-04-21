@@ -56,7 +56,7 @@ def main(argv):
 
         with open(argv['--stacklist'], 'w') as stacklist:
             for line in tmp:
-                image = line.strip('\n')
+                image = line.strip()
 
                 status_check = ['ok', 'ok']
 

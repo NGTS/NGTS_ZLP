@@ -28,7 +28,7 @@ def super_sample(filelist, factor, size, stars, binning, tag):
 
     files = []
     for line in open(filelist, 'r'):
-        files += [line.strip('\n')]
+        files += [line.strip()]
 
     for file in files:
         call_find_fwhm(file, factor, size, stars, tag=tag)
@@ -286,7 +286,7 @@ def call_find_fwhm(file, factor, size, stars, tag=''):
         data[label] = zero_array
         lengths[label] = False
         label_no += 1
-    plt.savefig(file.strip('.fits') + '_psf.png', bbox_inches=0)
+    plt.savefig(file.replace('.fits', '') + '_psf.png', bbox_inches=0)
     plt.clf()
 
     for label in labels:

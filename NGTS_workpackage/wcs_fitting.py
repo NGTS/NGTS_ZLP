@@ -49,7 +49,7 @@ def m_solve_images(filelist, outfile, dist_map, wcsref,
 
     with open(filelist) as infile:
         for line in infile:
-            image = line.strip('\n')
+            image = line.strip()
             status_checks = ['ok', 'ok']
 
             if all(status == 'ok' for status in status_checks):
@@ -139,7 +139,7 @@ def compute_frame_limits(catpath):
     DEC_lims = []
 
     for line in open(index_filename):
-        vals = line.strip('\n').split(' ')
+        vals = line.strip().split()
         cat_names += [vals[0]]
         RA_lims += [[float(vals[2]), float(vals[3])]]
         DEC_lims += [[float(vals[4]), float(vals[5])]]

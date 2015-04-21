@@ -29,7 +29,7 @@ def main(args):
     RA_lims = []
     DEC_lims = []
     for line in open(args.catsrc + '/index'):
-        vals = line.strip('\n').split(' ')
+        vals = line.strip().split(' ')
         cat_names += [vals[0]]
         RA_lims += [[float(vals[2]), float(vals[3])]]
         DEC_lims += [[float(vals[4]), float(vals[5])]]

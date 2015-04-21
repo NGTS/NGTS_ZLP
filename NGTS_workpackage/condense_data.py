@@ -85,7 +85,7 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
     first_frame = True
 
     for i in range(minlen, maxlen):
-        line = linecache.getline(filelist, i).strip('\n')
+        line = linecache.getline(filelist, i).strip()
         status_checks = line.split(' ')[1:]
         image = line.split(' ')[0]
         if all([status == 'ok' for status in status_checks]):
