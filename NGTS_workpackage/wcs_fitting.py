@@ -11,8 +11,7 @@ from multiprocessing import Pool as ThreadPool
 from functools import partial
 import casutools
 from util import validate_headers
-import fitsio
-import astropy.io.fits as pf
+from astropy.io import fits
 import os
 from vector_plot import wcsf_QCheck
 import numpy as np
@@ -82,15 +81,13 @@ def handle_errors_in_casu_solve(casuin, *args, **kwargs):
         return return_value
 
 
-def casu_solve(casuin, wcsref,
-               dist_map,
+def casu_solve(casuin, wcsref, dist_map,
                thresh=20,
                verbose=False,
                catsrc='viz2mass',
                catpath=False):
 
-
-    hdulist = fitsio.read_header(casuin)
+    hdulist = fits.getheader(casuin)
 
     apply_correct(dist_map, casuin)
 
@@ -105,9 +102,11 @@ def casu_solve(casuin, wcsref,
         # Now we're ready to solve wcs
         casutools.wcsfit(casuin, catfile_name, catpath=wcsref, verbose=verbose)
 
+        catfile.seek(0)
+
         # Do QC checks. should really break this out.
-        wcsf_QCheck(mycat, casuin, os.path.basename(casuin).strip('.fits') + '.png', cat,
-                    RA_lims, DEC_lims, my_X, my_Y,
-                    plot=True)
+        # wcsf_QCheck(mycat, casuin, os.path.basename(casuin).strip('.fits') + '.png', cat,
+        #             RA_lims, DEC_lims, my_X, my_Y,
+        #             plot=True)
 
         return 'ok'
