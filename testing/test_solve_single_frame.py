@@ -28,4 +28,5 @@ def wcsref():
 
 
 def test_solve_with_casu_solve(source_filename, dist_map, wcsref):
-    assert w.casu_solve(source_filename, wcsref, dist_map, thresh=7) == 'ok'
+    w.casu_solve(source_filename, wcsref, dist_map, thresh=7)
+    assert os.path.isfile(source_filename.replace('.fits', '') + '.png')
