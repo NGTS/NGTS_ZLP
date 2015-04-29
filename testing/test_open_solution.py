@@ -3,11 +3,13 @@ import json
 import pytest
 import sys
 import NGTS_workpackage.wcs_fitting as a
+import os
 
 
 @pytest.fixture
-def solution():
-    return {'a': {'b': 10}}
+def solution(root_dir):
+    with open(os.path.join(root_dir, 'testing', 'fixtures', 'wcs_params.json')) as infile:
+        return json.load(infile)['wcs']
 
 
 @pytest.fixture
