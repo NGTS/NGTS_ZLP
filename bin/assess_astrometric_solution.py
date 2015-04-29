@@ -10,6 +10,7 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
+import json
 
 
 def image_size(fname):
@@ -40,9 +41,28 @@ def remove_overscan_strips(fname):
     return out_fname
 
 
+def extract_dist_map(filename):
+    with open(filename) as infile:
+        try:
+            dist_map = json.load(infile)
+        except ValueError as err:
+            if 'No JSON object could be decoded' in str(err):
+                dist_map = pickle.load(infile)
+            else:
+                raise
+        finally:
+            return dist_map
+
+
 def main(args):
-    with open(args.solution) as infile:
-        dist_map = pickle.load(infile)
+    dist_map = extract_dist_map(args.solution)
+    if 'meta' in dist_map:
+        print(json.dumps(dist_map['meta'], indent=2))
+        dist_map = dist_map['wcs']
+
+    if 'CD1_1' not in dist_map:
+        raise KeyError("Cannot find valid wcs solution in map {}".format(
+            json.dumps(dist_map)))
 
     catpath = os.path.join(os.getcwd(), 'catcache')
     if os.path.isdir(catpath):
