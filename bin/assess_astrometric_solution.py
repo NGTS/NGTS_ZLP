@@ -59,11 +59,11 @@ def main(args):
         "Image incorrect shape, "
         "should be 2048x2048, is {}".format(image_size(fname)))
 
-    initialise_wcs_cache(fname, catpath, args.wcsref,
+    initialise_wcs_cache(fname, wcsref=args.wcsref,
                          thresh=20.0,
                          verbose=False,
                          force=True)
-    casu_solve(fname, args.wcsref, dist_map=dist_map, catpath=catpath)
+    casu_solve(fname, wcsref=args.wcsref, dist_map=dist_map)
 
 
 if __name__ == '__main__':
