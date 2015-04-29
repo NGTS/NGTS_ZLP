@@ -39,13 +39,6 @@ def remove_overscan_strips(fname):
 
 def main(args):
     dist_map = extract_dist_map(args.solution)
-    if 'meta' in dist_map:
-        print(json.dumps(dist_map['meta'], indent=2))
-        dist_map = dist_map['wcs']
-
-    if 'CD1_1' not in dist_map:
-        raise KeyError("Cannot find valid wcs solution in map {}".format(
-            json.dumps(dist_map)))
 
     catpath = os.path.join(os.getcwd(), 'catcache')
     if os.path.isdir(catpath):

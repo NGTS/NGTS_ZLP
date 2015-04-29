@@ -41,8 +41,7 @@ def main(argv):
     outfile = open(argv.outlist, 'w')
     outfile.close()
 
-    with open(argv.dist) as infile:
-        dist_map = json.load(infile)
+    dist_map = extract_dist_map(infile)
 
     if not argv.norunwcs:
         m_solve_images(argv.filelist, argv.outlist, dist_map, argv.wcsref,

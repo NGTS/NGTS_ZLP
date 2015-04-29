@@ -129,13 +129,23 @@ def casu_solve(casuin, wcsref, dist_map, thresh=20, verbose=False, catsrc='viz2m
 def extract_dist_map(filename):
     with open(filename) as infile:
         try:
-            return json.load(infile)
+            dist_map = json.load(infile)
         except ValueError as err:
             if 'No JSON object could be decoded' in str(err):
                 infile.seek(0)
-                return pickle.load(infile)
+                dist_map = pickle.load(infile)
             else:
                 raise
+
+    if 'meta' in dist_map:
+        print(json.dumps(dist_map['meta'], indent=2))
+        dist_map = dist_map['wcs']
+
+    if 'CD1_1' not in dist_map:
+        raise KeyError("Cannot find valid wcs solution in map {}".format(
+            json.dumps(dist_map)))
+
+    return dist_map
 
 
 def reference_catalogue_objects(catalogue, catpath):
