@@ -44,14 +44,13 @@ def remove_overscan_strips(fname):
 def extract_dist_map(filename):
     with open(filename) as infile:
         try:
-            dist_map = json.load(infile)
+            return json.load(infile)
         except ValueError as err:
             if 'No JSON object could be decoded' in str(err):
-                dist_map = pickle.load(infile)
+                infile.seek(0)
+                return pickle.load(infile)
             else:
                 raise
-        finally:
-            return dist_map
 
 
 def main(args):
