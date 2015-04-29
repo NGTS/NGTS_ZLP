@@ -2,15 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-from NGTS_workpackage.wcs_fitting import (initialise_wcs_cache, casu_solve, )
+from NGTS_workpackage.wcs_fitting import (initialise_wcs_cache, casu_solve,
+        extract_dist_map)
 import fitsio
 import shutil
 import os
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-import json
 
 
 def image_size(fname):
@@ -39,18 +35,6 @@ def remove_overscan_strips(fname):
         outfile.write(without_overscan, header=header)
 
     return out_fname
-
-
-def extract_dist_map(filename):
-    with open(filename) as infile:
-        try:
-            return json.load(infile)
-        except ValueError as err:
-            if 'No JSON object could be decoded' in str(err):
-                infile.seek(0)
-                return pickle.load(infile)
-            else:
-                raise
 
 
 def main(args):

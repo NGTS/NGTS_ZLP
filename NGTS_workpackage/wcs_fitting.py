@@ -17,6 +17,11 @@ from vector_plot import wcsf_QCheck
 import numpy as np
 from wcs_status import set_wcs_status
 from collections import namedtuple
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+import json
 
 
 class NullPool(object):
@@ -119,6 +124,18 @@ def casu_solve(casuin, wcsref, dist_map, thresh=20, verbose=False, catsrc='viz2m
                     plot=True)
 
         return 'ok'
+
+
+def extract_dist_map(filename):
+    with open(filename) as infile:
+        try:
+            return json.load(infile)
+        except ValueError as err:
+            if 'No JSON object could be decoded' in str(err):
+                infile.seek(0)
+                return pickle.load(infile)
+            else:
+                raise
 
 
 def reference_catalogue_objects(catalogue, catpath):

@@ -2,8 +2,7 @@ import pickle
 import json
 import pytest
 import sys
-sys.path.insert(0, 'bin')
-import assess_astrometric_solution as a
+import NGTS_workpackage.wcs_fitting as a
 
 
 @pytest.fixture
