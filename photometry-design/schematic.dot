@@ -1,0 +1,56 @@
+digraph G {
+    compound=true;
+
+    node [shape="box"];
+    sysrem_compatible_photometry [label="SYSREM\ncompatible\nphotometry"];
+
+    node [shape="ellipse"];
+    condense [label="Condense"];
+
+    subgraph cluster1 {
+        label="Single file";
+
+        /* Astrometry */
+        subgraph cluster0 {
+            label = "Astrometry";
+
+            /* Images */
+            node [shape="box3d"];
+            unsolved_image [label="Unsolved\nimage"];
+            solved_image [label="Solved\nimage"];
+
+            /* processes */
+            node [shape="ellipse"];
+            imcore [fontname="menlo", fillcolor="#ccddeb", style="filled"];
+            wcsfit [fontname="menlo", fillcolor="#ccddeb", style="filled"];
+            unsolved_image -> imcore -> wcsfit -> solved_image;
+
+        }
+
+        /* data sources */
+        node [shape="box"];
+        per_file_photometry [label="Per file\nphotometry"];
+        input_catalogue [label="Input\ncatalogue"];
+        source_extract_photometry [label="Source\nextract\nphotometry"];
+
+        /* processes */
+        node [shape="ellipse"];
+        imcore_list [fontname="menlo", fillcolor="#ccddeb", style="filled"];
+
+        /* Links */
+
+        solved_image -> imcore_list;
+        input_catalogue -> imcore_list;
+        imcore_list -> per_file_photometry;
+        imcore -> source_extract_photometry;
+
+        { rank=same; per_file_photometry; source_extract_photometry; }
+    }
+
+    per_file_photometry -> condense;
+    source_extract_photometry -> condense;
+    condense -> sysrem_compatible_photometry;
+
+    node [shape="box", margin=0.5, fontsize=18, style="filled", fillcolor="#e2fccc"];
+    "Other files..." -> condense;
+}
