@@ -8,3 +8,8 @@ all: schematic.png schematic.svg schematic.pdf
 
 %.pdf: %.dot
 	dot -T pdf $< -o $@
+
+.PHONY: clean
+
+clean:
+	@rm -f *.pdf *.png *.svg
