@@ -11,8 +11,6 @@ Options:
   --stars=STARS  How many stars to stack in each quadrant [default: 100]
   --binning=BINNING  use a binning factor for long time series? [default: 1]
 
-testing
-
 """
 
 import argparse
