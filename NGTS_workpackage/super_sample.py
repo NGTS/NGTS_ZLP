@@ -15,7 +15,7 @@ Options:
 
 import argparse
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import astropy.io.fits as pf
 import pickle
@@ -23,15 +23,58 @@ import threading
 import scipy.optimize as opt
 import os
 import numpy as np
+import multiprocessing.dummy as multithreading
+import multiprocessing
+from functools import partial
 
-def super_sample(filelist,factor,size,stars,binning,tag):
+def super_sample(filelist,factor,size,stars,binning,tag,nproc=4):
+
+  p = multiprocessing.Pool(nproc)
+
+  # make curry
 
   files = []
   for line in open(filelist,'r'):
     files += [line.strip('\n')]
 
+  files = files[:12]
+  
+  data_points = len(files)
+
+  curry = []
+  for i in range(0,data_points):
+    curry += [[files[i],factor,size,stars,tag]]
+    print files[i]
+
+  f_5x = []
+  f_5y = []
+  theta = []
+  mjd = []
+
+
+  output = p.map(uncurry_call_find_fwhm,curry)
+
+  print output
+
+  quit()
+
+  i = 0
   for file in files:
-    call_find_fwhm(file,factor,size,stars,tag=tag)
+    fwhm_x, fwhm_y, t = call_find_fwhm(file,factor,size,stars,tag=tag)
+    f_5x += [fwhm_x['f_5']]
+    f_5y += [fwhm_y['f_5']]
+    theta += [t['f_5']]
+    i +=1
+
+    with pf.open(file) as imdata:
+      mjd +=[imdata[0].header['MJD']]
+
+  plt.plot(mjd,f_5x,'bo')
+  plt.plot(mjd,f_5y,'ro')
+  plt.show()
+
+  plt.plot(mjd,theta,'ro')
+  plt.show()
 
  # labels = ['f_1','f_3','f_5','f_7','f_9']
 
@@ -39,6 +82,9 @@ def super_sample(filelist,factor,size,stars,binning,tag):
 #    condense_data(label,tag=tag)
 
 #  plot_everything(files[0:10],labels,binning,tag=tag)
+
+def uncurry_call_find_fwhm(c):
+  return call_find_fwhm(c[0],c[1],c[2],c[3],tag=c[4])
 
 def condense_data(label,tag=''):
 
@@ -81,7 +127,7 @@ def condense_data(label,tag=''):
 #    x0 = 110
 #    y0 = 110
 
-#    f = guassian2d(A,theta[i],x[i]*10,y[i]*10,x0,y0,xp,yp)
+#    f = gaussian2d(A,theta[i],x[i]*10,y[i]*10,x0,y0,xp,yp)
 #    fig = plt.figure()
 #    a = fig.add_subplot(1,1,1)
 #    imshow(f)
@@ -141,7 +187,7 @@ def plot_everything(files,labels,binning,tag=''):
   ylim(0,100)
 
   savefig(tag+'_timeseries.png', bbox_inches=0)
-  clf()
+  close()
 
   for fwhms in fwhm:
     plot(tel_alt,fwhms,'o')
@@ -149,21 +195,21 @@ def plot_everything(files,labels,binning,tag=''):
   xlabel('Altitude')
   xlim(0,100)
   savefig(tag+'_altitude.png', bbox_inches=0)
-  clf()
+  close()
 
   for thetas in theta:
     plot(mjd,thetas,'o') 
   ylabel('theta')
   xlabel('MJD')
   savefig(tag+'_theta.png', bbox_inches=0)
-  clf()
+  close()
 
   for ellipses in ellipse:
     plot(mjd,ellipses,'o') 
   ylabel('ellipticity')
   xlabel('MJD')
   savefig(tag+'_ellipse.png', bbox_inches=0)
-  clf()
+  close()
 
 #for i in cross_sec_x:
 #  plot(i)
@@ -177,7 +223,7 @@ def plot_everything(files,labels,binning,tag=''):
 #  ylabel('fwhm (pix)')
 #  xlabel('focus position (mm)')
 #  savefig('plot_bin/'+tag+'_focuspos.png', bbox_inches=0)
-#  clf()
+#  close()
 
 def find_minor_axis(theta,sx,sy):
 
@@ -226,6 +272,8 @@ def find_minor_axis(theta,sx,sy):
 
 def call_find_fwhm(file,factor,size,stars,tag=''):
 
+  tag = file.rstrip('.fits')
+
   labels = ['f_1','f_3','f_5','f_7','f_9']
 
   fwhm_x = [[]]*len(labels)
@@ -249,13 +297,14 @@ def call_find_fwhm(file,factor,size,stars,tag=''):
   for label in labels:
     fwhm_extract(file,factor,size,stars,tag)
 
+    print tag+label+'.p'
     dat = pickle.load(open(tag+label+'.p','rb'))
-
-    print dat
 
     data[label] += dat
     data[label] = data[label]/data[label].max()
     fwhm_x_frame, fwhm_y_frame, theta_frame = find_2dfwhm(data[label],factor,size)
+    print fwhm_x_frame, fwhm_y_frame, theta_frame
+    
     fwhm_x[label] += [fwhm_x_frame]
     fwhm_y[label] += [fwhm_y_frame]
     fwhm[label] += [(fwhm_x_frame + fwhm_y_frame)/2.0]
@@ -268,7 +317,7 @@ def call_find_fwhm(file,factor,size,stars,tag=''):
     a.set_xticklabels(np.arange(size))
     reverse = (0,a.get_ylim()[1] + factor)
     a.set_ylim(reverse)
-    cax = plt.imshow(data[label], interpolation='none')
+    cax = plt.imshow(data[label], interpolation='none',cmap='afmhot')
     a.grid(True)
     center = factor*((size)/2.0)
     plt.plot(center,center,'gx')
@@ -276,13 +325,12 @@ def call_find_fwhm(file,factor,size,stars,tag=''):
     lengths[label] = False
     label_no += 1
   plt.savefig(file.strip('.fits')+'_psf.png', bbox_inches=0)
-  plt.clf()
+  plt.close()
 
   for label in labels:
     os.system('rm '+tag+label+'.p')
 
   cache = False
-
   if cache == True:
     for label in labels:
       pickle.dump(fwhm[label], open(tag+'fwhm'+label+'.p','wb'))
@@ -290,21 +338,36 @@ def call_find_fwhm(file,factor,size,stars,tag=''):
       pickle.dump(fwhm_y[label], open(tag+'fwhm_y'+label+'.p','wb'))
       pickle.dump(theta[label], open(tag+'theta'+label+'.p','wb'))
 
+  return fwhm_x, fwhm_y, theta
+
 def find_2dfwhm(data,factor,size):
   x1 = [1.0,np.pi,0.6,0.4,size/2.0,size/2.0]
-  x, success = opt.leastsq(guassian2d_fit, x1, args=(np.arange(1.0*factor*size)/factor,np.arange(1.0*factor*size)/factor,data))
 
-  fwhm_x = 2.0*(np.sqrt(2.0*np.log(2.0)))*x[2]
-  fwhm_y = 2.0*(np.sqrt(2.0*np.log(2.0)))*x[3]
-  theta = x[1]*180.0/np.pi
+
+  x = np.arange(1.0*factor*size)/factor
+  y = np.arange(1.0*factor*size)/factor
+
+  p, success = opt.leastsq(gaussian2d_fit, x1, args=(x,y,data))
+
+  model = gaussian2d(p[0],p[1],p[2],p[3],p[4],p[5],x,y)
+
+  fwhm_x = 2.0*(np.sqrt(2.0*np.log(2.0)))*p[2]
+  fwhm_y = 2.0*(np.sqrt(2.0*np.log(2.0)))*p[3]
+  theta = p[1]*180.0/np.pi
+
+  #plt.imshow(model, interpolation='none')
+  #plt.show()
 
   return fwhm_x, fwhm_y, theta
 
-def guassian2d_fit(p,x,y,data):
-  f = guassian2d(p[0],p[1],p[2],p[3],p[4],p[5],x,y)
+def gaussian2d_fit(p,x,y,data):
+  f = gaussian2d(p[0],p[1],p[2],p[3],p[4],p[5],x,y)
   return (data - f).flatten()
 
-def guassian2d(A,theta,sx,sy,x0,y0,x,y):
+def gaussian2d(A,theta,sx,sy,x0,y0,x,y):
+
+  # http://en.wikipedia.org/wiki/Gaussian_function#Two-dimensional_Gaussian_function
+
   xx, yy = np.meshgrid(x,y)
 
   a = ((np.cos(theta))**2.0)/(2*sx**2) + ((np.sin(theta))**2.0)/(2*sy**2)
@@ -488,9 +551,11 @@ if __name__ == '__main__':
                       help='How many stars to stack in each quadrant [default: 100]')
   parser.add_argument('--binning', type=int, required=False, default=1,
                       help='use a binning factor for long time series? [default: 1]')
+  parser.add_argument('--nproc', type=int, required=False, default=4,
+                      help='use multiprocessing? [default: 4]')
 
   args = parser.parse_args()
 
-  super_sample(args.filelist,args.factor,args.size,args.stars,args.binning,args.outname)
+  super_sample(args.filelist,args.factor,args.size,args.stars,args.binning,args.outname,args.nproc)
 
 # vim: sw=2
