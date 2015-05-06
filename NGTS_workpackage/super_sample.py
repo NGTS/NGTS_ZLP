@@ -37,24 +37,40 @@ def super_sample(filelist,factor,size,stars,binning,tag,nproc=4):
   for line in open(filelist,'r'):
     files += [line.strip('\n')]
 
-  files = files[:12]
+  #files = files[:8]
   
   data_points = len(files)
-
-  curry = []
-  for i in range(0,data_points):
-    curry += [[files[i],factor,size,stars,tag]]
-    print files[i]
 
   f_5x = []
   f_5y = []
   theta = []
   mjd = []
 
+  curry = []
+  for i in range(0,data_points):
+    curry += [[files[i],factor,size,stars,tag]]
+    with pf.open(files[i]) as imdata:
+      mjd +=[imdata[0].header['MJD']]
 
   output = p.map(uncurry_call_find_fwhm,curry)
 
-  print output
+  for o in output:
+    f_5x += o[0]['f_5']
+    f_5y += o[1]['f_5']
+    theta += o[2]['f_5']
+
+  plt.plot(mjd,f_5x,'bo')
+  plt.plot(mjd,f_5y,'ro')
+
+  plt.savefig(tag+'_xy.png', bbox_inches=0)
+
+  plt.close()
+
+  plt.plot(mjd,theta,'ro')
+
+  plt.savefig(tag+'_theta.png', bbox_inches=0)
+
+  plt.close()
 
   quit()
 
@@ -65,16 +81,6 @@ def super_sample(filelist,factor,size,stars,binning,tag,nproc=4):
     f_5y += [fwhm_y['f_5']]
     theta += [t['f_5']]
     i +=1
-
-    with pf.open(file) as imdata:
-      mjd +=[imdata[0].header['MJD']]
-
-  plt.plot(mjd,f_5x,'bo')
-  plt.plot(mjd,f_5y,'ro')
-  plt.show()
-
-  plt.plot(mjd,theta,'ro')
-  plt.show()
 
  # labels = ['f_1','f_3','f_5','f_7','f_9']
 
@@ -297,7 +303,6 @@ def call_find_fwhm(file,factor,size,stars,tag=''):
   for label in labels:
     fwhm_extract(file,factor,size,stars,tag)
 
-    print tag+label+'.p'
     dat = pickle.load(open(tag+label+'.p','rb'))
 
     data[label] += dat
