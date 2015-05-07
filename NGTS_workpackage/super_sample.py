@@ -34,10 +34,15 @@ def super_sample(filelist,factor,size,stars,binning,tag,nproc=4):
   # make curry
 
   files = []
+  files_model = ''
+  files_residuals = ''
+  files_psf = ''
+
   for line in open(filelist,'r'):
     files += [line.strip('\n')]
-
-  #files = files[:8]
+    files_psf += files[-1].rstrip('.fits')+'_psf.png,'
+    files_model += files[-1].rstrip('.fits')+'_model.png,'
+    files_residuals += files[-1].rstrip('.fits')+'_residuals.png,'
   
   data_points = len(files)
 
@@ -71,6 +76,26 @@ def super_sample(filelist,factor,size,stars,binning,tag,nproc=4):
   plt.savefig(tag+'_theta.png', bbox_inches=0)
 
   plt.close()
+
+  fps = 5
+
+  outputf = 'moviepsf.avi'
+  command = 'mencoder mf://'+files_psf.rstrip(',')+' -mf w=800:h=600:fps='+str(fps)+':type=png -ovc raw -oac copy -o '+outputf
+  print command
+  os.system(command)
+  os.system('firefox '+ outputf)
+
+  outputf = 'movieresiduals.avi'
+  command = 'mencoder mf://'+files_residuals.rstrip(',')+' -mf w=800:h=600:fps='+str(fps)+':type=png -ovc raw -oac copy -o '+outputf
+  print command
+  os.system(command)
+  os.system('firefox '+ outputf)
+
+  outputf = 'moviemodel.avi'
+  command = 'mencoder mf://'+files_model.rstrip(',')+' -mf w=800:h=600:fps='+str(fps)+':type=png -ovc raw -oac copy -o '+outputf
+  print command
+  os.system(command)
+  os.system('firefox '+ outputf)
 
   quit()
 
@@ -296,7 +321,9 @@ def call_find_fwhm(file,factor,size,stars,tag=''):
   data = {'f_1':zero_array,'f_3':zero_array,'f_5':zero_array,'f_7':zero_array,'f_9':zero_array}
   lengths = {'f_1':True,'f_3':True,'f_5':True,'f_7':True,'f_9':True}
 
-  f = plt.figure()
+  f1 = plt.figure()
+  f2 = plt.figure()
+  f3 = plt.figure()
 
   label_no = 0
 
@@ -307,29 +334,76 @@ def call_find_fwhm(file,factor,size,stars,tag=''):
 
     data[label] += dat
     data[label] = data[label]/data[label].max()
-    fwhm_x_frame, fwhm_y_frame, theta_frame = find_2dfwhm(data[label],factor,size)
-    print fwhm_x_frame, fwhm_y_frame, theta_frame
+    fwhm_x_frame, fwhm_y_frame, theta_frame, residuals, model = find_2dfwhm(data[label],factor,size)
+    print fwhm_x_frame, fwhm_y_frame, theta_frame, label
     
     fwhm_x[label] += [fwhm_x_frame]
     fwhm_y[label] += [fwhm_y_frame]
     fwhm[label] += [(fwhm_x_frame + fwhm_y_frame)/2.0]
     theta[label] += [theta_frame]
-    a = f.add_subplot(3,3,(label_no*2) + 1)
+
+    a1 = f1.add_subplot(3,3,(label_no*2) + 1)
     ticks = factor*np.arange(size)
-    a.set_yticks(ticks)
-    a.set_yticklabels(np.arange(size))
-    a.set_xticks(ticks)
-    a.set_xticklabels(np.arange(size))
-    reverse = (0,a.get_ylim()[1] + factor)
-    a.set_ylim(reverse)
-    cax = plt.imshow(data[label], interpolation='none',cmap='afmhot')
-    a.grid(True)
+    a1.set_yticks(ticks)
+    a1.set_yticklabels(np.arange(size))
+    a1.set_xticks(ticks)
+    a1.set_xticklabels(np.arange(size))
+    reverse = (0,a1.get_ylim()[1] + factor)
+    a1.set_ylim(reverse)
+    cax = a1.imshow(data[label], interpolation='none',cmap='afmhot')
+    a1.grid(True)
     center = factor*((size)/2.0)
-    plt.plot(center,center,'gx')
-    data[label] = zero_array
+    a1.plot(center,center,'gx')
     lengths[label] = False
+    a1.get_xaxis().set_ticklabels([])
+    a1.get_yaxis().set_ticklabels([])
+    f1.suptitle(file.split('/')[-1] +' '+ str(round(fwhm_x_frame,2)) +' '+ str(round(fwhm_y_frame,2)) +' '+ str(round(theta_frame,2)))
+
+
+    a2 = f2.add_subplot(3,3,(label_no*2) + 1)
+    ticks = factor*np.arange(size)
+    a2.set_yticks(ticks)
+    a2.set_yticklabels(np.arange(size))
+    a2.set_xticks(ticks)
+    a2.set_xticklabels(np.arange(size))
+    reverse = (0,a2.get_ylim()[1] + factor)
+    a2.set_ylim(reverse)
+    cax = a2.imshow(abs(residuals), interpolation='none',cmap='afmhot',vmin=min(data[label].flatten()),vmax=max(data[label].flatten()))
+    a2.grid(True)
+    center = factor*((size)/2.0)
+    a2.plot(center,center,'gx')
+    lengths[label] = False
+    a2.get_xaxis().set_ticklabels([])
+    a2.get_yaxis().set_ticklabels([])
+    f2.suptitle(file.split('/')[-1] +' '+ str(round(fwhm_x_frame,2)) +' '+ str(round(fwhm_y_frame,2)) +' '+ str(round(theta_frame,2)))
+
+
+    a3 = f3.add_subplot(3,3,(label_no*2) + 1)
+    ticks = factor*np.arange(size)
+    a3.set_yticks(ticks)
+    a3.set_yticklabels(np.arange(size))
+    a3.set_xticks(ticks)
+    a3.set_xticklabels(np.arange(size))
+    reverse = (0,a3.get_ylim()[1] + factor)
+    a3.set_ylim(reverse)
+    cax = a3.imshow(model, interpolation='none',cmap='afmhot',vmin=min(data[label].flatten()),vmax=max(data[label].flatten()))
+    a3.grid(True)
+    center = factor*((size)/2.0)
+    a3.plot(center,center,'gx')
+    data[label] = zero_array.copy()
+    lengths[label] = False
+    a3.get_xaxis().set_ticklabels([])
+    a3.get_yaxis().set_ticklabels([])
+    f3.suptitle(file.split('/')[-1] +' '+ str(round(fwhm_x_frame,2)) +' '+ str(round(fwhm_y_frame,2)) +' '+ str(round(theta_frame,2)))
+
+
     label_no += 1
-  plt.savefig(file.strip('.fits')+'_psf.png', bbox_inches=0)
+
+  f1.savefig(file.strip('.fits')+'_psf.png', bbox_inches=0)
+  f2.savefig(file.strip('.fits')+'_residuals.png', bbox_inches=0)
+  f3.savefig(file.strip('.fits')+'_model.png', bbox_inches=0)
+  plt.close()
+  plt.close()
   plt.close()
 
   for label in labels:
@@ -349,25 +423,41 @@ def find_2dfwhm(data,factor,size):
   x1 = [1.0,np.pi,0.6,0.4,size/2.0,size/2.0]
 
 
+  x1 = [1.0,np.pi,0.6,0.1,size/2.0,size/2.0]
+
   x = np.arange(1.0*factor*size)/factor
   y = np.arange(1.0*factor*size)/factor
 
   p, success = opt.leastsq(gaussian2d_fit, x1, args=(x,y,data))
 
-  model = gaussian2d(p[0],p[1],p[2],p[3],p[4],p[5],x,y)
+  model = gaussian2d(p[0],p[1],p[2],p[2]+abs(p[3]),p[4],p[5],x,y)
 
   fwhm_x = 2.0*(np.sqrt(2.0*np.log(2.0)))*p[2]
-  fwhm_y = 2.0*(np.sqrt(2.0*np.log(2.0)))*p[3]
+  fwhm_y = 2.0*(np.sqrt(2.0*np.log(2.0)))*(p[2] + abs(p[3]))
   theta = p[1]*180.0/np.pi
+
+  while theta > 360:
+    theta -= 180
+
+  while theta < 0:
+    theta += 180
 
   #plt.imshow(model, interpolation='none')
   #plt.show()
 
-  return fwhm_x, fwhm_y, theta
+  residuals = model -data
+
+  return fwhm_x, fwhm_y, theta, residuals, model
 
 def gaussian2d_fit(p,x,y,data):
-  f = gaussian2d(p[0],p[1],p[2],p[3],p[4],p[5],x,y)
-  return (data - f).flatten()
+
+  f = gaussian2d(p[0],p[1],p[2],p[2]+abs(p[3]),p[4],p[5],x,y)
+
+  residuals = (data - f).flatten()/np.sqrt(abs(data.flatten()))
+
+  residuals[abs(residuals) == np.inf] = 0.0
+
+  return residuals
 
 def gaussian2d(A,theta,sx,sy,x0,y0,x,y):
 

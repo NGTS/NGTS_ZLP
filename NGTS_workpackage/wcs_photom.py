@@ -73,7 +73,7 @@ def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=Fal
   size = 11
   stars = 100
 
-  fwhm = call_find_fwhm(image,factor,size,stars,tag=image)
+  fwhm_x, fwhm_y, t = call_find_fwhm(image,factor,size,stars,tag=image)
      
   cloud_status = cloud_check(image)
 
@@ -84,6 +84,26 @@ def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=Fal
   pf.setval(outname,'CLOUD_S',1,value=round(cloud_status,2),comment='A measure of bulk structure in the image (S/N)')
   pf.setval(outname,'FWHM',1,value=pixel_fwhm,comment='[pixels] Average FWHM')
   pf.setval(outname,'SEEING',1,value=seeing,comment='[arcseconds] Average FWHM')
+
+  pf.setval(outname,'PSF_a_1',1,value=fwhm_y['f_1'],comment='[arcseconds] Supersampled FWHM. Long axis. Top left')
+  pf.setval(outname,'PSF_b_1',1,value=fwhm_x['f_1'],comment='[arcseconds] Supersampled FWHM. Short axis. Top left')
+  pf.setval(outname,'PSF_t_1',1,value=fwhm_x['f_1'],comment='[degrees] Supersampled psf rotation angle. Top left')
+
+  pf.setval(outname,'PSF_a_3',1,value=fwhm_y['f_3'],comment='[arcseconds] Supersampled FWHM. Long axis. Top right')
+  pf.setval(outname,'PSF_b_3',1,value=fwhm_x['f_3'],comment='[arcseconds] Supersampled FWHM. Short axis. Top right')
+  pf.setval(outname,'PSF_t_3',1,value=fwhm_x['f_3'],comment='[degrees] Supersampled psf rotation angle. Top right')
+
+  pf.setval(outname,'PSF_a_5',1,value=fwhm_y['f_5'],comment='[arcseconds] Supersampled FWHM. Long axis. Middle')
+  pf.setval(outname,'PSF_b_5',1,value=fwhm_x['f_5'],comment='[arcseconds] Supersampled FWHM. Short axis. Middle')
+  pf.setval(outname,'PSF_t_5',1,value=fwhm_x['f_5'],comment='[degrees] Supersampled psf rotation angle. Middle')
+
+  pf.setval(outname,'PSF_a_7',1,value=fwhm_y['f_7'],comment='[arcseconds] Supersampled FWHM. Long axis. Bottom left')
+  pf.setval(outname,'PSF_b_7',1,value=fwhm_x['f_7'],comment='[arcseconds] Supersampled FWHM. Short axis. Bottom left')
+  pf.setval(outname,'PSF_t_7',1,value=fwhm_x['f_7'],comment='[degrees] Supersampled psf rotation angle. Bottom left')
+
+  pf.setval(outname,'PSF_a_9',1,value=fwhm_y['f_9'],comment='[arcseconds] Supersampled FWHM. Long axis. Bottom right')
+  pf.setval(outname,'PSF_b_9',1,value=fwhm_x['f_9'],comment='[arcseconds] Supersampled FWHM. Short axis. Bottom right')
+  pf.setval(outname,'PSF_t_9',1,value=fwhm_x['f_9'],comment='[degrees] Supersampled psf rotation angle. Bottom right')
 
   # Compute the HJD values
   append_hjd_correction_column(outname)
