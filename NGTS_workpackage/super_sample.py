@@ -33,13 +33,6 @@ def super_sample(filelist, factor, size, stars, binning, tag):
     for file in files:
         call_find_fwhm(file, factor, size, stars, tag=tag)
 
-# labels = ['f_1','f_3','f_5','f_7','f_9']
-
-#  for label in labels:
-#    condense_data(label,tag=tag)
-
-#  plot_everything(files[0:10],labels,binning,tag=tag)
-
 
 def condense_data(label, tag=''):
 
@@ -69,25 +62,7 @@ def condense_data(label, tag=''):
 
         theta[i] = theta[i] * 180.0 / np.pi
 
-        #  print 'major?',abs(y[i]/np.cos(rad))
-
         ellipse_frame, average = find_minor_axis(rad, x[i], y[i])
-
-        #    A = 1.0
-
-        #    xp = arange(0,220)
-        #    yp = arange(0,220)
-
-        #    x0 = 110
-        #    y0 = 110
-
-        #    f = guassian2d(A,theta[i],x[i]*10,y[i]*10,x0,y0,xp,yp)
-        #    fig = plt.figure()
-        #    a = fig.add_subplot(1,1,1)
-        #    imshow(f)
-        #    a.set_ylim(0,220)
-
-        #    show()
 
         fwhm += [average]
 
@@ -162,20 +137,6 @@ def plot_everything(files, labels, binning, tag=''):
     xlabel('MJD')
     savefig(tag + '_ellipse.png', bbox_inches=0)
     clf()
-
-#for i in cross_sec_x:
-#  plot(i)
-#  show()
-
-#im_ani.save('im.mp4',metadata={'artist':'Tom'})
-#  i = 0
-#  for fwhms in fwhm:
-#    i += 1
-#    plot(focus_position,array(fwhms) + i,'o') 
-#  ylabel('fwhm (pix)')
-#  xlabel('focus position (mm)')
-#  savefig('plot_bin/'+tag+'_focuspos.png', bbox_inches=0)
-#  clf()
 
 
 def find_minor_axis(theta, sx, sy):
@@ -370,28 +331,10 @@ def fwhm_extract(image_name, factor, size, stars, tag=''):
             xpos = xpos[selection]
             ypos = ypos[selection]
 
-#    with pf.open('../focus_test/test.cat') as photdata:
-#      mean_fluxes = photdata[2].data['FLUX_APER']
-#      IQR = [(mean_fluxes < (np.median(mean_fluxes[mean_fluxes > median(mean_fluxes)]))) & (mean_fluxes > (median(mean_fluxes[mean_fluxes < median(mean_fluxes)])))]
-#      xpos = photdata[2].data['X_IMAGE'][mean_fluxes > 3*mean(mean_fluxes)]
-#      ypos = photdata[2].data['Y_IMAGE'][mean_fluxes > 3*mean(mean_fluxes)]
-
         imdata.close()
 
         x_phase = np.array([abs(x - int(x)) for x in xpos])
         y_phase = np.array([abs(y - int(y)) for y in ypos])
-
-        #    n,bins,patches = hist(x_phase,10,normed=1)
-        #    show()
-        #    n,bins,patches = hist(y_phase,10,normed=1)
-        #    show()
-
-        #    top_left = [(xpos < mean(xpos)) & (ypos > mean(ypos))],xpos[(xpos < mean(xpos)) & (ypos > mean(ypos))]
-        #    top_right = [(xpos > mean(xpos)) & (ypos > mean(ypos))],xpos[(xpos > mean(xpos)) & (ypos > mean(ypos))]
-        #    bottom_left = [(xpos < mean(xpos)) & (ypos < mean(ypos))],xpos[(xpos < mean(xpos)) & (ypos < mean(ypos))]
-        #    bottom_right = [(xpos > mean(xpos)) & (ypos < mean(ypos))],xpos[(xpos > mean(xpos)) & (ypos < mean(ypos))]
-        #    condition_list = [top_left,top_right,bottom_left,bottom_right]
-        #    condition_name_list = ['top_left','top_right','bottom_left','bottom_right']
 
         mx = 2048
         my = 2048
@@ -415,14 +358,6 @@ def fwhm_extract(image_name, factor, size, stars, tag=''):
         for i in range(0, len(condition_list)):
             get_psf(ypos[condition_list[i][0]], xpos[condition_list[i][0]],
                     image, size, factor, condition_name_list[i], tag)
-
-#    threads = []
-#    for i in range(0,len(condition_list)):
-#      t = threading.Thread(target=get_psf, args = (ypos[condition_list[i][0]],xpos[condition_list[i][0]],image,size,factor,condition_name_list[i],tag))
-#      threads.append(t)
-#      threads = np.append(threads,t)
-#    [x.start() for x in threads]
-#    [x.join() for x in threads]
 
 
 def get_psf(ypos, xpos, image, size, factor, condition_name, tag=''):
