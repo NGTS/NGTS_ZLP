@@ -257,11 +257,10 @@ def call_find_fwhm(file, factor, size, stars, tag=''):
     label_no = 0
 
     for label in labels:
+        print('Plotting {}'.format(label))
         fwhm_extract(file, factor, size, stars, tag)
 
         dat = pickle.load(open(tag + label + '.p', 'rb'))
-
-        print dat
 
         data[label] += dat
         data[label] = data[label] / data[label].max()
