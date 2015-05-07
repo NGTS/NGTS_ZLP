@@ -256,7 +256,9 @@ def call_find_fwhm(file, factor, size, stars, tag=''):
 
     label_no = 0
 
-    for label in labels:
+    fig, axes = plt.subplots(3, 3, figsize=(11, 11))
+    axes = axes.flatten()
+    for i, label in enumerate(labels):
         print('Plotting {}'.format(label))
         fwhm_extract(file, factor, size, stars, tag)
 
@@ -270,23 +272,28 @@ def call_find_fwhm(file, factor, size, stars, tag=''):
         fwhm_y[label] += [fwhm_y_frame]
         fwhm[label] += [(fwhm_x_frame + fwhm_y_frame) / 2.0]
         theta[label] += [theta_frame]
-        a = f.add_subplot(3, 3, (label_no * 2) + 1)
+        ax = axes[2 * i]
         ticks = factor * np.arange(size)
-        a.set_yticks(ticks)
-        a.set_yticklabels(np.arange(size))
-        a.set_xticks(ticks)
-        a.set_xticklabels(np.arange(size))
-        reverse = (0, a.get_ylim()[1] + factor)
-        a.set_ylim(reverse)
-        cax = plt.imshow(data[label], interpolation='none')
-        a.grid(True)
+        ax.set_yticks(ticks)
+        ax.set_yticklabels(np.arange(size))
+        ax.set_xticks(ticks)
+        ax.set_xticklabels(np.arange(size))
+        reverse = (0, ax.get_ylim()[1] + factor)
+        ax.set_ylim(reverse)
+        cax = ax.imshow(data[label], interpolation='none')
+        ax.grid(True)
         center = factor * ((size) / 2.0)
-        plt.plot(center, center, 'gx')
+        ax.plot(center, center, 'gx')
         data[label] = zero_array
         lengths[label] = False
         label_no += 1
-    plt.savefig(file.replace('.fits', '') + '_psf.png', bbox_inches=0)
-    plt.close(plt.gcf())
+
+    for null_ax in [1, 3, 5, 7]:
+        axes[null_ax].set_axis_off()
+
+    fig.tight_layout()
+    fig.savefig(file.replace('.fits', '') + '_psf.png', bbox_inches=0)
+    plt.close(fig)
 
     for label in labels:
         os.system('rm ' + tag + label + '.p')
