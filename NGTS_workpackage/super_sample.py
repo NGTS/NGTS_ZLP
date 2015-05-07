@@ -287,7 +287,7 @@ def call_find_fwhm(file, factor, size, stars, tag=''):
         lengths[label] = False
         label_no += 1
     plt.savefig(file.replace('.fits', '') + '_psf.png', bbox_inches=0)
-    plt.clf()
+    plt.close(plt.gcf())
 
     for label in labels:
         os.system('rm ' + tag + label + '.p')

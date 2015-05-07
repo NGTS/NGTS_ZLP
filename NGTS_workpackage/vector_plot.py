@@ -79,8 +79,7 @@ def wcsf_QCheck(catalog_name, image_name, plot_name, cat, RA_lims, DEC_lims,
         axis.set_title(r'RMS: ' + str(rms) + '"')
         fig.tight_layout()
         fig.savefig(os.path.join(plot_dir, plot_name), bbox_inches='tight')
-
-        plt.close()
+        plt.close(fig)
 
     print 'done plotting'
 
