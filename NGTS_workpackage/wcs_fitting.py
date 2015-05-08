@@ -95,35 +95,30 @@ def casu_solve(casuin, wcsref, dist_map, thresh=20, verbose=False, catsrc='viz2m
     apply_correct(dist_map, casuin)
     catpath = os.path.join(os.getcwd(), 'catcache')
 
-    with tempfile.NamedTemporaryFile(dir='.',
-                                     suffix='.fits',
-                                     prefix='catalogue.') as catfile:
-        catfile_name = catfile.name
+    catfile_name = casuin.replace('.fits', '.cat')
+    casutools.imcore(casuin, catfile_name, threshold=thresh, verbose=verbose,
+            ipix=2, threshold=3, rcore=3)
 
-        casutools.imcore(casuin, catfile_name, threshold=thresh, verbose=verbose)
-        catfile.seek(0)
+    # Now we're ready to solve wcs
+    casutools.wcsfit(casuin, catfile_name, catpath=wcsref, verbose=verbose)
 
-        # Now we're ready to solve wcs
-        casutools.wcsfit(casuin, catfile_name, catpath=wcsref, verbose=verbose)
 
-        catfile.seek(0)
+    catalogue = compute_frame_limits(catpath)
+    cat = reference_catalogue_objects(catalogue, catpath)
 
-        catalogue = compute_frame_limits(catpath)
-        cat = reference_catalogue_objects(catalogue, catpath)
+    with fits.open(catfile_name) as mycatt:
+        mycatt_data = mycatt[1].data
+        mycat = {'Aper_flux_3': mycatt_data['Aper_flux_3']}
+        my_X = mycatt_data['x_coordinate']
+        my_Y = mycatt_data['y_coordinate']
 
-        with fits.open(catfile_name) as mycatt:
-            mycatt_data = mycatt[1].data
-            mycat = {'Aper_flux_3': mycatt_data['Aper_flux_3']}
-            my_X = mycatt_data['x_coordinate']
-            my_Y = mycatt_data['y_coordinate']
+    # Do QC checks. should really break this out.
+    wcsf_QCheck(mycat, casuin,
+                os.path.basename(casuin).replace('.fits', '') + '.png', cat,
+                catalogue.ra_lims, catalogue.dec_lims, my_X, my_Y,
+                plot=True)
 
-        # Do QC checks. should really break this out.
-        wcsf_QCheck(mycat, casuin,
-                    os.path.basename(casuin).replace('.fits', '') + '.png', cat,
-                    catalogue.ra_lims, catalogue.dec_lims, my_X, my_Y,
-                    plot=True)
-
-        return 'ok'
+    return 'ok'
 
 
 def extract_dist_map(filename):
