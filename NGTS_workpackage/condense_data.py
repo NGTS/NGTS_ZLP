@@ -220,10 +220,10 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
     a17 = pf.Column(name='IMAGE_ID', format='1K', array=imid)
     a18 = pf.Column(name='AIRMASS', format='1D', array=airmass)
 
-    hducatalogue = pf.new_table([c1, c2, c3, c4, c5, c6])
+    hducatalogue = pf.BinTableHDU.from_columns([c1, c2, c3, c4, c5, c6])
 
-    hduimagelist = pf.new_table([a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11,
-                                 a12, a13, a14, a15, a16, a17, a18])
+    hduimagelist = pf.BinTableHDU.from_columns([a1, a2, a3, a4, a5, a6, a7, a8, a9,
+        a10, a11, a12, a13, a14, a15, a16, a17, a18])
 
     hduprime = pf.PrimaryHDU(np.array(flux).T)
 
@@ -337,8 +337,8 @@ def stitch(filelist, appsize, outname):
         combine = array(combine).T
         dicty[headername] = pf.ImageHDU(combine)
 
-    hduimagelist = pf.new_table(a)
-    hducatalogue = pf.new_table(c)
+    hduimagelist = pf.BinTableHDU.from_columns(a)
+    hducatalogue = pf.BinTableHDU.from_columns(c)
 
     c1 = pf.Column(name='FLUX_MEAN',
                    format='1D',
