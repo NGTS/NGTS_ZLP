@@ -314,7 +314,7 @@ def fwhm_extract(image_name, factor, size, stars, tag=''):
         size += 2
 
         with pf.open(image_name + '.phot') as photdata:
-            mean_fluxes = photdata[1].data['Core3_flux']
+            mean_fluxes = photdata[1].data['Aper_flux_3']
             IQR = [
                 (mean_fluxes <
                  (np.median(mean_fluxes[mean_fluxes >
