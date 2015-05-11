@@ -122,7 +122,7 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
                     centerra += [photdata[1].header['WCSF_RA']]
                     centerdec += [photdata[1].header['WCSF_DEC']]
                     # correcting for airmass - the newer fits files have an airmass term, so just use that instead perhaps
-                    sky += [photdata[1].data['Skylev'].copy()]
+                    sky += [photdata[1].data['Sky_level'].copy()]
                     frame_xpos = photdata[1].data['X_coordinate'].copy()
                     frame_ypos = photdata[1].data['Y_coordinate'].copy()
                     xpos += [frame_xpos]
@@ -132,9 +132,9 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
                     hr, min, sec = utc[1].split(':')
                     fwhm += [fwhm_frame]
                     seeing += [seeing_frame]
-                    rawflux = photdata[1].data['Core_flux'].copy()
-                    Skylev += [photdata[1].data['Skylev'].copy()]
-                    Skyrms += [photdata[1].data['Skyrms'].copy()]
+                    rawflux = photdata[1].data['Aper_flux_3'].copy()
+                    Skylev += [photdata[1].data['Sky_level'].copy()]
+                    Skyrms += [photdata[1].data['Sky_rms'].copy()]
                     correctedflux = rawflux
                     flux += [correctedflux]
                     rel_err = 1.0 / (rawflux / sqrt(rawflux + npix * sky[-1]))
@@ -143,9 +143,10 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
 
                     all_appertures = []
                     all_err_apps = []
-                    for i in range(1, 6):
-                        rawflux = photdata[1].data['Core' + str(i) +
-                                                   '_flux'].copy()
+                    for i in [2, 4, 5, 6, 7]:
+                        # rawflux = photdata[1].data['Core' + str(i) +
+                        #                            '_flux'].copy()
+                        rawflux = photdata[1].data['Aper_flux_{}'.format(i)].copy()
                         correctedflux = rawflux
                         all_appertures += [correctedflux]
                         rel_err = 1.0 / (rawflux /
