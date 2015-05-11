@@ -77,7 +77,7 @@ def handle_errors_in_wcs_photom(image, *args, **kwargs):
 def wcs_photom(image,
                cat_file='nocat',
                conf_file='noconf',
-               appsize=2.0,
+               appsize=3.,
                verbose=False):
     if not wcs_succeeded(image):
         return 'failed'

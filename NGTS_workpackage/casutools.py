@@ -88,7 +88,7 @@ def imcore(input_file, output_table,
 def imcore_list(input_file, listfile, output_file,
                 threshold=2.0,
                 confidence_map='noconf',
-                rcore=5,
+                rcore=3,
                 casu_verbose=False,
                 noell=True,
                 verbose=False):
