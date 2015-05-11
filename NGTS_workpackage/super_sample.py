@@ -220,7 +220,6 @@ def call_find_fwhm(file, factor, size, stars, tag=''):
     fig, axes = plt.subplots(3, 3, figsize=(11, 11))
     axes = axes.flatten()
     for i, label in enumerate(labels):
-        print('Plotting {}'.format(label))
         fwhm_extract(file, factor, size, stars, tag)
 
         dat = pickle.load(open(tag + label + '.p', 'rb'))
