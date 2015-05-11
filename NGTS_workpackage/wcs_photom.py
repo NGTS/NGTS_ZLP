@@ -84,6 +84,7 @@ def wcs_photom(image,
 
     outname = image + '.phot'
 
+    print('IMCORE: {}'.format(image))
     casutools.imcore_list(image, cat_file, outname,
                           confidence_map=conf_file,
                           rcore=appsize,
