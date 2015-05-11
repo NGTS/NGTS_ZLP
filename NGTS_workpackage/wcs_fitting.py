@@ -88,7 +88,7 @@ def handle_errors_in_casu_solve(casuin, *args, **kwargs):
         return return_value
 
 
-def casu_solve(casuin, wcsref, dist_map, thresh=20, verbose=False, catsrc='viz2mass'):
+def casu_solve(casuin, wcsref, dist_map, thresh=3, verbose=False, catsrc='viz2mass'):
 
     hdulist = fits.getheader(casuin)
 
@@ -97,7 +97,7 @@ def casu_solve(casuin, wcsref, dist_map, thresh=20, verbose=False, catsrc='viz2m
 
     catfile_name = casuin.replace('.fits', '.cat')
     casutools.imcore(casuin, catfile_name, threshold=thresh, verbose=verbose,
-            ipix=2, threshold=3, rcore=3)
+            ipix=2, rcore=3)
 
     # Now we're ready to solve wcs
     casutools.wcsfit(casuin, catfile_name, catpath=wcsref, verbose=verbose)
