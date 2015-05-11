@@ -39,7 +39,6 @@ Catalogue = namedtuple('Catalogue', ['cat_name', 'ra_lims', 'dec_lims'])
 def initialise_wcs_cache(fname, wcsref, thresh, verbose, force=False):
     print("Constructing initial wcs cache")
     catalogue_name = 'initial-catalogue.fits'
-    print('IMCORE: {}'.format(fname))
     casutools.imcore(fname, catalogue_name, threshold=thresh, verbose=verbose)
     casutools.wcsfit(fname, catalogue_name, catpath=wcsref, verbose=verbose)
 
@@ -97,7 +96,6 @@ def casu_solve(casuin, wcsref, dist_map, thresh=3, verbose=False, catsrc='viz2ma
     catpath = os.path.join(os.getcwd(), 'catcache')
 
     catfile_name = casuin.replace('.fits', '.cat')
-    print('IMCORE: {}'.format(casuin))
     casutools.imcore(casuin, catfile_name, threshold=thresh, verbose=verbose,
             ipix=2, rcore=3)
 
