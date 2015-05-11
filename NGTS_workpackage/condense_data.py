@@ -122,7 +122,7 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
                     centerra += [photdata[1].header['WCSF_RA']]
                     centerdec += [photdata[1].header['WCSF_DEC']]
                     # correcting for airmass - the newer fits files have an airmass term, so just use that instead perhaps
-                    sky += [photdata[1].data['Skylev'].copy()]
+                    sky += [photdata[1].data['Sky_level'].copy()]
                     frame_xpos = photdata[1].data['X_coordinate'].copy()
                     frame_ypos = photdata[1].data['Y_coordinate'].copy()
                     xpos += [frame_xpos]
@@ -132,26 +132,18 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
                     hr, min, sec = utc[1].split(':')
                     fwhm += [fwhm_frame]
                     seeing += [seeing_frame]
-                    rawflux = photdata[1].data['Core_flux'].copy()
-                    Skylev += [photdata[1].data['Skylev'].copy()]
-                    Skyrms += [photdata[1].data['Skyrms'].copy()]
-                    correctedflux = rawflux
-                    flux += [correctedflux]
-                    rel_err = 1.0 / (rawflux / sqrt(rawflux + npix * sky[-1]))
-                    abs_err = rel_err * correctedflux
-                    flux_err += [abs_err]
+                    Skylev += [photdata[1].data['Sky_level'].copy()]
+                    Skyrms += [photdata[1].data['Sky_rms'].copy()]
+                    flux += [photdata[1].data['Aper_flux_3'].copy()]
+                    flux_err += [photdata[1].data['Aper_flux_3_err'].copy()]
 
                     all_appertures = []
                     all_err_apps = []
-                    for i in range(1, 6):
-                        rawflux = photdata[1].data['Core' + str(i) +
-                                                   '_flux'].copy()
-                        correctedflux = rawflux
-                        all_appertures += [correctedflux]
-                        rel_err = 1.0 / (rawflux /
-                                         sqrt(rawflux + npix * sky[-1]))
-                        abs_err = rel_err * correctedflux
-                        all_err_apps += [abs_err]
+                    for i in [2, 4, 5, 6, 7]:
+                        flux_key = 'Aper_flux_{}'.format(i)
+                        fluxerr_key = '{}_err'.format(flux_key)
+                        all_appertures += [photdata[1].data[flux_key].copy()]
+                        all_err_apps += [photdata[1].data[fluxerr_key].copy()]
 
                     flux_grid += [all_appertures]
                     flux_err_grid += [all_err_apps]
