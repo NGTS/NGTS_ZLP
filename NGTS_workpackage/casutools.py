@@ -89,6 +89,7 @@ def imcore_list(input_file, listfile, output_file,
                 threshold=2.0,
                 confidence_map='noconf',
                 rcore=3,
+                cattype=6,
                 casu_verbose=False,
                 noell=True,
                 verbose=False):
@@ -96,7 +97,7 @@ def imcore_list(input_file, listfile, output_file,
     Runs the casu task `imcore_list`
     '''
     cmd = ['imcore_list', input_file, confidence_map, listfile, output_file,
-           threshold, '--rcore', rcore]
+           threshold, '--rcore', rcore, '--cattype', cattype]
 
     if noell:
         cmd.append('--noell')
