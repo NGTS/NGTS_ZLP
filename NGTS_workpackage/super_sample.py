@@ -27,7 +27,7 @@ import multiprocessing.dummy as multithreading
 import multiprocessing
 from functools import partial
 
-def super_sample(filelist,factor,size,stars,binning,tag,nproc=4):
+def super_sample(filelist,inputcat,factor,size,stars,binning,tag,nproc=4):
 
   p = multiprocessing.Pool(nproc)
 
@@ -53,7 +53,7 @@ def super_sample(filelist,factor,size,stars,binning,tag,nproc=4):
 
   curry = []
   for i in range(0,data_points):
-    curry += [[files[i],factor,size,stars,tag]]
+    curry += [[files[i],inputcat,factor,size,stars,tag]]
     with pf.open(files[i]) as imdata:
       mjd +=[imdata[0].header['MJD']]
 
@@ -79,29 +79,26 @@ def super_sample(filelist,factor,size,stars,binning,tag,nproc=4):
 
   fps = 5
 
-  outputf = 'moviepsf.avi'
+  outputf = tag+'_psf.avi'
   command = 'mencoder mf://'+files_psf.rstrip(',')+' -mf w=800:h=600:fps='+str(fps)+':type=png -ovc raw -oac copy -o '+outputf
   print command
   os.system(command)
-  os.system('firefox '+ outputf)
 
-  outputf = 'movieresiduals.avi'
+  outputf = tag+'_residuals.avi'
   command = 'mencoder mf://'+files_residuals.rstrip(',')+' -mf w=800:h=600:fps='+str(fps)+':type=png -ovc raw -oac copy -o '+outputf
   print command
   os.system(command)
-  os.system('firefox '+ outputf)
 
-  outputf = 'moviemodel.avi'
+  outputf = tag+'_model.avi'
   command = 'mencoder mf://'+files_model.rstrip(',')+' -mf w=800:h=600:fps='+str(fps)+':type=png -ovc raw -oac copy -o '+outputf
   print command
   os.system(command)
-  os.system('firefox '+ outputf)
 
   quit()
 
   i = 0
   for file in files:
-    fwhm_x, fwhm_y, t = call_find_fwhm(file,factor,size,stars,tag=tag)
+    fwhm_x, fwhm_y, t = call_find_fwhm(file,inputcat,factor,size,stars,tag=tag)
     f_5x += [fwhm_x['f_5']]
     f_5y += [fwhm_y['f_5']]
     theta += [t['f_5']]
@@ -115,7 +112,7 @@ def super_sample(filelist,factor,size,stars,binning,tag,nproc=4):
 #  plot_everything(files[0:10],labels,binning,tag=tag)
 
 def uncurry_call_find_fwhm(c):
-  return call_find_fwhm(c[0],c[1],c[2],c[3],tag=c[4])
+  return call_find_fwhm(c[0],c[1],c[2],c[3],c[4],tag=c[5])
 
 def condense_data(label,tag=''):
 
@@ -301,11 +298,12 @@ def find_minor_axis(theta,sx,sy):
 
   return ellipse, average
 
-def call_find_fwhm(file,factor,size,stars,tag=''):
+def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
 
   tag = file.rstrip('.fits')
 
   labels = ['f_1','f_3','f_5','f_7','f_9']
+  labels = ['f_1','f_2','f_3','f_4','f_5','f_6','f_7','f_8','f_9']
 
   fwhm_x = [[]]*len(labels)
   fwhm_y = [[]]*len(labels)
@@ -314,21 +312,20 @@ def call_find_fwhm(file,factor,size,stars,tag=''):
 
   zero_array = np.zeros((factor*size,factor*size))
 
-  fwhm = {'f_1':[],'f_3':[],'f_5':[],'f_7':[],'f_9':[]}
-  fwhm_x = {'f_1':[],'f_3':[],'f_5':[],'f_7':[],'f_9':[]}
-  fwhm_y = {'f_1':[],'f_3':[],'f_5':[],'f_7':[],'f_9':[]}
-  theta = {'f_1':[],'f_3':[],'f_5':[],'f_7':[],'f_9':[]}
-  data = {'f_1':zero_array,'f_3':zero_array,'f_5':zero_array,'f_7':zero_array,'f_9':zero_array}
-  lengths = {'f_1':True,'f_3':True,'f_5':True,'f_7':True,'f_9':True}
+  fwhm = {'f_1':[],'f_2':[],'f_3':[],'f_4':[],'f_5':[],'f_6':[],'f_7':[],'f_8':[],'f_9':[]}
+  fwhm_x = {'f_1':[],'f_2':[],'f_3':[],'f_4':[],'f_5':[],'f_6':[],'f_7':[],'f_8':[],'f_9':[]}
+  fwhm_y = {'f_1':[],'f_2':[],'f_3':[],'f_4':[],'f_5':[],'f_6':[],'f_7':[],'f_8':[],'f_9':[]}
+  theta = {'f_1':[],'f_2':[],'f_3':[],'f_4':[],'f_5':[],'f_6':[],'f_7':[],'f_8':[],'f_9':[]}
+  data = {'f_1':zero_array.copy(),'f_2':zero_array.copy(),'f_3':zero_array.copy(),'f_4':zero_array.copy(),'f_5':zero_array.copy(),'f_6':zero_array.copy(),'f_7':zero_array.copy(),'f_8':zero_array.copy(),'f_9':zero_array.copy()}
+  lengths = {'f_1':True,'f_2':True,'f_3':True,'f_4':True,'f_5':True,'f_6':True,'f_7':True,'f_8':True,'f_9':True}
 
   f1 = plt.figure()
   f2 = plt.figure()
   f3 = plt.figure()
 
-  label_no = 0
+  fwhm_extract(file,inputcat,factor,size,stars,labels,tag)
 
   for label in labels:
-    fwhm_extract(file,factor,size,stars,tag)
 
     dat = pickle.load(open(tag+label+'.p','rb'))
 
@@ -342,7 +339,8 @@ def call_find_fwhm(file,factor,size,stars,tag=''):
     fwhm[label] += [(fwhm_x_frame + fwhm_y_frame)/2.0]
     theta[label] += [theta_frame]
 
-    a1 = f1.add_subplot(3,3,(label_no*2) + 1)
+    label_no = int(label.split('_')[-1])
+    a1 = f1.add_subplot(3,3,label_no)
     ticks = factor*np.arange(size)
     a1.set_yticks(ticks)
     a1.set_yticklabels(np.arange(size))
@@ -360,7 +358,7 @@ def call_find_fwhm(file,factor,size,stars,tag=''):
     f1.suptitle(file.split('/')[-1] +' '+ str(round(fwhm_x_frame,2)) +' '+ str(round(fwhm_y_frame,2)) +' '+ str(round(theta_frame,2)))
 
 
-    a2 = f2.add_subplot(3,3,(label_no*2) + 1)
+    a2 = f2.add_subplot(3,3,label_no)
     ticks = factor*np.arange(size)
     a2.set_yticks(ticks)
     a2.set_yticklabels(np.arange(size))
@@ -378,7 +376,7 @@ def call_find_fwhm(file,factor,size,stars,tag=''):
     f2.suptitle(file.split('/')[-1] +' '+ str(round(fwhm_x_frame,2)) +' '+ str(round(fwhm_y_frame,2)) +' '+ str(round(theta_frame,2)))
 
 
-    a3 = f3.add_subplot(3,3,(label_no*2) + 1)
+    a3 = f3.add_subplot(3,3,label_no)
     ticks = factor*np.arange(size)
     a3.set_yticks(ticks)
     a3.set_yticklabels(np.arange(size))
@@ -396,12 +394,10 @@ def call_find_fwhm(file,factor,size,stars,tag=''):
     a3.get_yaxis().set_ticklabels([])
     f3.suptitle(file.split('/')[-1] +' '+ str(round(fwhm_x_frame,2)) +' '+ str(round(fwhm_y_frame,2)) +' '+ str(round(theta_frame,2)))
 
-
-    label_no += 1
-
   f1.savefig(file.strip('.fits')+'_psf.png', bbox_inches=0)
   f2.savefig(file.strip('.fits')+'_residuals.png', bbox_inches=0)
   f3.savefig(file.strip('.fits')+'_model.png', bbox_inches=0)
+
   plt.close()
   plt.close()
   plt.close()
@@ -474,7 +470,7 @@ def gaussian2d(A,theta,sx,sy,x0,y0,x,y):
   f = A*np.exp(-(a*(x0-xx)**2 + 2*b*(x0- xx)*(y0 - yy) + c*(y0 - yy)**2.0))
   return f
 
-def fwhm_extract(image_name,factor,size,stars,tag=''):
+def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,tag=''):
 
   with pf.open(image_name) as imdata:
     image = imdata[0].data
@@ -482,10 +478,12 @@ def fwhm_extract(image_name,factor,size,stars,tag=''):
     size += 2
 
     with pf.open(image_name + '.phot') as photdata:
-      mean_fluxes = photdata[1].data['Core3_flux']
-      IQR = [(mean_fluxes < (np.median(mean_fluxes[mean_fluxes > np.median(mean_fluxes)]))) & (mean_fluxes > (np.median(mean_fluxes[mean_fluxes < np.median(mean_fluxes)])))]
 
-      selection = [(np.argsort(mean_fluxes)[-(stars+100):-100])]
+
+      with pf.open(inputcat) as incat:
+	mean_fluxes = incat[1].data['isophotal_flux']
+	IQR = [(mean_fluxes < (np.median(mean_fluxes[mean_fluxes > np.median(mean_fluxes)]))) & (mean_fluxes > (np.median(mean_fluxes[mean_fluxes < np.median(mean_fluxes)])))]
+	selection = [(np.argsort(mean_fluxes)[-(stars+100):-100])]
 
       xpos = photdata[1].data['X_coordinate']
       ypos = photdata[1].data['Y_coordinate']
@@ -532,8 +530,7 @@ def fwhm_extract(image_name,factor,size,stars,tag=''):
     f_8 = [(xpos > mx/3) & (xpos < 2*mx/3) & (ypos < my/3)]
     f_9 = [(xpos > 2*mx/3) & (ypos < my/3)]
 
-    condition_list = [f_1,f_3,f_5,f_7,f_9]
-    condition_name_list = ['f_1','f_3','f_5','f_7','f_9']
+    condition_list = [f_1,f_2,f_3,f_4,f_5,f_6,f_7,f_8,f_9]
 
     for i in range(0,len(condition_list)):
       get_psf(ypos[condition_list[i][0]],xpos[condition_list[i][0]],image,size,factor,condition_name_list[i],tag)
@@ -637,6 +634,7 @@ if __name__ == '__main__':
 
   parser = argparse.ArgumentParser(description=description)
   parser.add_argument('filelist')
+  parser.add_argument('inputcat')
   parser.add_argument('outname')
   parser.add_argument('--factor', type=int, required=False, default=5,
                       help='What oversampling factor to use [default: 5]')
@@ -651,6 +649,6 @@ if __name__ == '__main__':
 
   args = parser.parse_args()
 
-  super_sample(args.filelist,args.factor,args.size,args.stars,args.binning,args.outname,args.nproc)
+  super_sample(args.filelist,args.inputcat,args.factor,args.size,args.stars,args.binning,args.outname,args.nproc)
 
 # vim: sw=2
