@@ -39,7 +39,7 @@ def super_sample(filelist,inputcat,factor,size,stars,binning,tag,nproc=4):
   files_psf = ''
 
   for line in open(filelist,'r'):
-    files += [line.strip('\n')]
+    files += [line.rstrip('\n')]
     files_psf += files[-1].rstrip('.fits')+'_psf.png,'
     files_model += files[-1].rstrip('.fits')+'_model.png,'
     files_residuals += files[-1].rstrip('.fits')+'_residuals.png,'
@@ -394,9 +394,9 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
     a3.get_yaxis().set_ticklabels([])
     f3.suptitle(file.split('/')[-1] +' '+ str(round(fwhm_x_frame,2)) +' '+ str(round(fwhm_y_frame,2)) +' '+ str(round(theta_frame,2)))
 
-  f1.savefig(file.strip('.fits')+'_psf.png', bbox_inches=0)
-  f2.savefig(file.strip('.fits')+'_residuals.png', bbox_inches=0)
-  f3.savefig(file.strip('.fits')+'_model.png', bbox_inches=0)
+  f1.savefig(file.rstrip('.fits')+'_psf.png', bbox_inches=0)
+  f2.savefig(file.rstrip('.fits')+'_residuals.png', bbox_inches=0)
+  f3.savefig(file.rstrip('.fits')+'_model.png', bbox_inches=0)
 
   plt.close()
   plt.close()
