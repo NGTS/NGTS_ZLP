@@ -373,7 +373,7 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
     lengths[label] = False
     a2.get_xaxis().set_ticklabels([])
     a2.get_yaxis().set_ticklabels([])
-    #f2.suptitle(file.split('/')[-1] +' '+ str(round(fwhm_x_frame,2)) +' '+ str(round(fwhm_y_frame,2)) +' '+ str(round(theta_frame,2)))
+    f2.suptitle(file.split('/')[-1] +' '+ str(round(fwhm_x_frame,2)) +' '+ str(round(fwhm_y_frame,2)) +' '+ str(round(theta_frame,2)))
 
 
     a3 = f3.add_subplot(3,3,label_no)
@@ -392,7 +392,7 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
     lengths[label] = False
     a3.get_xaxis().set_ticklabels([])
     a3.get_yaxis().set_ticklabels([])
-    #f3.suptitle(file.split('/')[-1] +' '+ str(round(fwhm_x_frame,2)) +' '+ str(round(fwhm_y_frame,2)) +' '+ str(round(theta_frame,2)))
+    f3.suptitle(file.split('/')[-1] +' '+ str(round(fwhm_x_frame,2)) +' '+ str(round(fwhm_y_frame,2)) +' '+ str(round(theta_frame,2)))
 
   f1.savefig(file.rstrip('.fits')+'_psf.png', bbox_inches=0)
   f2.savefig(file.rstrip('.fits')+'_residuals.png', bbox_inches=0)
