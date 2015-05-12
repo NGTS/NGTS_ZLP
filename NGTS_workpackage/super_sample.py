@@ -213,8 +213,6 @@ def call_find_fwhm(file, factor, size, stars, tag=''):
     }
     lengths = {'f_1': True, 'f_3': True, 'f_5': True, 'f_7': True, 'f_9': True}
 
-    f = plt.figure()
-
     label_no = 0
 
     fig, axes = plt.subplots(3, 3, figsize=(11, 11))
