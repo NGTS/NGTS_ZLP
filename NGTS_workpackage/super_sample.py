@@ -15,7 +15,7 @@ Options:
 
 import argparse
 import matplotlib
-#matplotlib.use('Agg')
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import astropy.io.fits as pf
 import pickle
@@ -401,9 +401,9 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
     a3.get_xaxis().set_ticklabels([])
     a3.get_yaxis().set_ticklabels([])
 
-  f1.suptitle('{} {:.2f} {:.2f} {:.2f}'.format(stub, av_fwhm_x, av_fwhm_y, av_theta))
-  f2.suptitle('{} {:.2f} {:.2f} {:.2f}'.format(stub, av_fwhm_x, av_fwhm_y, av_theta))
-  f3.suptitle('{} {:.2f} {:.2f} {:.2f}'.format(stub, av_fwhm_x, av_fwhm_y, av_theta))
+  f1.suptitle('{0} {1:.2f} {2:.2f} {3:.2f}'.format(stub, av_fwhm_x, av_fwhm_y, av_theta))
+  f2.suptitle('{0} {1:.2f} {2:.2f} {3:.2f}'.format(stub, av_fwhm_x, av_fwhm_y, av_theta))
+  f3.suptitle('{0} {1:.2f} {2:.2f} {3:.2f}'.format(stub, av_fwhm_x, av_fwhm_y, av_theta))
 
   f1.savefig(file.rstrip('.fits')+'_psf.png', bbox_inches=0)
   f2.savefig(file.rstrip('.fits')+'_residuals.png', bbox_inches=0)
