@@ -27,6 +27,8 @@ import multiprocessing.dummy as multithreading
 import multiprocessing
 from functools import partial
 
+matplotlib.rc('text', usetex=False)
+
 def super_sample(filelist,inputcat,factor,size,stars,binning,tag,nproc=4):
 
   p = multiprocessing.Pool(nproc)
