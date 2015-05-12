@@ -357,7 +357,14 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
     lengths[label] = False
     a1.get_xaxis().set_ticklabels([])
     a1.get_yaxis().set_ticklabels([])
-    f1.suptitle(file.split('/')[-1] +' '+ str(round(fwhm_x_frame,2)) +' '+ str(round(fwhm_y_frame,2)) +' '+ str(round(theta_frame,2)))
+
+    # ONLY COMPUTE THIS ONCE...
+    if label_no == 5:
+      stub = os.path.basename(file)
+      av_fwhm_x = round(fwhm_x_frame,2)
+      av_fwhm_y = round(fwhm_y_frame,2)
+      av_theta = round(theta_frame,2)
+
 
 
     a2 = f2.add_subplot(3,3,label_no)
@@ -375,7 +382,6 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
     lengths[label] = False
     a2.get_xaxis().set_ticklabels([])
     a2.get_yaxis().set_ticklabels([])
-    f2.suptitle(file.split('/')[-1] +' '+ str(round(fwhm_x_frame,2)) +' '+ str(round(fwhm_y_frame,2)) +' '+ str(round(theta_frame,2)))
 
 
     a3 = f3.add_subplot(3,3,label_no)
@@ -394,7 +400,10 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
     lengths[label] = False
     a3.get_xaxis().set_ticklabels([])
     a3.get_yaxis().set_ticklabels([])
-    f3.suptitle(file.split('/')[-1] +' '+ str(round(fwhm_x_frame,2)) +' '+ str(round(fwhm_y_frame,2)) +' '+ str(round(theta_frame,2)))
+
+  f1.suptitle('{} {:.2f} {:.2f} {:.2f}'.format(stub, av_fwhm_x, av_fwhm_y, av_theta))
+  f2.suptitle('{} {:.2f} {:.2f} {:.2f}'.format(stub, av_fwhm_x, av_fwhm_y, av_theta))
+  f3.suptitle('{} {:.2f} {:.2f} {:.2f}'.format(stub, av_fwhm_x, av_fwhm_y, av_theta))
 
   f1.savefig(file.rstrip('.fits')+'_psf.png', bbox_inches=0)
   f2.savefig(file.rstrip('.fits')+'_residuals.png', bbox_inches=0)
