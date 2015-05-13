@@ -100,9 +100,9 @@ def super_sample(filelist,inputcat,factor,size,stars,binning,tag,nproc=4):
 
   i = 0
   for file in files:
-    fwhm_x, fwhm_y, t = call_find_fwhm(file,inputcat,factor,size,stars,tag=tag)
-    f_5x += [fwhm_x['f_5']]
-    f_5y += [fwhm_y['f_5']]
+    fwhm_a, fwhm_b, t = call_find_fwhm(file,inputcat,factor,size,stars,tag=tag)
+    f_5x += [fwhm_a['f_5']]
+    f_5y += [fwhm_b['f_5']]
     theta += [t['f_5']]
     i +=1
 
@@ -126,8 +126,8 @@ def condense_data(label,tag=''):
 
 
   theta += pickle.load(open(tag+'theta'+label+'.p'))
-  x += pickle.load(open(tag+'fwhm_x'+label+'.p'))
-  y += pickle.load(open(tag+'fwhm_y'+label+'.p'))
+  x += pickle.load(open(tag+'fwhm_a'+label+'.p'))
+  y += pickle.load(open(tag+'fwhm_b'+label+'.p'))
 
   for i in range(0,len(x)):
     rad = theta[i]*np.pi/180.0
@@ -307,16 +307,16 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
   labels = ['f_1','f_3','f_5','f_7','f_9']
   labels = ['f_1','f_2','f_3','f_4','f_5','f_6','f_7','f_8','f_9']
 
-  fwhm_x = [[]]*len(labels)
-  fwhm_y = [[]]*len(labels)
+  fwhm_a = [[]]*len(labels)
+  fwhm_b = [[]]*len(labels)
   fwhm = [[]]*len(labels)
   theta = [[]]*len(labels)
 
   zero_array = np.zeros((factor*size,factor*size))
 
   fwhm = {'f_1':[],'f_2':[],'f_3':[],'f_4':[],'f_5':[],'f_6':[],'f_7':[],'f_8':[],'f_9':[]}
-  fwhm_x = {'f_1':[],'f_2':[],'f_3':[],'f_4':[],'f_5':[],'f_6':[],'f_7':[],'f_8':[],'f_9':[]}
-  fwhm_y = {'f_1':[],'f_2':[],'f_3':[],'f_4':[],'f_5':[],'f_6':[],'f_7':[],'f_8':[],'f_9':[]}
+  fwhm_a = {'f_1':[],'f_2':[],'f_3':[],'f_4':[],'f_5':[],'f_6':[],'f_7':[],'f_8':[],'f_9':[]}
+  fwhm_b = {'f_1':[],'f_2':[],'f_3':[],'f_4':[],'f_5':[],'f_6':[],'f_7':[],'f_8':[],'f_9':[]}
   theta = {'f_1':[],'f_2':[],'f_3':[],'f_4':[],'f_5':[],'f_6':[],'f_7':[],'f_8':[],'f_9':[]}
   data = {'f_1':zero_array.copy(),'f_2':zero_array.copy(),'f_3':zero_array.copy(),'f_4':zero_array.copy(),'f_5':zero_array.copy(),'f_6':zero_array.copy(),'f_7':zero_array.copy(),'f_8':zero_array.copy(),'f_9':zero_array.copy()}
   lengths = {'f_1':True,'f_2':True,'f_3':True,'f_4':True,'f_5':True,'f_6':True,'f_7':True,'f_8':True,'f_9':True}
@@ -333,12 +333,12 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
 
     data[label] += dat
     data[label] = data[label]/data[label].max()
-    fwhm_x_frame, fwhm_y_frame, theta_frame, residuals, model = find_2dfwhm(data[label],factor,size)
-    print fwhm_x_frame, fwhm_y_frame, theta_frame, label
+    fwhm_a_frame, fwhm_b_frame, theta_frame, residuals, model = find_2dfwhm(data[label],factor,size)
+    print fwhm_a_frame, fwhm_b_frame, theta_frame, label
     
-    fwhm_x[label] += [fwhm_x_frame]
-    fwhm_y[label] += [fwhm_y_frame]
-    fwhm[label] += [(fwhm_x_frame + fwhm_y_frame)/2.0]
+    fwhm_a[label] += [fwhm_a_frame]
+    fwhm_b[label] += [fwhm_b_frame]
+    fwhm[label] += [(fwhm_a_frame + fwhm_b_frame)/2.0]
     theta[label] += [theta_frame]
 
     label_no = int(label.split('_')[-1])
@@ -361,9 +361,10 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
     # ONLY COMPUTE THIS ONCE...
     if label_no == 5:
       stub = os.path.basename(file)
-      av_fwhm_x = round(fwhm_x_frame,2)
-      av_fwhm_y = round(fwhm_y_frame,2)
-      av_theta = round(theta_frame,2)
+      av_fwhm_a = round(fwhm_a_frame,2)
+      av_fwhm_b = round(fwhm_b_frame,2)
+      eccentricity = round(np.sqrt(1.0-((av_fwhm_b/av_fwhm_a)**2)),2)
+      av_theta = round(theta_frame,0)
 
 
 
@@ -401,9 +402,13 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
     a3.get_xaxis().set_ticklabels([])
     a3.get_yaxis().set_ticklabels([])
 
-  f1.suptitle('{0} {1:.2f} {2:.2f} {3:.2f}'.format(stub, av_fwhm_x, av_fwhm_y, av_theta))
-  f2.suptitle('{0} {1:.2f} {2:.2f} {3:.2f}'.format(stub, av_fwhm_x, av_fwhm_y, av_theta))
-  f3.suptitle('{0} {1:.2f} {2:.2f} {3:.2f}'.format(stub, av_fwhm_x, av_fwhm_y, av_theta))
+  f1.suptitle('PSF_a_5: {0:.2f}    e: {1:.2f}    theta: {2:.0f}'.format(av_fwhm_a, eccentricity, av_theta),size=15)
+  f2.suptitle('PSF_a_5: {0:.2f}    e: {1:.2f}    theta: {2:.0f}'.format(av_fwhm_a, eccentricity, av_theta),size=15)
+  f3.suptitle('PSF_a_5: {0:.2f}    e: {1:.2f}    theta: {2:.0f}'.format(av_fwhm_a, eccentricity, av_theta),size=15)
+
+  f1.text(0.5, 0.05, '{0}'.format(stub), ha="center", va="center",size=15)
+  f2.text(0.5, 0.05, '{0}'.format(stub), ha="center", va="center",size=15)
+  f3.text(0.5, 0.05, '{0}'.format(stub), ha="center", va="center",size=15)
 
   f1.savefig(file.rstrip('.fits')+'_psf.png', bbox_inches=0)
   f2.savefig(file.rstrip('.fits')+'_residuals.png', bbox_inches=0)
@@ -420,11 +425,11 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
   if cache == True:
     for label in labels:
       pickle.dump(fwhm[label], open(tag+'fwhm'+label+'.p','wb'))
-      pickle.dump(fwhm_x[label], open(tag+'fwhm_x'+label+'.p','wb'))
-      pickle.dump(fwhm_y[label], open(tag+'fwhm_y'+label+'.p','wb'))
+      pickle.dump(fwhm_a[label], open(tag+'fwhm_a'+label+'.p','wb'))
+      pickle.dump(fwhm_b[label], open(tag+'fwhm_b'+label+'.p','wb'))
       pickle.dump(theta[label], open(tag+'theta'+label+'.p','wb'))
 
-  return fwhm_x, fwhm_y, theta
+  return fwhm_a, fwhm_b, theta
 
 def find_2dfwhm(data,factor,size):
   x1 = [1.0,np.pi,0.6,0.4,size/2.0,size/2.0]
@@ -439,22 +444,22 @@ def find_2dfwhm(data,factor,size):
 
   model = gaussian2d(p[0],p[1],p[2],p[2]+abs(p[3]),p[4],p[5],x,y)
 
-  fwhm_x = 2.0*(np.sqrt(2.0*np.log(2.0)))*p[2]
-  fwhm_y = 2.0*(np.sqrt(2.0*np.log(2.0)))*(p[2] + abs(p[3]))
+  fwhm_b = 2.0*(np.sqrt(2.0*np.log(2.0)))*p[2]
+  fwhm_a = 2.0*(np.sqrt(2.0*np.log(2.0)))*(p[2] + abs(p[3]))
   theta = p[1]*180.0/np.pi
 
-  while theta > 360:
-    theta -= 180
+  #while theta > 360:
+    #theta -= 180
 
-  while theta < 0:
-    theta += 180
+  #while theta < 0:
+    #theta += 180
 
   #plt.imshow(model, interpolation='none')
   #plt.show()
 
   residuals = model -data
 
-  return fwhm_x, fwhm_y, theta, residuals, model
+  return fwhm_a, fwhm_b, theta, residuals, model
 
 def gaussian2d_fit(p,x,y,data):
 
@@ -543,8 +548,9 @@ def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,tag='
 
     condition_list = [f_1,f_2,f_3,f_4,f_5,f_6,f_7,f_8,f_9]
 
-    for i in range(0,len(condition_list)):
-      get_psf(ypos[condition_list[i][0]],xpos[condition_list[i][0]],image,size,factor,condition_name_list[i],tag)
+    for x in condition_name_list:
+      i = int(x.split('_')[-1])-1
+      get_psf(ypos[condition_list[i][0]],xpos[condition_list[i][0]],image,size,factor,x,tag)
 
 #    threads = []
 #    for i in range(0,len(condition_list)):

@@ -74,7 +74,7 @@ def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=Fal
   size = 11
   stars = 100
 
-  fwhm_x, fwhm_y, t = call_find_fwhm(image,cat_file,factor,size,stars,tag=image)
+  fwhm_a, fwhm_b, t = call_find_fwhm(image,cat_file,factor,size,stars,tag=image)
      
   cloud_status = cloud_check(image)
 
@@ -88,8 +88,8 @@ def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=Fal
   positions = ['Top left.','Top middle.','Top right.','Middle left.','Center.','Middle right.','Bottom left.','Bottom middle.','Bottom right.']
 
   for val in range(1,10):
-    pf.setval(outname,'PSF_a_'+str(val),1,value=fwhm_y['f_'+str(val)][0],comment='[pixels] psf long axis FWHM. '+positions[val-1])
-    pf.setval(outname,'PSF_b_'+str(val),1,value=fwhm_x['f_'+str(val)][0],comment='[pixels] psf short axis FWHM. '+positions[val-1])
+    pf.setval(outname,'PSF_a_'+str(val),1,value=fwhm_a['f_'+str(val)][0],comment='[pixels] psf long axis FWHM. '+positions[val-1])
+    pf.setval(outname,'PSF_b_'+str(val),1,value=fwhm_b['f_'+str(val)][0],comment='[pixels] psf short axis FWHM. '+positions[val-1])
     pf.setval(outname,'PSF_t_'+str(val),1,value=t['f_'+str(val)][0],comment='[degrees] psf rotation angle. '+positions[val-1])
 
   # Compute the HJD values
