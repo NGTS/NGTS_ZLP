@@ -207,9 +207,9 @@ def condense_data(label,tag=''):
     for line in files:
         with pf.open(line) as imdata:
             if 1.0*i/binning == int(i/binning):
-    focus_position +=[imdata[0].header['FCSR_PHY']]
-    tel_alt +=[imdata[0].header['TEL_ALT']]
-    mjd +=[imdata[0].header['MJD']]
+                focus_position +=[imdata[0].header['FCSR_PHY']]
+                tel_alt +=[imdata[0].header['TEL_ALT']]
+                mjd +=[imdata[0].header['MJD']]
         i += 1
         if i > binning*(len(ellipse[0])-1): break
 
@@ -506,9 +506,9 @@ def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,tag='
 
 
             with pf.open(inputcat) as incat:
-    mean_fluxes = incat[1].data['isophotal_flux']
-    IQR = [(mean_fluxes < (np.median(mean_fluxes[mean_fluxes > np.median(mean_fluxes)]))) & (mean_fluxes > (np.median(mean_fluxes[mean_fluxes < np.median(mean_fluxes)])))]
-    selection = [(np.argsort(mean_fluxes)[-(stars+100):-100])]
+                mean_fluxes = incat[1].data['isophotal_flux']
+                IQR = [(mean_fluxes < (np.median(mean_fluxes[mean_fluxes > np.median(mean_fluxes)]))) & (mean_fluxes > (np.median(mean_fluxes[mean_fluxes < np.median(mean_fluxes)])))]
+                selection = [(np.argsort(mean_fluxes)[-(stars+100):-100])]
 
             xpos = photdata[1].data['X_coordinate']
             ypos = photdata[1].data['Y_coordinate']
@@ -572,14 +572,7 @@ def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,tag='
 #        [x.start() for x in threads]
 #        [x.join() for x in threads]
 
-    xpos = np.array(xpos[condition])
-    ypos = np.array(ypos[condition])
-
-    for n in range(0, len(xpos)):
-        coords = [ypos[n], xpos[n]]
-        oversampled = return_sample_square(coords, image, size, factor)
-        stack += oversampled
-    # cleanup
+def get_psf(ypos,xpos,image,size,factor,condition_name,tag=''):
 
     a_size = size*factor
     stack = np.zeros((a_size,a_size))
@@ -590,9 +583,9 @@ def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,tag='
     xpos = np.array(xpos[condition])
     ypos = np.array(ypos[condition])
 
-    for n in range(0,len(xpos)):
-        coords = [ypos[n],xpos[n]]
-        oversampled = return_sample_square(coords,image,size,factor)
+    for n in range(0, len(xpos)):
+        coords = [ypos[n], xpos[n]]
+        oversampled = return_sample_square(coords, image, size, factor)
         stack += oversampled
     # cleanup
 
@@ -604,16 +597,8 @@ def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,tag='
 
     pickle.dump(stack, open(outname,'wb'))
 
-    yoffset = (round(c[1]) - c[1]) * factor
-    xoffset = (round(c[0]) - c[0]) * factor
 
-    oversampled = []
-    for row in raw:
-        oversampled_row = []
-        for pixel in row:
-            oversampled_row += [pixel] * factor
-        oversampled += [oversampled_row] * factor
-    oversampled = np.array(oversampled)
+def return_sample_square(c,image,size,factor):
 
     r = (size-1.0)/2.0
     raw = image[int(round(c[0])-r-1):int(round(c[0])+r),int(round(c[1])-r-1):int(round(c[1])+r)]
@@ -641,8 +626,7 @@ def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,tag='
 
     return oversampled
 
-    xshift = -int(round(xshift))
-    yshift = -int(round(yshift))
+def recenter(oversampled,xshift,yshift):
 
     xshift = -int(round(xshift))
     yshift = -int(round(yshift))
