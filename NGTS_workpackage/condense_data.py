@@ -12,6 +12,8 @@ from util import thread_alloc
 from numpy import *
 import fitsio
 import sys
+from functools import partial
+from pipeutils import NullPool
 
 
 def m_condense_data(filelist, nproc, appsize, verbose=False, outdir='./'):
@@ -22,9 +24,9 @@ def m_condense_data(filelist, nproc, appsize, verbose=False, outdir='./'):
 
     starts, ends = thread_alloc(nfiles, nproc)
 
-    processes = []
-    for i in range(0, nproc):
-        condense_data(filelist, starts[i], ends[i], i + 1, appsize, verbose)
+    pool = NullPool()
+    fn = lambda i: condense_data(filelist, starts[i], ends[i], i + 1, appsize, verbose)
+    pool.map(fn, range(nproc))
 
     filelist = array([f for f in listdir(os.getcwd()) if 'output_' in f])
     numberlist = array([int(f.split('_')[1].split('.')[0]) for f in filelist])
