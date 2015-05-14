@@ -71,48 +71,41 @@ def handle_errors_in_wcs_photom(image, *args, **kwargs):
         return wcs_photom(image, *args, **kwargs)
     except Exception as err:
         print("Exception handled in wcs_photom: {}".format(str(err)),
-              file=sys.stderr)
+                file=sys.stderr)
 
+def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=False):
 
-def wcs_photom(image,
-               cat_file='nocat',
-               conf_file='noconf',
-               appsize=3.,
-               verbose=False):
     if not wcs_succeeded(image):
         return 'failed'
 
     outname = image + '.phot'
 
-    casutools.imcore_list(image, cat_file, outname,
-                          confidence_map=conf_file,
-                          rcore=appsize,
-                          noell=True,
-                          verbose=verbose)
+    casutools.imcore_list(image, cat_file, outname, confidence_map=conf_file,rcore=appsize, noell=True,
+                        verbose=verbose)
 
-    #    do some quality checks
+     #      do some quality checks
 
     factor = 5
     size = 11
     stars = 100
 
-    fwhm = call_find_fwhm(image, factor, size, stars, tag=image)
-
+    fwhm_a, fwhm_b, t = call_find_fwhm(image,cat_file,factor,size,stars,tag=image)
+         
     cloud_status = cloud_check(image)
 
-    pixel_fwhm = pf.getval(outname, 'SEEING', 1)
-    plate_scale = 5.0
-    seeing = round(plate_scale * pixel_fwhm * 3600, 2)
+    pixel_fwhm = pf.getval(outname,'SEEING',1)
+    plate_scale = 5.0 
+    seeing = round(plate_scale*pixel_fwhm*3600,2)
 
-    pf.setval(outname, 'CLOUD_S', 1,
-              value=round(cloud_status, 2),
-              comment='A measure of bulk structure in the image (S/N)')
-    pf.setval(outname, 'FWHM', 1,
-              value=pixel_fwhm,
-              comment='[pixels] Average FWHM')
-    pf.setval(outname, 'SEEING', 1,
-              value=seeing,
-              comment='[arcseconds] Average FWHM')
+    pf.setval(outname,'CLOUD_S',1,value=round(cloud_status,2),comment='A measure of bulk structure in the image (S/N)')
+    pf.setval(outname,'FWHM',1,value=pixel_fwhm,comment='[pixels] Average FWHM')
+    pf.setval(outname,'SEEING',1,value=seeing,comment='[arcseconds] Average FWHM')
+    positions = ['Top left.','Top middle.','Top right.','Middle left.','Center.','Middle right.','Bottom left.','Bottom middle.','Bottom right.']
+
+    for val in range(1,10):
+        pf.setval(outname,'PSF_a_'+str(val),1,value=fwhm_a['f_'+str(val)][0],comment='[pixels] psf long axis FWHM. '+positions[val-1])
+        pf.setval(outname,'PSF_b_'+str(val),1,value=fwhm_b['f_'+str(val)][0],comment='[pixels] psf short axis FWHM. '+positions[val-1])
+        pf.setval(outname,'PSF_t_'+str(val),1,value=t['f_'+str(val)][0],comment='[degrees] psf rotation angle. '+positions[val-1])
 
     # Compute the HJD values
     append_hjd_correction_column(outname)
