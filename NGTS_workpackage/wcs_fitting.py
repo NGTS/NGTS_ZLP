@@ -2,7 +2,7 @@
 
 import tempfile
 from catmatch import shift_wcs_axis
-from catmatch import apply_correct
+from catmatch import apply_correct, apply_correct_old
 from catmatch import lmq_fit
 from catmatch import calc_seps
 from catmatch import load_wcs_from_keywords
@@ -16,6 +16,8 @@ import os
 from vector_plot import wcsf_QCheck
 import numpy as np
 from wcs_status import set_wcs_status
+import fitsio
+from astropy.io import fits as pf
 from collections import namedtuple
 try:
     import cPickle as pickle
@@ -93,7 +95,7 @@ def casu_solve_old(casuin, wcsref,
                    thresh=20,
                    verbose=False,
                    catsrc='viz2mass',
-                   catpath=False):
+                   catpath=None):
     hdulist = fitsio.read_header(casuin)
 
     cen = [[dist_map['CRPIX1'], dist_map['CRPIX2']]]
@@ -104,7 +106,7 @@ def casu_solve_old(casuin, wcsref,
     for key in dist_map:
         print key, dist_map[key], hdulist.get(key)
 
-    apply_correct(dist_map, casuin, TEL_RA, TEL_DEC)
+    apply_correct_old(dist_map, casuin, TEL_RA, TEL_DEC)
 
     catfile_name = casuin.replace('.fits', '.cat')
     casutools.imcore(casuin, catfile_name, threshold=thresh, verbose=verbose)
@@ -113,6 +115,8 @@ def casu_solve_old(casuin, wcsref,
     RA_lims = []
     DEC_lims = []
 
+    catpath = (catpath if catpath is not None
+            else os.path.join(os.getcwd(), 'catcache'))
     for line in open(catpath + '/index'):
         vals = line.strip('\n').split(' ')
         cat_names += [vals[0]]
@@ -127,7 +131,7 @@ def casu_solve_old(casuin, wcsref,
         catt = catd[1].data.copy()
     cat = {'ra': catt['ra'], 'dec': catt['dec'], 'Jmag': catt['Jmag']}
 
-    apply_correct(dist_map, casuin, TEL_RA, TEL_DEC)
+    apply_correct_old(dist_map, casuin, TEL_RA, TEL_DEC)
 
     with fitsio.FITS(catfile_name) as mycatt:
         mycat = {'Aper_flux_3': mycatt[1]['Aper_flux_3'][:]}
@@ -149,7 +153,7 @@ def casu_solve_old(casuin, wcsref,
                            TEL_DEC,
                            fitlist=['RA_s', 'DEC_s', 'CD1_1', 'CD2_2', 'CD1_2', 'CD2_1'])
 
-    apply_correct(dist_map, casuin, TEL_RA, TEL_DEC)
+    apply_correct_old(dist_map, casuin, TEL_RA, TEL_DEC)
 
     # wcs keywords may have changed since imcore was done, so we have to update the RA and DEC values.
     correct_catfile(catfile_name, casuin, nstars=2000)
