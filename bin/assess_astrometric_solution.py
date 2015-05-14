@@ -2,16 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-from NGTS_workpackage.wcs_fitting import (initialise_wcs_cache,
-                                          casu_solve,
-                                          )
+from NGTS_workpackage.wcs_fitting import (initialise_wcs_cache, casu_solve_old,
+        extract_dist_map)
 import fitsio
 import shutil
 import os
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 
 
 def image_size(fname):
@@ -43,12 +38,9 @@ def remove_overscan_strips(fname):
 
 
 def main(args):
-    with open(args.solution) as infile:
-        dist_map = pickle.load(infile)
+    dist_map = extract_dist_map(args.solution)
 
-    catpath = os.path.join(
-        os.getcwd(),
-        'catcache')
+    catpath = os.path.join(os.getcwd(), 'catcache')
     if os.path.isdir(catpath):
         shutil.rmtree(catpath)
 
@@ -61,12 +53,13 @@ def main(args):
 
     assert image_size(fname) == (2048, 2048), (
         "Image incorrect shape, "
-        "should be 2048x2048, is {}".format(image_size(fname))
-    )
+        "should be 2048x2048, is {}".format(image_size(fname)))
 
-    initialise_wcs_cache(fname, catpath, args.wcsref,
-                         thresh=20.0, verbose=False, force=True)
-    casu_solve(fname, args.wcsref, dist_map=dist_map, catpath=catpath)
+    initialise_wcs_cache(fname, wcsref=args.wcsref,
+                         thresh=20.0,
+                         verbose=False,
+                         force=True)
+    casu_solve_old(fname, wcsref=args.wcsref, dist_map=dist_map)
 
 
 if __name__ == '__main__':
@@ -74,6 +67,9 @@ if __name__ == '__main__':
     parser.add_argument('filename')
     parser.add_argument('-s', '--solution', required=True)
     parser.add_argument('-w', '--wcsref', required=True)
-    parser.add_argument('--reduced', required=False, action='store_true',
-                        default=False, help='Is the frame reduced?')
+    parser.add_argument('--reduced',
+                        required=False,
+                        action='store_true',
+                        default=False,
+                        help='Is the frame reduced?')
     main(parser.parse_args())

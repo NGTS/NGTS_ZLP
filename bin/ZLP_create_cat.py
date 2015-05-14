@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 
 Zero Level Pipeline catalog generation
@@ -29,9 +28,11 @@ from NGTS_workpackage.wcs_fitting import m_solve_images
 from NGTS_workpackage import casutools
 from tempfile import NamedTemporaryFile
 
+
 def main(argv):
     if argv['--verbose'] == True:
-        print 'Creating source catalogue from first {} images...'.format(argv['--nfiles'])
+        print 'Creating source catalogue from first {} images...'.format(
+            argv['--nfiles'])
 
     # Pick the first N files if argument given
     nfiles = int(argv['--nfiles']) if argv['--nfiles'] else None
@@ -42,20 +43,22 @@ def main(argv):
             for i, line in enumerate(infile):
                 if nfiles and i >= nfiles:
                     break
-		tmp.write(line)
+                tmp.write(line)
 
         tmp.seek(0)
 
         if not argv['--no-wcs']:
-            m_solve_images(name, name, thresh=argv['--s_thresh'],
-                    nproc=int(argv['--nproc']) if argv['--nproc'] else None,
-                    verbose=argv['--verbose'])
+            m_solve_images(
+                name, name,
+                thresh=argv['--s_thresh'],
+                nproc=int(argv['--nproc']) if argv['--nproc'] else None,
+                verbose=argv['--verbose'])
 
-        with open(argv['--stacklist'],'w') as stacklist:
+        with open(argv['--stacklist'], 'w') as stacklist:
             for line in tmp:
-                image = line.strip('\n')
+                image = line.strip()
 
-                status_check = ['ok','ok']
+                status_check = ['ok', 'ok']
 
                 if all([status == 'ok' for status in status_check]):
                     stacklist.write(image + '\n')
@@ -63,13 +66,18 @@ def main(argv):
     outstack_name = 'outstack.fits'
     outstackconf_name = 'outstackconf.fits'
 
-    casutools.imstack(argv['--stacklist'], argv['--confmap'], verbose=argv['--verbose'],
-            outstack=outstack_name, outconf=outstackconf_name)
-    casutools.imcore(outstack_name, argv['--outname'], threshold=argv['--c_thresh'],
-            confidence_map=outstackconf_name, verbose=argv['--verbose'])
+    casutools.imstack(argv['--stacklist'], argv['--confmap'],
+                      verbose=argv['--verbose'],
+                      outstack=outstack_name,
+                      outconf=outstackconf_name)
+    casutools.imcore(outstack_name, argv['--outname'],
+                     threshold=argv['--c_thresh'],
+                     confidence_map=outstackconf_name,
+                     verbose=argv['--verbose'])
 
     if argv['--verbose'] == True:
         print 'Catalogue complete'
+
 
 if __name__ == '__main__':
     main(docopt(__doc__))

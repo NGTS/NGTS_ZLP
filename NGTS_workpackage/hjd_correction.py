@@ -16,14 +16,13 @@ def compute_hjd_correction(jd, ra, dec, sun_ra, sun_dec):
     c = (1 * cds.c).si.value
 
     ra_rad, dec_rad, sun_ra_rad, sun_dec_rad = [
-        np.radians(data).astype(np.float64) for data in [
-            ra, dec, sun_ra, sun_dec
-        ]
+        np.radians(data).astype(np.float64)
+        for data in [ra, dec, sun_ra, sun_dec]
     ]
 
     first_term = np.sin(dec_rad) * np.sin(sun_dec_rad)
-    second_term = np.cos(
-        dec_rad) * np.cos(sun_dec_rad) * np.cos(ra_rad - sun_ra_rad)
+    second_term = np.cos(dec_rad) * np.cos(sun_dec_rad) * np.cos(
+        ra_rad - sun_ra_rad)
     correction_seconds = (r / c) * (first_term + second_term)
 
     return -(correction_seconds / 86400.).astype(np.float64)
@@ -34,9 +33,8 @@ def compute_hjd_correction_column(fname):
         catalogue = infile[1]
         header = catalogue.read_header()
 
-        ra, dec = [
-            catalogue[key].read().astype(np.float64) for key in ['ra', 'dec']
-        ]
+        ra, dec = [catalogue[key].read().astype(np.float64)
+                   for key in ['ra', 'dec']]
 
     mjd, sun_ra, sun_dec = [header[key]
                             for key in ['mjd', 'sun_ra', 'sun_dec']]

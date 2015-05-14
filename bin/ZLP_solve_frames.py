@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
  
 Zero Level Pipeline apperture photometry 
@@ -35,16 +34,20 @@ argv = docopt(__doc__)
 
 #if you don't provide an outlist name i'll assume you just want to add _phot to the end
 if not argv['--outlist']:
-  argv['--outlist'] = argv['<FILELIST>'] + '_solved'
+    argv['--outlist'] = argv['<FILELIST>'] + '_solved'
 
-outfile = open(argv['--outlist'],'w')
+outfile = open(argv['--outlist'], 'w')
 outfile.close()
-
 
 filelist = argv['<FILELIST>']
 if filelist:
-  m_solve_images(filelist,argv['--outlist'],nproc=int(argv['--nproc']),thresh=int(argv['--s_thresh']),verbose=argv['--verbose'],catsrc=argv['--catsrc'],catpath=argv['--catpath'])
+    m_solve_images(filelist, argv['--outlist'],
+                   nproc=int(argv['--nproc']),
+                   thresh=int(argv['--s_thresh']),
+                   verbose=argv['--verbose'],
+                   catsrc=argv['--catsrc'],
+                   catpath=argv['--catpath'])
 
 if argv['INPUT']:
-  for filename in argv['INPUT']:
-    casu_solve(filename,argv['--s_thresh'],verbose=argv['--verbose'])
+    for filename in argv['INPUT']:
+        casu_solve(filename, argv['--s_thresh'], verbose=argv['--verbose'])

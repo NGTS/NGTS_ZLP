@@ -1,0 +1,26 @@
+{
+  "wcs": {
+    "CD1_2": 1.69386236422896e-05, 
+    "CD1_1": -0.00140673846349624, 
+    "CRVAL2": -1.33981207201781, 
+    "CRPIX1": 1023.69368192365, 
+    "CRPIX2": 990.889560719734, 
+    "CRVAL1": 173.315926931773, 
+    "PV2_1": 1.0, 
+    "PV2_3": 9.065868253786455, 
+    "PV2_5": -665.7236986488612, 
+    "PV2_7": 554741.1583222866, 
+    "CD2_1": -1.68663763547134e-05, 
+    "CTYPE2": "DEC--ZPN", 
+    "CTYPE1": "RA---ZPN", 
+    "CD2_2": -0.00140683630885085
+  }, 
+  "meta": {
+    "image_id": 80220150405233905, 
+    "host": "ngtshead", 
+    "camera_id": 802, 
+    "field": "NG1133-0127", 
+    "action_id": 102933, 
+    "filename": "/home/sw/work/NGTS/pipeline/ZLP/zlp-initial-astrometry/workdir/20150420/IMAGE80220150421020324_without_overscan_strips.fits"
+  }
+}

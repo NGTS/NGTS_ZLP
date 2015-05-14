@@ -4,12 +4,14 @@ __all__ = ['wcs_succeeded', 'set_wcs_status']
 
 HEADER_KEY = 'wcscompl'
 
+
 def wcs_succeeded(fname, hdu=0):
     '''
     Return true if the wcs has succeeded for a file
     '''
     header = fitsio.read_header(fname, ext=hdu)
     return HEADER_KEY not in header or header[HEADER_KEY]
+
 
 def set_wcs_status(fname, succeeded, hdu=0):
     '''
