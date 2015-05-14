@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-from NGTS_workpackage.wcs_fitting import (initialise_wcs_cache, casu_solve,
+from NGTS_workpackage.wcs_fitting import (initialise_wcs_cache, casu_solve_old,
         extract_dist_map)
 import fitsio
 import shutil
@@ -59,7 +59,7 @@ def main(args):
                          thresh=20.0,
                          verbose=False,
                          force=True)
-    casu_solve(fname, wcsref=args.wcsref, dist_map=dist_map)
+    casu_solve_old(fname, wcsref=args.wcsref, dist_map=dist_map)
 
 
 if __name__ == '__main__':
