@@ -70,9 +70,42 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
     coolstat = []
     ADU_DEV = []
     fwhm = []
-    s_fwhma = []
-    s_fwhmb = []
-    s_fwhmt = []
+
+    fwhma_1 = []
+    fwhmb_1 = []
+    fwhmt_1 = []
+
+    fwhma_2 = []
+    fwhmb_2 = []
+    fwhmt_2 = []
+
+    fwhma_3 = []
+    fwhmb_3 = []
+    fwhmt_3 = []
+
+    fwhma_4 = []
+    fwhmb_4 = []
+    fwhmt_4 = []
+
+    fwhma_5 = []
+    fwhmb_5 = []
+    fwhmt_5 = []
+
+    fwhma_6 = []
+    fwhmb_6 = []
+    fwhmt_6 = []
+
+    fwhma_7 = []
+    fwhmb_7 = []
+    fwhmt_7 = []
+
+    fwhma_8 = []
+    fwhmb_8 = []
+    fwhmt_8 = []
+
+    fwhma_9 = []
+    fwhmb_9 = []
+    fwhmt_9 = []
 
     SKY_MED = []
     CLOUDS = []
@@ -100,9 +133,42 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
 		    ambient = photdata[1].header.get('WXTEMP', 30.0)
 		    cloud_status = photdata[1].header['CLOUD_S']
 		    fwhm_frame = photdata[1].header['FWHM']
+
+		    psf_a_1 = photdata[1].header['PSF_a_1']
+		    psf_b_1 = photdata[1].header['PSF_b_1']
+		    psf_t_1 = photdata[1].header['PSF_t_1']
+
+		    psf_a_2 = photdata[1].header['PSF_a_2']
+		    psf_b_2 = photdata[1].header['PSF_b_2']
+		    psf_t_2 = photdata[1].header['PSF_t_2']
+
+		    psf_a_3 = photdata[1].header['PSF_a_3']
+		    psf_b_3 = photdata[1].header['PSF_b_3']
+		    psf_t_3 = photdata[1].header['PSF_t_3']
+
+		    psf_a_4 = photdata[1].header['PSF_a_4']
+		    psf_b_4 = photdata[1].header['PSF_b_4']
+		    psf_t_4 = photdata[1].header['PSF_t_4']
+
 		    psf_a_5 = photdata[1].header['PSF_a_5']
 		    psf_b_5 = photdata[1].header['PSF_b_5']
 		    psf_t_5 = photdata[1].header['PSF_t_5']
+
+		    psf_a_6 = photdata[1].header['PSF_a_6']
+		    psf_b_6 = photdata[1].header['PSF_b_6']
+		    psf_t_6 = photdata[1].header['PSF_t_6']
+
+		    psf_a_7 = photdata[1].header['PSF_a_7']
+		    psf_b_7 = photdata[1].header['PSF_b_7']
+		    psf_t_7 = photdata[1].header['PSF_t_7']
+
+		    psf_a_8 = photdata[1].header['PSF_a_8']
+		    psf_b_8 = photdata[1].header['PSF_b_8']
+		    psf_t_8 = photdata[1].header['PSF_t_8']
+
+		    psf_a_9 = photdata[1].header['PSF_a_9']
+		    psf_b_9 = photdata[1].header['PSF_b_9']
+		    psf_t_9 = photdata[1].header['PSF_t_9']
 
 		    frame_shift = photdata[1].header['SKY_MOVE']
 		    seeing_frame = photdata[1].header['SEEING']
@@ -141,9 +207,41 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
 		    hr, min, sec = utc[1].split(':')
 		    fwhm += [fwhm_frame]
 
-		    s_fwhma += [psf_a_5]
-		    s_fwhmb += [psf_b_5]
-		    s_fwhmt += [psf_t_5]
+		    fwhma_1 += [psf_a_1]
+		    fwhmb_1 += [psf_b_1]
+		    fwhmt_1 += [psf_t_1]
+
+		    fwhma_2 += [psf_a_2]
+		    fwhmb_2 += [psf_b_2]
+		    fwhmt_2 += [psf_t_2]
+
+		    fwhma_3 += [psf_a_3]
+		    fwhmb_3 += [psf_b_3]
+		    fwhmt_3 += [psf_t_3]
+
+		    fwhma_4 += [psf_a_4]
+		    fwhmb_4 += [psf_b_4]
+		    fwhmt_4 += [psf_t_4]
+
+		    fwhma_5 += [psf_a_5]
+		    fwhmb_5 += [psf_b_5]
+		    fwhmt_5 += [psf_t_5]
+
+		    fwhma_6 += [psf_a_6]
+		    fwhmb_6 += [psf_b_6]
+		    fwhmt_6 += [psf_t_6]
+
+		    fwhma_7 += [psf_a_7]
+		    fwhmb_7 += [psf_b_7]
+		    fwhmt_7 += [psf_t_7]
+
+		    fwhma_8 += [psf_a_8]
+		    fwhmb_8 += [psf_b_8]
+		    fwhmt_8 += [psf_t_8]
+
+		    fwhma_9 += [psf_a_9]
+		    fwhmb_9 += [psf_b_9]
+		    fwhmt_9 += [psf_t_9]
 
 		    seeing += [seeing_frame]
 		    rawflux = photdata[1].data['Aper_flux_3'].copy()
@@ -233,13 +331,46 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
     a16 = pf.Column(name='EXPOSURE', format='1D', array=exposure)
     a17 = pf.Column(name='IMAGE_ID',format='1K',array=imid)
     a18 = pf.Column(name='AIRMASS', format='1D', array=airmass)
-    a19 = pf.Column(name='PSF_a', format='1D', array=s_fwhma)
-    a20 = pf.Column(name='PSF_b',format='1D',array=s_fwhmb)
-    a21 = pf.Column(name='PSF_ang', format='1D', array=s_fwhmt)
+
+    a19 = pf.Column(name='PSF_a_1', format='1D', array=fwhma_1)
+    a20 = pf.Column(name='PSF_b_1',format='1D',array=fwhmb_1)
+    a21 = pf.Column(name='PSF_t_1', format='1D', array=fwhmt_1)
+
+    a22 = pf.Column(name='PSF_a_2', format='1D', array=fwhma_2)
+    a23 = pf.Column(name='PSF_b_2',format='1D',array=fwhmb_2)
+    a24 = pf.Column(name='PSF_t_2', format='1D', array=fwhmt_2)
+
+    a25 = pf.Column(name='PSF_a_3', format='1D', array=fwhma_3)
+    a26 = pf.Column(name='PSF_b_3',format='1D',array=fwhmb_3)
+    a27 = pf.Column(name='PSF_t_3', format='1D', array=fwhmt_3)
+
+    a28 = pf.Column(name='PSF_a_4', format='1D', array=fwhma_4)
+    a29 = pf.Column(name='PSF_b_4',format='1D',array=fwhmb_4)
+    a30 = pf.Column(name='PSF_t_4', format='1D', array=fwhmt_4)
+
+    a31 = pf.Column(name='PSF_a_5', format='1D', array=fwhma_5)
+    a32 = pf.Column(name='PSF_b_5',format='1D',array=fwhmb_5)
+    a33 = pf.Column(name='PSF_t_5', format='1D', array=fwhmt_5)
+
+    a34 = pf.Column(name='PSF_a_6', format='1D', array=fwhma_6)
+    a35 = pf.Column(name='PSF_b_6',format='1D',array=fwhmb_6)
+    a36 = pf.Column(name='PSF_t_6', format='1D', array=fwhmt_6)
+
+    a37 = pf.Column(name='PSF_a_7', format='1D', array=fwhma_7)
+    a38 = pf.Column(name='PSF_b_7',format='1D',array=fwhmb_7)
+    a39 = pf.Column(name='PSF_t_7', format='1D', array=fwhmt_7)
+
+    a40 = pf.Column(name='PSF_a_8', format='1D', array=fwhma_8)
+    a41 = pf.Column(name='PSF_b_8',format='1D',array=fwhmb_8)
+    a42 = pf.Column(name='PSF_t_8', format='1D', array=fwhmt_8)
+
+    a43 = pf.Column(name='PSF_a_9', format='1D', array=fwhma_9)
+    a44 = pf.Column(name='PSF_b_9',format='1D',array=fwhmb_9)
+    a45 = pf.Column(name='PSF_t_9', format='1D', array=fwhmt_9)
 
     hducatalogue=pf.BinTableHDU.from_columns([c1,c2,c3,c4,c5,c6])
 
-    hduimagelist=pf.BinTableHDU.from_columns([a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21])
+    hduimagelist=pf.BinTableHDU.from_columns([a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31,a32,a33,a34,a35,a36,a37,a38,a39,a40,a41,a42,a43,a44,a45])
 
     hduprime = pf.PrimaryHDU(np.array(flux).T)
 
