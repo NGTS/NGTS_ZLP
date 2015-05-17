@@ -32,6 +32,18 @@ run_test() {
 
 assert_output() {
     assert_npts_correct
+    assert_tmid_sorted
+}
+
+assert_tmid_sorted() {
+python - <<EOF
+import fitsio
+import numpy as np
+with fitsio.FITS("testdata/output.fits") as infile:
+    imagelist = infile['imagelist'].read()
+tmid = imagelist['TMID']
+assert (tmid == np.sort(tmid)).all(), tmid
+EOF
 }
 
 assert_npts_correct() {
