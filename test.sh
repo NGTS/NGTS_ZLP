@@ -6,12 +6,13 @@ abspath() {
 }
 
 BASEDIR=$(abspath $(dirname $0))
+PIPELINEDIR="${BASEDIR}/../zlp-script"
 STDERRFILE=/tmp/test.stderr
 STDOUTFILE=/tmp/test.stdout
 
 
 setup_environment() {
-    export PYTHONPATH=${BASEDIR}:${BASEDIR}/testdata:${PYTHONPATH}
+    export PYTHONPATH=${BASEDIR}:${BASEDIR}/testdata:${PIPELINEDIR}/scripts:${PYTHONPATH}
 }
 
 create_filelist(){
