@@ -13,6 +13,12 @@ STDOUTFILE=/tmp/test.stdout
 
 setup_environment() {
     export PYTHONPATH=${BASEDIR}:${BASEDIR}/testdata:${PIPELINEDIR}/scripts:${PYTHONPATH}
+    OUTFILE=$(find ${BASEDIR}/testdata -name 'output.fits')
+    if [ ! -z ${OUTFILE} ]; then
+        if [ -f ${OUTFILE} ]; then
+            rm ${OUTFILE}
+        fi
+    fi
 }
 
 create_filelist(){
