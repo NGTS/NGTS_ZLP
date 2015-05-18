@@ -14,35 +14,17 @@ import fitsio
 import sys
 from functools import partial
 from pipeutils import NullPool
+import os
 
 
 def m_condense_data(filelist, nproc, appsize, verbose=False, outdir='./'):
+    with open(filelist) as infile:
+        files = sorted([line.strip() for line in infile])
 
-    nfiles = 0
-    for line in open(filelist):
-        nfiles += 1
-
-    starts, ends = thread_alloc(nfiles, nproc)
-
-    pool = NullPool()
-    fn = lambda i: condense_data(filelist, starts[i], ends[i], i + 1, appsize, verbose)
-    pool.map(fn, range(nproc))
-
-    filelist = array([f for f in listdir(os.getcwd()) if 'output_' in f])
-    numberlist = array([int(f.split('_')[1].split('.')[0]) for f in filelist])
-    ordered = numberlist.argsort()
-
-    outname = os.path.join(outdir, 'output.fits')
-    stitch(filelist[ordered], appsize, outname)
-    compute_final_statistics(outname)
-
-    for f in filelist:
-        os.system('rm ' + f)
+    condense_data(files, os.path.join(outdir, 'output.fits'), appsize, verbose)
 
 
-def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
-
-    #Take all .phot outputs from casu imstack_ls and condense them into a single file with formatting suitible for reading by sysrem
+def condense_data(files, outfile_name, appsize, verbose):
 
     flux = []
     flux_err = []
@@ -90,93 +72,88 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
 
     first_frame = True
 
-    for i in range(minlen, maxlen):
-        line = linecache.getline(filelist, i).strip()
-        status_checks = line.split(' ')[1:]
-        image = line.split(' ')[0]
-        if all([status == 'ok' for status in status_checks]):
-            try:
-		with pf.open(image+'.phot') as photdata:
-		    ambient = photdata[1].header.get('WXTEMP', 30.0)
-		    cloud_status = photdata[1].header['CLOUD_S']
-		    fwhm_frame = photdata[1].header['FWHM']
-		    psf_a_5 = photdata[1].header['PSF_a_5']
-		    psf_b_5 = photdata[1].header['PSF_b_5']
-		    psf_t_5 = photdata[1].header['PSF_t_5']
+    for fname in files:
+        try:
+            with pf.open(fname+'.phot') as photdata:
+                ambient = photdata[1].header.get('WXTEMP', 30.0)
+                cloud_status = photdata[1].header['CLOUD_S']
+                fwhm_frame = photdata[1].header['FWHM']
+                psf_a_5 = photdata[1].header['PSF_a_5']
+                psf_b_5 = photdata[1].header['PSF_b_5']
+                psf_t_5 = photdata[1].header['PSF_t_5']
 
-		    frame_shift = photdata[1].header['SKY_MOVE']
-		    seeing_frame = photdata[1].header['SEEING']
+                frame_shift = photdata[1].header['SKY_MOVE']
+                seeing_frame = photdata[1].header['SEEING']
 
-		    imid += [photdata[1].header['IMAGE_ID']]
-		    SHIFT += [frame_shift]
+                imid += [photdata[1].header['IMAGE_ID']]
+                SHIFT += [frame_shift]
 
-		    CLOUDS += [cloud_status]
-		    SKY_MED += [photdata[1].header['SKYLEVEL']]
-		    ALT +=[photdata[1].header['TEL_ALT']]
-		    AZ +=[photdata[1].header['TEL_AZ']]
-		    TEL_RA +=[photdata[1].header['TEL_RA']]
-		    TEL_DEC +=[photdata[1].header['TEL_DEC']]
-		    airmass += [photdata[1].header.get('AIRMASS')]
-		    exposure += [photdata[1].header['EXPOSURE']]
-		    try:
-			ADU_DEV +=[photdata[1].header['ADU_DEV']]
-			skylevel +=[photdata[1].header['skylevel']]
-			meanbias += [photdata[1].header['BIASMEAN']]
-		    except:
-			imagedata = pf.open(line)
-			ADU_DEV +=[std(imagedata[0].data)]
-			skylevel +=[median(imagedata[0].data)]      
-			biasstrip = append(imagedata[0].data[:,:20],imagedata[0].data[:,-20:])
-			meanbias += [mean(biasstrip)]
-		    centerra +=[photdata[1].header['WCSF_RA']]
-		    centerdec +=[photdata[1].header['WCSF_DEC']]
-		    # correcting for airmass - the newer fits files have an airmass term, so just use that instead perhaps
-		    sky += [photdata[1].data['Sky_level'].copy()]
-		    frame_xpos = photdata[1].data['X_coordinate'].copy()
-		    frame_ypos = photdata[1].data['Y_coordinate'].copy()
-		    xpos += [frame_xpos]
-		    ypos += [frame_ypos]
-		    utc = photdata[1].header['OBSSTART'].split('T')
-		    yr, month, day = utc[0].split('-')
-		    hr, min, sec = utc[1].split(':')
-		    fwhm += [fwhm_frame]
+                CLOUDS += [cloud_status]
+                SKY_MED += [photdata[1].header['SKYLEVEL']]
+                ALT +=[photdata[1].header['TEL_ALT']]
+                AZ +=[photdata[1].header['TEL_AZ']]
+                TEL_RA +=[photdata[1].header['TEL_RA']]
+                TEL_DEC +=[photdata[1].header['TEL_DEC']]
+                airmass += [photdata[1].header.get('AIRMASS')]
+                exposure += [photdata[1].header['EXPOSURE']]
+                try:
+                    ADU_DEV +=[photdata[1].header['ADU_DEV']]
+                    skylevel +=[photdata[1].header['skylevel']]
+                    meanbias += [photdata[1].header['BIASMEAN']]
+                except:
+                    imagedata = pf.open(line)
+                    ADU_DEV +=[std(imagedata[0].data)]
+                    skylevel +=[median(imagedata[0].data)]      
+                    biasstrip = append(imagedata[0].data[:,:20],imagedata[0].data[:,-20:])
+                    meanbias += [mean(biasstrip)]
+                centerra +=[photdata[1].header['WCSF_RA']]
+                centerdec +=[photdata[1].header['WCSF_DEC']]
+                # correcting for airmass - the newer fits files have an airmass term, so just use that instead perhaps
+                sky += [photdata[1].data['Sky_level'].copy()]
+                frame_xpos = photdata[1].data['X_coordinate'].copy()
+                frame_ypos = photdata[1].data['Y_coordinate'].copy()
+                xpos += [frame_xpos]
+                ypos += [frame_ypos]
+                utc = photdata[1].header['OBSSTART'].split('T')
+                yr, month, day = utc[0].split('-')
+                hr, min, sec = utc[1].split(':')
+                fwhm += [fwhm_frame]
 
-		    s_fwhma += [psf_a_5]
-		    s_fwhmb += [psf_b_5]
-		    s_fwhmt += [psf_t_5]
+                s_fwhma += [psf_a_5]
+                s_fwhmb += [psf_b_5]
+                s_fwhmt += [psf_t_5]
 
-		    seeing += [seeing_frame]
-		    rawflux = photdata[1].data['Aper_flux_3'].copy()
-		    Skylev += [photdata[1].data['Sky_level'].copy()]
-		    Skyrms += [photdata[1].data['Sky_rms'].copy()]
-		    flux += [rawflux]
-                    flux_err += [photdata[1].data['Aper_flux_3_err'].copy()]
+                seeing += [seeing_frame]
+                rawflux = photdata[1].data['Aper_flux_3'].copy()
+                Skylev += [photdata[1].data['Sky_level'].copy()]
+                Skyrms += [photdata[1].data['Sky_rms'].copy()]
+                flux += [rawflux]
+                flux_err += [photdata[1].data['Aper_flux_3_err'].copy()]
 
-		    all_appertures = []
-		    all_err_apps = []
-		    for aper in [2, 4, 5, 6, 7]:
-                        flux_key = 'Aper_flux_{}'.format(aper)
-                        fluxerr_key = '{}_err'.format(flux_key)
-			rawflux = photdata[1].data[flux_key].copy()
-			all_appertures += [rawflux]
-			all_err_apps += [photdata[1].data[fluxerr_key].copy()]
+                all_appertures = []
+                all_err_apps = []
+                for aper in [2, 4, 5, 6, 7]:
+                    flux_key = 'Aper_flux_{}'.format(aper)
+                    fluxerr_key = '{}_err'.format(flux_key)
+                    rawflux = photdata[1].data[flux_key].copy()
+                    all_appertures += [rawflux]
+                    all_err_apps += [photdata[1].data[fluxerr_key].copy()]
 
-		    flux_grid += [all_appertures]
-		    flux_err_grid += [all_err_apps]
+                flux_grid += [all_appertures]
+                flux_err_grid += [all_err_apps]
 
-		    T +=[photdata[1].header['CCDTEMP']]
-		    coolstat +=[photdata[1].header['COOLSTAT']]
-		    mjd = photdata[1].header['MJD']
-		    hjd_hist += [mjd + photdata[1].data['hjd_correction'].copy()]
-		    time +=[[mjd]*len(flux[0])]
-		    if verbose == True:
-			print shape(time), line.split(' ')[0]+'.phot', thread_no
+                T +=[photdata[1].header['CCDTEMP']]
+                coolstat +=[photdata[1].header['COOLSTAT']]
+                mjd = photdata[1].header['MJD']
+                hjd_hist += [mjd + photdata[1].data['hjd_correction'].copy()]
+                time +=[[mjd]*len(flux[0])]
+                if verbose == True:
+                    print shape(time), line.split(' ')[0]+'.phot', thread_no
 
-            except Exception as err:
-		sys.stderr.write('Error analysing file {}, original error: {}\n'.format(
-		    image + '.phot', str(err)))
-        else:
-            print 'frame bad'
+        except Exception as err:
+            sys.stderr.write('Error analysing file {}, original error: {}\n'.format(
+                image + '.phot', str(err)))
+
     # generate time of mid exposure array
     tarray = np.array(time)
     tmid = tarray[:, 0] + ((array(exposure) / 2.0) / (3600.0 * 24.0))
@@ -185,7 +162,7 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
     error_grid = np.array(flux_err_grid)
 
     #get some data that should be common to all frames
-    with pf.open(image + '.phot') as photdata:
+    with pf.open(files[0] + '.phot') as photdata:
         RA = photdata[1].data['RA']
         DEC = photdata[1].data['DEC']
 
@@ -203,7 +180,7 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
 
     meanarray = np.array(meanflux)
 
-    npts = np.ones_like(meanarray) * (maxlen - minlen)
+    npts = np.ones_like(meanarray) * len(files)
 
     c1 = pf.Column(name='OBJ_ID', format='26A', array=objid)
     c2 = pf.Column(name='FLUX_MEAN',
@@ -290,10 +267,7 @@ def condense_data(filelist, minlen, maxlen, thread_no, appsize, verbose):
     hdulist[19].name = 'ERROR_4'
     hdulist[20].name = 'ERROR_5'
 
-    outname = 'output_' + str(thread_no) + '.fits'
-
-    if len(exposure) > 0:
-        hdulist.writeto(outname, clobber=True)
+    hdulist.writeto(outfile_name, clobber=True)
 
 
 def stitch(filelist, appsize, outname):
