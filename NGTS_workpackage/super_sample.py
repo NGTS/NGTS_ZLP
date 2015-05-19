@@ -124,15 +124,15 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag='',side=3,label_filt=Fals
 
     tag = file.rstrip('.fits')
 
-    #label_filt = ['f_1','f_3','f_5','f_7','f_9']
-
     if label_filt != False:
       labels = label_filt
+      frame_center = int(label_filt[len(label_filt)/2].split('_')[-1])
     else:
       labels = []
-      frame_center = int((side**2 + 1)/2)
       for i in range(0,side**2):
         labels += ['f_'+str(i+1)]
+      frame_center = int((side**2 + 1)/2)
+
 
     zero_array = np.zeros((factor*size,factor*size))
 
@@ -155,7 +155,7 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag='',side=3,label_filt=Fals
     f2 = plt.figure()
     f3 = plt.figure()
 
-    fwhm_extract(file,inputcat,factor,size,stars,labels,tag)
+    fwhm_extract(file,inputcat,factor,size,stars,labels,side,tag)
 
     for label in labels:
 
@@ -317,7 +317,7 @@ def gaussian2d(A,theta,sx,sy,x0,y0,x,y):
     f = A*np.exp(-(a*(x0-xx)**2 + 2*b*(x0- xx)*(y0 - yy) + c*(y0 - yy)**2.0))
     return f
 
-def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,tag=''):
+def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,side,tag=''):
 
     with pf.open(image_name) as imdata:
         image = imdata[0].data
@@ -354,16 +354,14 @@ def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,tag='
   
         condition_list = []
 
-        n = np.sqrt(int(condition_name_list[-1].split('_')[-1]))
-
         i = 0
-        for y in range(0,n)[::-1]:
-          ymin = y*my/n
-          ymax = (y+1)*my/n
+        for y in range(0,side)[::-1]:
+          ymin = y*my/side
+          ymax = (y+1)*my/side
           print ymin, ymax
-          for x in range(0,n):
-            xmin = x*mx/n
-            xmax = (x+1)*mx/n
+          for x in range(0,side):
+            xmin = x*mx/side
+            xmax = (x+1)*mx/side
             condition = [(xpos > xmin) & (xpos < xmax) & (ypos < ymax) & (ypos > ymin)]
             condition_list += [condition]
 
