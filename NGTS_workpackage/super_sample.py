@@ -118,6 +118,10 @@ def uncurry_call_find_fwhm(c):
 
 def call_find_fwhm(file,inputcat,factor,size,stars,tag='',side=3,label_filt=False):
 
+    if(side % 2 == 0):
+      print 'Side must be an odd number!'
+      quit()
+
     tag = file.rstrip('.fits')
 
     #label_filt = ['f_1','f_3','f_5','f_7','f_9']

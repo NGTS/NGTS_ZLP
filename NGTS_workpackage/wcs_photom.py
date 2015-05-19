@@ -87,9 +87,11 @@ def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=Fal
 
     factor = 5
     size = 11
-    stars = 100
+    stars = 1000
+    side = 3 #how many subdevisions of the chip along each axis. must be odd.
 
-    fwhm_a, fwhm_b, t = call_find_fwhm(image,cat_file,factor,size,stars,tag=image)
+
+    fwhm_a, fwhm_b, t = call_find_fwhm(image,cat_file,factor,size,stars,tag=image,side=side)
          
     cloud_status = cloud_check(image)
 
