@@ -116,26 +116,36 @@ def uncurry_call_find_fwhm(c):
     return call_find_fwhm(c[0],c[1],c[2],c[3],c[4],tag=c[5])
 
 
-def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
+def call_find_fwhm(file,inputcat,factor,size,stars,tag='',side=3,label_filt=False):
 
     tag = file.rstrip('.fits')
 
-    labels = ['f_1','f_3','f_5','f_7','f_9']
-    labels = ['f_1','f_2','f_3','f_4','f_5','f_6','f_7','f_8','f_9']
+    #label_filt = ['f_1','f_3','f_5','f_7','f_9']
 
-    fwhm_a = [[]]*len(labels)
-    fwhm_b = [[]]*len(labels)
-    fwhm = [[]]*len(labels)
-    theta = [[]]*len(labels)
+    if label_filt != False:
+      labels = label_filt
+    else:
+      labels = []
+      frame_center = int((side**2 + 1)/2)
+      for i in range(0,side**2):
+        labels += ['f_'+str(i+1)]
 
     zero_array = np.zeros((factor*size,factor*size))
 
-    fwhm = {'f_1':[],'f_2':[],'f_3':[],'f_4':[],'f_5':[],'f_6':[],'f_7':[],'f_8':[],'f_9':[]}
-    fwhm_a = {'f_1':[],'f_2':[],'f_3':[],'f_4':[],'f_5':[],'f_6':[],'f_7':[],'f_8':[],'f_9':[]}
-    fwhm_b = {'f_1':[],'f_2':[],'f_3':[],'f_4':[],'f_5':[],'f_6':[],'f_7':[],'f_8':[],'f_9':[]}
-    theta = {'f_1':[],'f_2':[],'f_3':[],'f_4':[],'f_5':[],'f_6':[],'f_7':[],'f_8':[],'f_9':[]}
-    data = {'f_1':zero_array.copy(),'f_2':zero_array.copy(),'f_3':zero_array.copy(),'f_4':zero_array.copy(),'f_5':zero_array.copy(),'f_6':zero_array.copy(),'f_7':zero_array.copy(),'f_8':zero_array.copy(),'f_9':zero_array.copy()}
-    lengths = {'f_1':True,'f_2':True,'f_3':True,'f_4':True,'f_5':True,'f_6':True,'f_7':True,'f_8':True,'f_9':True}
+    fwhm = {}
+    fwhm_a = {}
+    fwhm_b = {}
+    theta = {}
+    data = {}
+    lengths = {}
+
+    for label in labels:
+      fwhm[label] = []
+      fwhm_a[label] = []
+      fwhm_b[label] = []
+      theta[label] = []
+      data[label] = zero_array.copy()
+      lengths[label] = True
 
     f1 = plt.figure()
     f2 = plt.figure()
@@ -158,7 +168,7 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
         theta[label] += [theta_frame]
 
         label_no = int(label.split('_')[-1])
-        a1 = f1.add_subplot(3,3,label_no)
+        a1 = f1.add_subplot(side,side,label_no)
         ticks = factor*np.arange(size)
         a1.set_yticks(ticks)
         a1.set_yticklabels(np.arange(size))
@@ -175,7 +185,8 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
         a1.get_yaxis().set_ticklabels([])
 
         # ONLY COMPUTE THIS ONCE...
-        if label_no == 5:
+        print label_no, frame_center
+        if label_no == frame_center:
             stub = os.path.basename(file)
             av_fwhm_a = round(fwhm_a_frame,2)
             av_fwhm_b = round(fwhm_b_frame,2)
@@ -184,7 +195,7 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
 
 
 
-        a2 = f2.add_subplot(3,3,label_no)
+        a2 = f2.add_subplot(side,side,label_no)
         ticks = factor*np.arange(size)
         a2.set_yticks(ticks)
         a2.set_yticklabels(np.arange(size))
@@ -201,7 +212,7 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
         a2.get_yaxis().set_ticklabels([])
 
 
-        a3 = f3.add_subplot(3,3,label_no)
+        a3 = f3.add_subplot(side,side,label_no)
         ticks = factor*np.arange(size)
         a3.set_yticks(ticks)
         a3.set_yticklabels(np.arange(size))
@@ -218,9 +229,9 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag=''):
         a3.get_xaxis().set_ticklabels([])
         a3.get_yaxis().set_ticklabels([])
 
-    f1.suptitle('PSF_a_5: {0:.2f}        e: {1:.2f}      theta: {2:.0f}'.format(av_fwhm_a, eccentricity, av_theta),size=15)
-    f2.suptitle('PSF_a_5: {0:.2f}        e: {1:.2f}      theta: {2:.0f}'.format(av_fwhm_a, eccentricity, av_theta),size=15)
-    f3.suptitle('PSF_a_5: {0:.2f}        e: {1:.2f}      theta: {2:.0f}'.format(av_fwhm_a, eccentricity, av_theta),size=15)
+    f1.suptitle('Center PSF: {0:.2f}        e: {1:.2f}      theta: {2:.0f}'.format(av_fwhm_a, eccentricity, av_theta),size=15)
+    f2.suptitle('Center PSF: {0:.2f}        e: {1:.2f}      theta: {2:.0f}'.format(av_fwhm_a, eccentricity, av_theta),size=15)
+    f3.suptitle('Center PSF: {0:.2f}        e: {1:.2f}      theta: {2:.0f}'.format(av_fwhm_a, eccentricity, av_theta),size=15)
 
     f1.text(0.5, 0.05, '{0}'.format(stub), ha="center", va="center",size=15)
     f2.text(0.5, 0.05, '{0}'.format(stub), ha="center", va="center",size=15)
@@ -322,12 +333,6 @@ def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,tag='
             xpos = xpos[selection]
             ypos = ypos[selection]
 
-#        with pf.open('../focus_test/test.cat') as photdata:
-#            mean_fluxes = photdata[2].data['FLUX_APER']
-#            IQR = [(mean_fluxes < (np.median(mean_fluxes[mean_fluxes > median(mean_fluxes)]))) & (mean_fluxes > (median(mean_fluxes[mean_fluxes < median(mean_fluxes)])))]
-#            xpos = photdata[2].data['X_IMAGE'][mean_fluxes > 3*mean(mean_fluxes)]
-#            ypos = photdata[2].data['Y_IMAGE'][mean_fluxes > 3*mean(mean_fluxes)]
-
         imdata.close()
 
         x_phase = np.array([abs(x-int(x)) for x in xpos])
@@ -335,49 +340,32 @@ def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,tag='
 
         imdata.close()
 
-#        n,bins,patches = hist(x_phase,10,normed=1)
-#        show()
-#        n,bins,patches = hist(y_phase,10,normed=1)
-#        show()
+        mx = 2048
+        my = 2048
+
 
         mx = 2048
         my = 2048
 
-#        top_left = [(xpos < mean(xpos)) & (ypos > mean(ypos))],xpos[(xpos < mean(xpos)) & (ypos > mean(ypos))]
-#        top_right = [(xpos > mean(xpos)) & (ypos > mean(ypos))],xpos[(xpos > mean(xpos)) & (ypos > mean(ypos))]
-#        bottom_left = [(xpos < mean(xpos)) & (ypos < mean(ypos))],xpos[(xpos < mean(xpos)) & (ypos < mean(ypos))]
-#        bottom_right = [(xpos > mean(xpos)) & (ypos < mean(ypos))],xpos[(xpos > mean(xpos)) & (ypos < mean(ypos))]
-#        condition_list = [top_left,top_right,bottom_left,bottom_right]
-#        condition_name_list = ['top_left','top_right','bottom_left','bottom_right']
+  
+        condition_list = []
 
-        mx = 2048
-        my = 2048
+        n = np.sqrt(int(condition_name_list[-1].split('_')[-1]))
 
-        f_1 = [(xpos < mx/3) & (ypos > 2*my/3)]
-        f_2 = [(xpos > mx/3) & (xpos < 2*mx/3) & (ypos < my/3)]
-        f_3 = [(xpos > 2*mx/3) & (ypos > 2*my/3)]
-
-        f_4 = [(xpos < mx/3) & (ypos < 2*my/3)]
-        f_5 = [(xpos > mx/3) & (xpos < 2*mx/3) & (ypos < 2*my/3) & (ypos > mx/3)]
-        f_6 = [(xpos > 2*mx/3) & (ypos < 2*my/3)]
-
-        f_7 = [(xpos < mx/3) & (ypos < my/3)]
-        f_8 = [(xpos > mx/3) & (xpos < 2*mx/3) & (ypos < my/3)]
-        f_9 = [(xpos > 2*mx/3) & (ypos < my/3)]
-
-        condition_list = [f_1,f_2,f_3,f_4,f_5,f_6,f_7,f_8,f_9]
+        i = 0
+        for y in range(0,n)[::-1]:
+          ymin = y*my/n
+          ymax = (y+1)*my/n
+          print ymin, ymax
+          for x in range(0,n):
+            xmin = x*mx/n
+            xmax = (x+1)*mx/n
+            condition = [(xpos > xmin) & (xpos < xmax) & (ypos < ymax) & (ypos > ymin)]
+            condition_list += [condition]
 
         for x in condition_name_list:
             i = int(x.split('_')[-1])-1
             get_psf(ypos[condition_list[i][0]],xpos[condition_list[i][0]],image,size,factor,x,tag)
-
-#        threads = []
-#        for i in range(0,len(condition_list)):
-#            t = threading.Thread(target=get_psf, args = (ypos[condition_list[i][0]],xpos[condition_list[i][0]],image,size,factor,condition_name_list[i],tag))
-#            threads.append(t)
-#            threads = np.append(threads,t)
-#        [x.start() for x in threads]
-#        [x.join() for x in threads]
 
 def get_psf(ypos,xpos,image,size,factor,condition_name,tag=''):
 
