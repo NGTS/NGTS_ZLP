@@ -14,7 +14,7 @@ Options:
 
 import argparse
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import astropy.io.fits as pf
 import pickle
@@ -26,9 +26,14 @@ import multiprocessing.dummy as multithreading
 import multiprocessing
 from functools import partial
 
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+import itertools
+
 matplotlib.rc('text', usetex=False)
 
-def super_sample(filelist,inputcat,factor,size,stars,binning,tag,nproc=4):
+def super_sample(filelist,inputcat,factor,size,stars,binning,tag,side,nproc=4):
 
     p = multiprocessing.Pool(nproc)
 
@@ -38,12 +43,14 @@ def super_sample(filelist,inputcat,factor,size,stars,binning,tag,nproc=4):
     files_model = ''
     files_residuals = ''
     files_psf = ''
+    files_surface = ''
 
     for line in open(filelist,'r'):
         files += [line.rstrip('\n')]
         files_psf += files[-1].rstrip('.fits')+'_psf.png,'
         files_model += files[-1].rstrip('.fits')+'_model.png,'
         files_residuals += files[-1].rstrip('.fits')+'_residuals.png,'
+        files_surface += files[-1].rstrip('.fits')+'_surface.png,'
     
     data_points = len(files)
 
@@ -54,7 +61,7 @@ def super_sample(filelist,inputcat,factor,size,stars,binning,tag,nproc=4):
 
     curry = []
     for i in range(0,data_points):
-        curry += [[files[i],inputcat,factor,size,stars,tag]]
+        curry += [[files[i],inputcat,factor,size,stars,tag,side]]
         with pf.open(files[i]) as imdata:
             mjd +=[imdata[0].header['MJD']]
 
@@ -95,25 +102,13 @@ def super_sample(filelist,inputcat,factor,size,stars,binning,tag,nproc=4):
     print command
     os.system(command)
 
-    quit()
-
-    i = 0
-    for file in files:
-        fwhm_a, fwhm_b, t = call_find_fwhm(file,inputcat,factor,size,stars,tag=tag)
-        f_5x += [fwhm_a['f_5']]
-        f_5y += [fwhm_b['f_5']]
-        theta += [t['f_5']]
-        i +=1
-
- # labels = ['f_1','f_3','f_5','f_7','f_9']
-
-#  for label in labels:
-#        condense_data(label,tag=tag)
-
-#  plot_everything(files[0:10],labels,binning,tag=tag)
-
+    outputf = tag+'_surface.avi'
+    command = 'mencoder mf://'+files_surface.rstrip(',')+' -mf w=800:h=600:fps='+str(fps)+':type=png -ovc raw -oac copy -o '+outputf
+    print command
+    os.system(command)
+  
 def uncurry_call_find_fwhm(c):
-    return call_find_fwhm(c[0],c[1],c[2],c[3],c[4],tag=c[5])
+    return call_find_fwhm(c[0],c[1],c[2],c[3],c[4],tag=c[5],side=c[6])
 
 
 def call_find_fwhm(file,inputcat,factor,size,stars,tag='',side=3,label_filt=False):
@@ -189,7 +184,6 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag='',side=3,label_filt=Fals
         a1.get_yaxis().set_ticklabels([])
 
         # ONLY COMPUTE THIS ONCE...
-        print label_no, frame_center
         if label_no == frame_center:
             stub = os.path.basename(file)
             av_fwhm_a = round(fwhm_a_frame,2)
@@ -251,6 +245,9 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag='',side=3,label_filt=Fals
 
     for label in labels:
         os.system('rm '+tag+label+'.p')
+
+
+    fit_focus_surface(labels,fwhm_a,fwhm_b,side,tag)
 
     cache = False
     if cache == True:
@@ -346,11 +343,6 @@ def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,side,
 
         mx = 2048
         my = 2048
-
-
-        mx = 2048
-        my = 2048
-
   
         condition_list = []
 
@@ -358,7 +350,6 @@ def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,side,
         for y in range(0,side)[::-1]:
           ymin = y*my/side
           ymax = (y+1)*my/side
-          print ymin, ymax
           for x in range(0,side):
             xmin = x*mx/side
             xmax = (x+1)*mx/side
@@ -444,6 +435,89 @@ def recenter(oversampled,xshift,yshift):
         oversampled=np.append(oversampled[:,yshift:],blanks,axis=1)
     return oversampled
 
+def fit_focus_surface(labels,fwhm_a,fwhm_b,side,tag):
+
+  mx = 2048.0
+  my = 2048.0
+
+  condition_list = []
+
+  i = 0
+
+  xcens = []
+  ycens = []
+
+  for y in range(0,side)[::-1]:
+    ycen = (y+0.5)*my/side
+    for x in range(0,side):
+      xcen = (x + 0.5)*mx/side
+      xcens += [xcen]
+      ycens += [ycen]
+
+  xcens = np.array(xcens)
+  ycens = np.array(ycens)
+
+  Z = []
+  for label in labels:
+    psf_area = [fwhm_a[label][0]*fwhm_b[label][0]*np.pi]
+    Z += psf_area
+
+  Z = np.array(Z)
+
+  #order = np.argsort(ycens.copy())
+  #xcens = xcens[order]
+  #ycens = ycens[order]
+  #Z = Z[order]
+
+  X, Y = np.meshgrid(xcens, ycens)
+
+  m = polyfit2d(xcens,ycens,Z,order=2)
+
+  nx = 20
+  ny = 20
+
+  xx, yy = np.meshgrid(np.linspace(0, mx, nx), 
+			np.linspace(0, my, ny))
+  zz = polyval2d(xx, yy, m)
+
+  plt.imshow(zz, extent=(0, my, 0, mx), cmap=cm.afmhot)
+  plt.scatter(xcens, ycens, c=Z, cmap=cm.afmhot)
+  plt.savefig(tag+'_surface.png', bbox_inches=0)
+  plt.close()
+
+  pickle.dump(m, open(tag+'_fitparams.p','wb'))
+
+  #fig = plt.figure()
+  #ax = fig.gca(projection='3d')
+
+  #surf = ax.plot_surface(xx, yy, zz, rstride=1, cstride=1, cmap=cm.coolwarm,
+	  #linewidth=0, antialiased=False)
+
+  #ax.set_zlim(-1.01, 1.01)
+  #ax.zaxis.set_major_locator(LinearLocator(10))
+  #ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+
+  #fig.colorbar(surf, shrink=0.5, aspect=5)
+
+  #plt.show()
+
+def polyfit2d(x, y, z, order=3):
+    ncols = (order + 1)**2
+    G = np.zeros((x.size, ncols))
+    ij = itertools.product(range(order+1), range(order+1))
+    for k, (i,j) in enumerate(ij):
+        G[:,k] = x**i * y**j
+    m, _, _, _ = np.linalg.lstsq(G, z)
+    return m
+
+def polyval2d(x, y, m):
+    order = int(np.sqrt(len(m))) - 1
+    ij = itertools.product(range(order+1), range(order+1))
+    z = np.zeros_like(x)
+    for a, (i,j) in zip(m, ij):
+        z += a * x**i * y**j
+    return z
+
 if __name__ == '__main__':
 
     description='''
@@ -465,15 +539,17 @@ if __name__ == '__main__':
                                             help='What oversampling factor to use [default: 5]')
     parser.add_argument('--size', type=int, required=False, default=11,
                                             help='how large a region around each star to stack [default: 11]')
-    parser.add_argument('--stars', type=int, required=False, default=100,
+    parser.add_argument('--stars', type=int, required=False, default=1000,
                                             help='How many stars to stack in each quadrant [default: 100]')
     parser.add_argument('--binning', type=int, required=False, default=1,
                                             help='use a binning factor for long time series? [default: 1]')
     parser.add_argument('--nproc', type=int, required=False, default=4,
                                             help='use multiprocessing? [default: 4]')
+    parser.add_argument('--side', type=int, required=False, default=3,
+                                            help='How many times should the image be split on each axis? (Must be odd) [default: 3]')
 
     args = parser.parse_args()
 
-    super_sample(args.filelist,args.inputcat,args.factor,args.size,args.stars,args.binning,args.outname,args.nproc)
+    super_sample(args.filelist,args.inputcat,args.factor,args.size,args.stars,args.binning,args.outname,args.side,args.nproc)
 
 # vim: sw=2
