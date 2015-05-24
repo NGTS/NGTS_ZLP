@@ -95,13 +95,7 @@ def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=Fal
          
     cloud_status = cloud_check(image)
 
-    pixel_fwhm = pf.getval(outname,'SEEING',1)
-    plate_scale = 5.0 
-    seeing = round(plate_scale*pixel_fwhm*3600,2)
-
     pf.setval(outname,'CLOUD_S',1,value=round(cloud_status,2),comment='A measure of bulk structure in the image (S/N)')
-    pf.setval(outname,'FWHM',1,value=pixel_fwhm,comment='[pixels] Average FWHM')
-    pf.setval(outname,'SEEING',1,value=seeing,comment='[arcseconds] Average FWHM')
     positions = ['Top left.','Top middle.','Top right.','Middle left.','Center.','Middle right.','Bottom left.','Bottom middle.','Bottom right.']
 
     for val in range(1,10):
