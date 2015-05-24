@@ -20,7 +20,7 @@ def cum_guassian_func(p, x):
     return f
 
 
-def cloud_check(image_name):
+def compute_frame_signal_to_noise(image_name):
     with pf.open(image_name) as imagedata:
         gain = 1.
         SNimage = (mean(imagedata[0].data) /

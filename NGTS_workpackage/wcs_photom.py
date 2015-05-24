@@ -93,9 +93,9 @@ def wcs_photom(image,cat_file='nocat',conf_file='noconf',appsize=2.0,verbose=Fal
 
     fwhm_a, fwhm_b, t = call_find_fwhm(image,cat_file,factor,size,stars,tag=image,side=side)
          
-    cloud_status = cloud_check(image)
+    frame_ston = compute_frame_signal_to_noise(image)
 
-    pf.setval(outname,'CLOUD_S',1,value=round(cloud_status,2),comment='A measure of bulk structure in the image (S/N)')
+    pf.setval(outname,'FRAME_SN',1,value=round(frame_ston,2),comment='A measure of bulk structure in the image (S/N)')
     positions = ['Top left.','Top middle.','Top right.','Middle left.','Center.','Middle right.','Bottom left.','Bottom middle.','Bottom right.']
 
     for val in range(1,10):
