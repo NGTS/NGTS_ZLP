@@ -150,14 +150,11 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag='',side=3,label_filt=Fals
     f2 = plt.figure()
     f3 = plt.figure()
 
-    fwhm_extract(file,inputcat,factor,size,stars,labels,side,tag)
+    stacks = fwhm_extract(file,inputcat,factor,size,stars,labels,side,tag)
 
     for label in labels:
 
-        dat = pickle.load(open(tag+label+'.p','rb'))
-
-        data[label] += dat
-        data[label] = data[label]/data[label].max()
+        data[label] = stacks[label]/stacks[label].max()
         fwhm_a_frame, fwhm_b_frame, theta_frame, residuals, model = find_2dfwhm(data[label],factor,size)
         print fwhm_a_frame, fwhm_b_frame, theta_frame, label
         
@@ -242,10 +239,6 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag='',side=3,label_filt=Fals
     plt.close()
     plt.close()
     plt.close()
-
-    for label in labels:
-        os.system('rm '+tag+label+'.p')
-
 
     fit_focus_surface(labels,fwhm_a,fwhm_b,side,tag)
 
@@ -356,9 +349,15 @@ def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,side,
             condition = [(xpos > xmin) & (xpos < xmax) & (ypos < ymax) & (ypos > ymin)]
             condition_list += [condition]
 
+        dat = {}
+
         for x in condition_name_list:
             i = int(x.split('_')[-1])-1
-            get_psf(ypos[condition_list[i][0]],xpos[condition_list[i][0]],image,size,factor,x,tag)
+            stack = get_psf(ypos[condition_list[i][0]],xpos[condition_list[i][0]],image,size,factor,x,tag)
+            dat[x] = stack
+
+        return dat
+
 
 def get_psf(ypos,xpos,image,size,factor,condition_name,tag=''):
 
@@ -381,9 +380,7 @@ def get_psf(ypos,xpos,image,size,factor,condition_name,tag=''):
     stack = stack - np.median(stack)
     stack = stack / stack.max()
 
-    outname = tag+condition_name+'.p'
-
-    pickle.dump(stack, open(outname,'wb'))
+    return stack
 
 
 def return_sample_square(c,image,size,factor):
@@ -460,7 +457,8 @@ def fit_focus_surface(labels,fwhm_a,fwhm_b,side,tag):
   Z = []
   for label in labels:
     psf_area = [fwhm_a[label][0]*fwhm_b[label][0]*np.pi]
-    Z += psf_area
+    #Z += psf_area
+    Z += [fwhm_b[label][0]]
 
   Z = np.array(Z)
 
@@ -477,7 +475,7 @@ def fit_focus_surface(labels,fwhm_a,fwhm_b,side,tag):
   ny = 20
 
   xx, yy = np.meshgrid(np.linspace(0, mx, nx), 
-			np.linspace(0, my, ny))
+                        np.linspace(0, my, ny))
   zz = polyval2d(xx, yy, m)
 
   plt.imshow(zz, extent=(0, my, 0, mx), cmap=cm.afmhot)
@@ -485,13 +483,13 @@ def fit_focus_surface(labels,fwhm_a,fwhm_b,side,tag):
   plt.savefig(tag+'_surface.png', bbox_inches=0)
   plt.close()
 
-  pickle.dump(m, open(tag+'_fitparams.p','wb'))
+  pickle.dump(m, open(tag+'_fitparams_2.p','wb'))
 
   #fig = plt.figure()
   #ax = fig.gca(projection='3d')
 
   #surf = ax.plot_surface(xx, yy, zz, rstride=1, cstride=1, cmap=cm.coolwarm,
-	  #linewidth=0, antialiased=False)
+          #linewidth=0, antialiased=False)
 
   #ax.set_zlim(-1.01, 1.01)
   #ax.zaxis.set_major_locator(LinearLocator(10))
