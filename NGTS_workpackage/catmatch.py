@@ -212,11 +212,17 @@ def calc_seps(mycat, cat, RA_lims, DEC_lims, world, my_X, my_Y, dicty,
 
     old_n = len(course_seps)
     n = old_n - 1
+
+    # a sigma clipping routine to remove incorrectly matched stars
+    # iterates until there are no stars with seperations > 5 standard deviations
+    # from the median
+
+    iterations = 0
+
     while ((old_n - n) > 0):
         old_n = len(course_seps)
         stdev = np.std(course_seps)
         course_fit = np.median(course_seps)
-        #      print 'std',stdev,'med',course_fit,'n',len(course_seps)
         fs = [course_seps < (course_fit + 5.0 * stdev)]
         xs = xs[fs]
         ys = ys[fs]
@@ -226,6 +232,11 @@ def calc_seps(mycat, cat, RA_lims, DEC_lims, world, my_X, my_Y, dicty,
         y_sep = y_sep[fs]
         course_seps = course_seps[fs]
         n = len(course_seps)
+        iterations += 1
+        if iterations > 1e6:
+            print 'Error calculating clipped mean of star seperations'
+            break
+
     return xs, ys, RA_sep, DEC_sep, x_sep, y_sep, course_seps
 
 
