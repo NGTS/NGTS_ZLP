@@ -25,11 +25,14 @@ import numpy as np
 import multiprocessing.dummy as multithreading
 import multiprocessing
 from functools import partial
+import fitsio
 
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import itertools
+from NGTS_workpackage.catmatch import load_pixels_from_keywords
+
 
 matplotlib.rc('text', usetex=False)
 
@@ -85,7 +88,7 @@ def super_sample(filelist,inputcat,factor,size,stars,binning,tag,side,nproc=4):
 
     plt.close()
 
-    fps = 5
+    fps = 30
 
     outputf = tag+'_psf.avi'
     command = 'mencoder mf://'+files_psf.rstrip(',')+' -mf w=800:h=600:fps='+str(fps)+':type=png -ovc raw -oac copy -o '+outputf
@@ -156,7 +159,7 @@ def call_find_fwhm(file,inputcat,factor,size,stars,tag='',side=3,label_filt=Fals
 
         data[label] = stacks[label]/stacks[label].max()
         fwhm_a_frame, fwhm_b_frame, theta_frame, residuals, model = find_2dfwhm(data[label],factor,size)
-        print fwhm_a_frame, fwhm_b_frame, theta_frame, label
+        #print fwhm_a_frame, fwhm_b_frame, theta_frame, label
         
         fwhm_a[label] += [fwhm_a_frame]
         fwhm_b[label] += [fwhm_b_frame]
@@ -327,6 +330,24 @@ def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,side,
             xpos = xpos[selection]
             ypos = ypos[selection]
 
+            rapos = photdata[1].data['RA']
+            decpos = photdata[1].data['DEC']
+            rapos = rapos[selection]
+            decpos = decpos[selection]
+
+            mean_fluxes = mean_fluxes[selection]
+
+            wcscrd = [[rapos[i], decpos[i]] for i in range(0, len(rapos))]
+            im_header = fitsio.read_header(image_name)
+            pixels = load_pixels_from_keywords(im_header, wcscrd)
+
+            new_xpos = [px[0] for px in pixels]
+            new_ypos = [py[1] for py in pixels]
+
+            xpos = np.array(new_xpos)
+            ypos = np.array(new_ypos)
+
+
         imdata.close()
 
         x_phase = np.array([abs(x-int(x)) for x in xpos])
@@ -353,6 +374,7 @@ def fwhm_extract(image_name,inputcat,factor,size,stars,condition_name_list,side,
 
         for x in condition_name_list:
             i = int(x.split('_')[-1])-1
+            #print len(ypos[condition_list[i][0]]), 'stars in ',x, np.median(mean_fluxes[condition_list[i][0]]), np.mean(mean_fluxes[condition_list[i][0]]), np.min(mean_fluxes[condition_list[i][0]]), np.max(mean_fluxes[condition_list[i][0]])
             stack = get_psf(ypos[condition_list[i][0]],xpos[condition_list[i][0]],image,size,factor,x,tag)
             dat[x] = stack
 
@@ -457,8 +479,7 @@ def fit_focus_surface(labels,fwhm_a,fwhm_b,side,tag):
   Z = []
   for label in labels:
     psf_area = [fwhm_a[label][0]*fwhm_b[label][0]*np.pi]
-    #Z += psf_area
-    Z += [fwhm_b[label][0]]
+    Z += psf_area
 
   Z = np.array(Z)
 
@@ -476,14 +497,21 @@ def fit_focus_surface(labels,fwhm_a,fwhm_b,side,tag):
 
   xx, yy = np.meshgrid(np.linspace(0, mx, nx), 
                         np.linspace(0, my, ny))
-  zz = polyval2d(xx, yy, m)
+  zz = polyval2d([xx, yy],m)
+
+  model_min = np.argmin(zz)
+
+  midx = xx.flatten()[model_min]
+  midy = yy.flatten()[model_min]
+
+  print midx, midy
 
   plt.imshow(zz, extent=(0, my, 0, mx), cmap=cm.afmhot)
   plt.scatter(xcens, ycens, c=Z, cmap=cm.afmhot)
   plt.savefig(tag+'_surface.png', bbox_inches=0)
   plt.close()
 
-  pickle.dump(m, open(tag+'_fitparams_2.p','wb'))
+  pickle.dump(m, open(tag+'_fitparams_3x3.p','wb'))
 
   #fig = plt.figure()
   #ax = fig.gca(projection='3d')
@@ -501,14 +529,28 @@ def fit_focus_surface(labels,fwhm_a,fwhm_b,side,tag):
 
 def polyfit2d(x, y, z, order=3):
     ncols = (order + 1)**2
-    G = np.zeros((x.size, ncols))
-    ij = itertools.product(range(order+1), range(order+1))
-    for k, (i,j) in enumerate(ij):
-        G[:,k] = x**i * y**j
-    m, _, _, _ = np.linalg.lstsq(G, z)
+
+    #G = np.zeros((x.size, ncols))
+    #ij = itertools.product(range(order+1), range(order+1))
+    #for k, (i,j) in enumerate(ij):
+        #G[:,k] = x**i * y**j
+    #m, _, _, _ = np.linalg.lstsq(G, z)
+
+    x1 = [1.0]*ncols
+    m, success = opt.leastsq(eval_polyval2d, x1, args=(x,y,z))
+
     return m
 
-def polyval2d(x, y, m):
+def eval_polyval2d(m, x, y,z):
+
+    model = polyval2d([x,y],m)
+    return (model-z)/z
+
+
+def polyval2d(xx,m):
+
+    x = xx[0]
+    y = xx[1]
     order = int(np.sqrt(len(m))) - 1
     ij = itertools.product(range(order+1), range(order+1))
     z = np.zeros_like(x)

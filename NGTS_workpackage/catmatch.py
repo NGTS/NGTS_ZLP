@@ -288,3 +288,21 @@ def load_wcs_from_keywords(fheader, pixcrd):
     world = w.wcs_pix2world(pixcrd, 1)
 
     return world
+
+def load_pixels_from_keywords(fheader, wcscrd):
+    # Load the WCS information from a fits header, and use it
+    # to convert pixel coordinates to world coordinates.
+    # Load the FITS hdulist using astropy.io.fits
+
+    #hdulist = fits.open(filename)
+    #fheader = hdulist[0].header
+
+    # Parse the WCS keywords in the primary HDU
+    w = wcs.WCS(fheader)
+
+    # Convert pixel coordinates to world coordinates
+    # The second argument is "origin" -- in this case we're declaring we
+    # have 1-based (Fortran-like) coordinates.
+    pixels = w.wcs_world2pix(wcscrd, 1)
+
+    return pixels
