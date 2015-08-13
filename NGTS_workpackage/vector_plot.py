@@ -5,7 +5,7 @@ Create a vector plot of the astrometric errors. The errors are greatly exagerate
 Returns the median astrometric error for diagnostic use.
 
 Usage:
-  vector_plot.py [options] (<CATALOG_NAME>) (<IMAGE_NAME>) (<PLOT_NAME>)
+  vector_plot.py [options] (<CATALOG_NAME>) (<IMAGE_NAME>) (<PLOT_NAME>) (<PLOT_NAME>) (<CAT>) (<CAT_SRC>)
 
 Options:
   -h --help  Show help text
@@ -21,10 +21,22 @@ from NGTS_workpackage.catmatch import load_wcs_from_keywords
 from NGTS_workpackage.catmatch import calc_seps
 
 
-def wcsf_QCheck(catalog_name, image_name, plot_name, cat, RA_lims, DEC_lims,
-                my_X, my_Y,
+def wcsf_QCheck(catalog_name, image_name, plot_name, cat, catsrc,
                 upscale_factor=500,
                 plot=True):
+
+
+    my_X = cat[1].data['x_coordinate']
+    my_Y = cat[1].data['y_coordinate']
+
+    cat_names = []
+    RA_lims = []
+    DEC_lims = []
+    for line in open(catsrc+'/index'):
+        vals = line.strip('\n').split(' ')
+        cat_names += [vals[0]]
+        RA_lims += [[float(vals[2]),float(vals[3])]]
+        DEC_lims += [[float(vals[4]),float(vals[5])]]
 
     print 'about to plot'
 
@@ -141,8 +153,10 @@ if __name__ == '__main__':
     parser.add_argument("catalog_name")
     parser.add_argument('image_name')
     parser.add_argument('plot_name')
+    parser.add_argument('cat')
+    parser.add_argument('catsrc')
 
     args = parser.parse_args()
     med_sep = plot_differences(args.catalog_name, args.image_name,
-                               args.plot_name)
+                               args.plot_name, args.cat, args.catsrc)
     print 'the median sep is', med_sep, ' arcseconds'
