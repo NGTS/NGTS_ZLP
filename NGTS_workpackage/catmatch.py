@@ -100,7 +100,7 @@ def fit_shift_wcs_axis(dicty, casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC,
     world = load_wcs_from_keywords(dicty, pix_coords)
 
     if update == True:
-        apply_correct(dicty, casuin, TEL_RA, TEL_DEC)
+        apply_correct_old(dicty, casuin, TEL_RA, TEL_DEC)
 
     xs, ys, RA_sep, DEC_sep, x_sep, y_sep, sep_list = calc_seps(
         mycat, cat, RA_lims, DEC_lims, world, my_X, my_Y, dicty)
