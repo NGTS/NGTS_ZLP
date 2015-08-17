@@ -22,7 +22,7 @@ def main(args):
     burns = 0
     start_size = 1e-2
 
-    hdulist = fitsio.read_header(args.casuin.rstrip('.fits')+'.new')
+    hdulist = fitsio.read_header(args.casuin.replace('.fits','.new'))
     XVAL = hdulist['NAXIS1'] / 2
     YVAL = hdulist['NAXIS2'] / 2
     TEL_RA = hdulist['TEL_RA']
@@ -153,7 +153,7 @@ def main(args):
         pool = mp.Pool(nthreads)
         toolbox.register("map", pool.map)
 
-        pop, logbook = algorithms.eaSimple(pop, toolbox, cxpb=0.5, mutpb=0.5, ngen=10, stats=stats, halloffame=hof, verbose=True)
+        pop, logbook = algorithms.eaSimple(pop, toolbox, cxpb=0.0, mutpb=1.0, ngen=10, stats=stats, halloffame=hof, verbose=True)
         pool.close()
 
         x = hof[0]
@@ -218,11 +218,8 @@ def lnprob(casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims, m
     except:
         return np.inf,
 
-    likelyhood = -2000 * ((np.median(rms)) ** 2.0)
-
     im_header = fitsio.read_header(casuin)
-    lp = lnprior(dicty, rms, im_header)
-    lnoutput = lp + likelyhood
+    lp = lnprior(dicty, rms)
 
     if not np.isfinite(lp):
         return np.inf,
@@ -230,7 +227,7 @@ def lnprob(casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims, m
     return np.median(rms),
 
 
-def lnprior(dicty, rms,im_header):
+def lnprior(dicty, rms):
 
 #    if np.all((len(rms) > 1000) and (0.0012 < dicty['CD1_1'] < 0.0025) and
 #              (0.0012 < dicty['CD1_1'] < 0.0025) and (

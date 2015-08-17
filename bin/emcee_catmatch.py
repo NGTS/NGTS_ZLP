@@ -143,13 +143,31 @@ def lnprob(x, casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims,
 
 def lnprior(dicty, rms):
 
-    if np.all((len(rms) > 1000) and (0.0012 < dicty['CD1_1'] < 0.0025) and
-              (0.0012 < dicty['CD1_1'] < 0.0025) and (
-                  (abs(dicty['CD2_1']) < 1e-4)) and
-              (abs(dicty['CD1_2']) < 1e-4) and (abs(dicty['RA_s']) < 1.0) and
-              (abs(dicty['DEC_s'] < 1.0))):
+#    if np.all((len(rms) > 1000) and (0.0012 < dicty['CD1_1'] < 0.0025) and
+#              (0.0012 < dicty['CD1_1'] < 0.0025) and (
+#                  (abs(dicty['CD2_1']) < 1e-4)) and
+#              (abs(dicty['CD1_2']) < 1e-4) and (abs(dicty['RA_s']) < 1.0) and
+#              (abs(dicty['DEC_s'] < 1.0))):
+#        return 0.0
+#    return -np.inf
+
+    left = [[1024, 0]]
+    right = [[1024, 2048]]
+    top = [[2048, 1024]]
+    bottom = [[0, 1024]]
+
+    w = wcs.WCS(dicty)
+    wcs_left = w.wcs_pix2world(left,1)
+    wcs_right = w.wcs_pix2world(right,1)
+    wcs_top = w.wcs_pix2world(top,1)
+    wcs_bottom = w.wcs_pix2world(bottom,1)
+
+    x_sep = sky_sep(wcs_left[0],wcs_right[0])/3600
+    y_sep = sky_sep(wcs_top[0],wcs_bottom[0])/3600
+
+    if np.all((len(rms) > 100) & (x_sep > 2.75) & (y_sep > 2.75) & (x_sep < 2.95) & (y_sep < 2.95)):
         return 0.0
-    return -np.inf
+    return np.inf
 
 
 if __name__ == '__main__':
