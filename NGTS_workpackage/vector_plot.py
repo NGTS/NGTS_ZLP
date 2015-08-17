@@ -18,7 +18,7 @@ from astropy.io import fits
 import fitsio
 import os
 from NGTS_workpackage.catmatch import load_wcs_from_keywords
-from NGTS_workpackage.catmatch import calc_seps
+from NGTS_workpackage.catmatch import calc_seps, sky_sep
 from astropy.io import fits as pf
 
 
@@ -90,18 +90,18 @@ def wcsf_QCheck(catalog_name, image_name, plot_name, cat,
     top = [[2048, 1024]]
     bottom = [[0, 1024]]
 
-    wcs_left = load_wcs_from_keywords(left,1)
-    wcs_right = load_wcs_from_keywords(right,1)
-    wcs_top = load_wcs_from_keywords(top,1)
-    wcs_bottom = load_wcs_from_keywords(bottom,1)
+    wcs_left = load_wcs_from_keywords(im_header,left)
+    wcs_right = load_wcs_from_keywords(im_header,right)
+    wcs_top = load_wcs_from_keywords(im_header,top)
+    wcs_bottom = load_wcs_from_keywords(im_header,bottom)
 
-    x_sep = sky_sep(wcs_left[0],wcs_right[0])/3600
-    y_sep = sky_sep(wcs_top[0],wcs_bottom[0])/3600
+    x_width = sky_sep(wcs_left[0],wcs_right[0])/3600
+    y_width = sky_sep(wcs_top[0],wcs_bottom[0])/3600
 
     #  axis.plot(true_cen_xs,true_cen_ys,'go',markersize=10)
 
 
-    print 'FOV:',x_sep,y_sep
+    print 'FOV:',x_width,y_width
     print 'found ',len(sep_list),' sources'
 
 
