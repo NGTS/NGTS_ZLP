@@ -236,7 +236,7 @@ def lnprior(dicty, rms,im_header):
     x_sep = sky_sep(wcs_left[0],wcs_right[0])/3600
     y_sep = sky_sep(wcs_top[0],wcs_bottom[0])/3600
 
-    if np.all((len(rms) > 100) & (x_sep > 2.8) & (y_sep > 2.8) & (x_sep < 2.9) & (y_sep < 2.9)):
+    if np.all((len(rms) > 100) & (x_sep > 2.75) & (y_sep > 2.75) & (x_sep < 2.95) & (y_sep < 2.95)):
         return 0.0
     return np.inf
 
