@@ -85,7 +85,23 @@ def wcsf_QCheck(catalog_name, image_name, plot_name, cat,
 
     print 'cen is', cen_world
 
+    left = [[1024, 0]]
+    right = [[1024, 2048]]
+    top = [[2048, 1024]]
+    bottom = [[0, 1024]]
+
+    wcs_left = load_wcs_from_keywords(left,1)
+    wcs_right = load_wcs_from_keywords(right,1)
+    wcs_top = load_wcs_from_keywords(top,1)
+    wcs_bottom = load_wcs_from_keywords(bottom,1)
+
+    x_sep = sky_sep(wcs_left[0],wcs_right[0])/3600
+    y_sep = sky_sep(wcs_top[0],wcs_bottom[0])/3600
+
     #  axis.plot(true_cen_xs,true_cen_ys,'go',markersize=10)
+
+
+    print 'FOV:',x_sep,y_sep
     print 'found ',len(sep_list),' sources'
 
 

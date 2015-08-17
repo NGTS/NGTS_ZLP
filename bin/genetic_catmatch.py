@@ -11,6 +11,7 @@ import astropy.io.fits as pf
 import sys
 import argparse
 import multiprocessing as mp
+from scipy.optimize import minimize
 
 def main(args):
 
@@ -147,11 +148,6 @@ def main(args):
 
     prior = [1036.7321717054986, 1096.8650742235243, -0.001401784573685648, -0.0014012682614868211, 2.3835942625088995e-05, -2.4196483702234726e-05, 6.897168819915355, 428.67716787632344, 15682.380358213133, -0.003270601033412758, -0.11566758136316097]
 
-    from scipy.optimize import minimize
-
-    minimize(lnprob,prior,args=(args.casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims,DEC_lims, my_X, my_Y, pix_coords, name_list, dicty),method='Powell')
-    quit()
-
     for i in range(0,10000):
         #required to be in loop to plug a memory leak... non optimal.
         pool = mp.Pool(nthreads)
@@ -173,8 +169,11 @@ def main(args):
                                  TEL_DEC, RA_lims, DEC_lims, my_X, my_Y,
                                  pix_coords,update=True)
         print np.median(rms)
-        if np.median(rms) < 2.0:
-            lm_solve(x)                        
+        if np.median(rms) < 0.6:
+            new_x = polish(prior,args.casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty)
+            print new_x
+            print 'This is probably optimum'
+            quit()
 
 
 def scatter_prior(prior,sigma):
@@ -196,7 +195,15 @@ def scatter_individual(individual,sigma=0.01,indp=0.01,scale_jump_p=0.01,tweak_j
                 individual[i] = np.random.normal(individual[i],np.abs(sigma*individual[i]))
     return individual,
 
-def lnprob(x,casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty):
+def polish(x,casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty):
+    result = minimize(eval_polish,x,args=(casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims,DEC_lims, my_X, my_Y, pix_coords, name_list, dicty),method='Nelder-Mead')
+    return result['x']
+
+def eval_polish(x,casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty):
+    result, = lnprob(casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty,x)
+    return result
+
+def lnprob(casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty,x):
 
     for i in range(0, len(x)):
         dicty[name_list[i]] = x[i]
@@ -209,8 +216,7 @@ def lnprob(x,casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims,
                                  TEL_DEC, RA_lims, DEC_lims, my_X, my_Y,
                                  pix_coords)
     except:
-#        return np.inf,
-        return np.inf
+        return np.inf,
 
     likelyhood = -2000 * ((np.median(rms)) ** 2.0)
 
@@ -219,15 +225,9 @@ def lnprob(x,casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims,
     lnoutput = lp + likelyhood
 
     if not np.isfinite(lp):
-#        return np.inf,
-       return np.inf
+        return np.inf,
 
-    print x
-    print np.median(rms)
-    return np.median(rms)
-
-#    return lnoutput,
-#    return np.median(rms),
+    return np.median(rms),
 
 
 def lnprior(dicty, rms,im_header):
