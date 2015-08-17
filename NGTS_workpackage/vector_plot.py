@@ -19,24 +19,40 @@ import fitsio
 import os
 from NGTS_workpackage.catmatch import load_wcs_from_keywords
 from NGTS_workpackage.catmatch import calc_seps
+from astropy.io import fits as pf
 
 
-def wcsf_QCheck(catalog_name, image_name, plot_name, cat, catsrc,
+def wcsf_QCheck(catalog_name, image_name, plot_name, cat,
                 upscale_factor=500,
                 plot=True):
-
-
-    my_X = cat[1].data['x_coordinate']
-    my_Y = cat[1].data['y_coordinate']
 
     cat_names = []
     RA_lims = []
     DEC_lims = []
+
+    catsrc = cat.rstrip(cat.split('/')[-1])
+
     for line in open(catsrc+'/index'):
         vals = line.strip('\n').split(' ')
         cat_names += [vals[0]]
         RA_lims += [[float(vals[2]),float(vals[3])]]
         DEC_lims += [[float(vals[4]),float(vals[5])]]
+
+    n = 0
+
+    cat_name = cat_names[n]
+
+    with pf.open(catsrc+'/'+cat_name) as catd:
+      catt = catd[1].data.copy()
+    cat = {'ra':catt['ra'],'dec':catt['dec'],'Jmag':catt['Jmag']}
+
+
+    with pf.open(catalog_name) as mycatd:
+        mycatt = mycatd[1].data.copy()
+        my_X = mycatd[1].data['x_coordinate']
+        my_Y = mycatd[1].data['y_coordinate']
+
+    mycat = {'Aper_flux_3':mycatt['Aper_flux_3']}
 
     print 'about to plot'
 
@@ -47,7 +63,7 @@ def wcsf_QCheck(catalog_name, image_name, plot_name, cat, catsrc,
     world = load_wcs_from_keywords(im_header, pix_coords)
 
     xs, ys, RA_sep, DEC_sep, x_sep, y_sep, sep_list = calc_seps(
-        catalog_name, cat, RA_lims, DEC_lims, world, my_X, my_Y, im_header)
+        mycat, cat, RA_lims, DEC_lims, world, my_X, my_Y, im_header)
 
     rms = np.median(sep_list)
 
@@ -70,6 +86,8 @@ def wcsf_QCheck(catalog_name, image_name, plot_name, cat, catsrc,
     print 'cen is', cen_world
 
     #  axis.plot(true_cen_xs,true_cen_ys,'go',markersize=10)
+    print 'found ',len(sep_list),' sources'
+
 
     if plot == True:
         import matplotlib
@@ -100,6 +118,8 @@ def wcsf_QCheck(catalog_name, image_name, plot_name, cat, catsrc,
         fits[0].write_key('wcsf_RMS', rms)
         fits[0].write_key('wcsf_RA', cen_world[0][0])
         fits[0].write_key('wcsf_DEC', cen_world[0][1])
+
+    return rms
 
 
 def iter_poly(xs, RA_sep):
@@ -152,11 +172,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("catalog_name")
     parser.add_argument('image_name')
-    parser.add_argument('plot_name')
     parser.add_argument('cat')
-    parser.add_argument('catsrc')
+    parser.add_argument('plot_name')
 
     args = parser.parse_args()
-    med_sep = plot_differences(args.catalog_name, args.image_name,
-                               args.plot_name, args.cat, args.catsrc)
+    med_sep = wcsf_QCheck(args.catalog_name, args.image_name,
+                               args.plot_name, args.cat)
     print 'the median sep is', med_sep, ' arcseconds'

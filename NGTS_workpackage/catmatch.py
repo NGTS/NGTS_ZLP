@@ -299,3 +299,9 @@ def load_wcs_from_keywords(fheader, pixcrd):
     world = w.wcs_pix2world(pixcrd, 1)
 
     return world
+
+def sky_sep(c1,c2):
+    sep = 3600 * (((c1[0] - c2[0]) *
+                       (np.cos(c1[1] * np.pi / 180.0))) ** 2.0 +
+                      (c1[1] - c2[1]) ** 2.0) ** 0.5
+    return sep
