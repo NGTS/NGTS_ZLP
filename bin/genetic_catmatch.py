@@ -143,6 +143,15 @@ def main(args):
     
 #    old_best = [872.7225757887486, 1113.8052862722673, 0.001235502346442564, 0.00071341762270345, -1.8620475874018094e-06, 9.392021451322169e-07, 8.696428851660816, 281.6029470630021, 19648.54124845112, 0.865776751183994, -2.023251331235531]
 
+    prior = [1036.7659160556957, 1096.8252100341174, -0.001401848440110451, -0.0014013722072105585, 2.388587148144828e-05, -2.4261914468789037e-05, 6.950867138717323, 443.7975833904563, 6175.138975826036, -0.0033025073050745907, -0.11565356728453148]
+
+    prior = [1036.7321717054986, 1096.8650742235243, -0.001401784573685648, -0.0014012682614868211, 2.3835942625088995e-05, -2.4196483702234726e-05, 6.897168819915355, 428.67716787632344, 15682.380358213133, -0.003270601033412758, -0.11566758136316097]
+
+    from scipy.optimize import minimize
+
+    minimize(lnprob,prior,args=(args.casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims,DEC_lims, my_X, my_Y, pix_coords, name_list, dicty),method='Powell')
+    quit()
+
     for i in range(0,10000):
         #required to be in loop to plug a memory leak... non optimal.
         pool = mp.Pool(nthreads)
@@ -164,6 +173,8 @@ def main(args):
                                  TEL_DEC, RA_lims, DEC_lims, my_X, my_Y,
                                  pix_coords,update=True)
         print np.median(rms)
+        if np.median(rms) < 2.0:
+            lm_solve(x)                        
 
 
 def scatter_prior(prior,sigma):
@@ -185,7 +196,7 @@ def scatter_individual(individual,sigma=0.01,indp=0.01,scale_jump_p=0.01,tweak_j
                 individual[i] = np.random.normal(individual[i],np.abs(sigma*individual[i]))
     return individual,
 
-def lnprob(casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty,x):
+def lnprob(x,casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims, my_X, my_Y, pix_coords, name_list, dicty):
 
     for i in range(0, len(x)):
         dicty[name_list[i]] = x[i]
@@ -198,7 +209,8 @@ def lnprob(casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims, m
                                  TEL_DEC, RA_lims, DEC_lims, my_X, my_Y,
                                  pix_coords)
     except:
-        return np.inf,
+#        return np.inf,
+        return np.inf
 
     likelyhood = -2000 * ((np.median(rms)) ** 2.0)
 
@@ -207,12 +219,15 @@ def lnprob(casuin, mycat, cat, XVAL, YVAL, TEL_RA, TEL_DEC, RA_lims, DEC_lims, m
     lnoutput = lp + likelyhood
 
     if not np.isfinite(lp):
-        return np.inf,
+#        return np.inf,
+       return np.inf
 
-#    print lnoutput, np.median(rms)
+    print x
+    print np.median(rms)
+    return np.median(rms)
 
 #    return lnoutput,
-    return np.median(rms),
+#    return np.median(rms),
 
 
 def lnprior(dicty, rms,im_header):
