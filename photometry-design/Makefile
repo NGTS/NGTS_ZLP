@@ -1,4 +1,4 @@
-all: schematic.png schematic.svg schematic.pdf
+all: process.html schematic.png schematic.svg schematic.pdf
 
 %.png: %.dot
 	dot -T png $< -o $@
@@ -8,6 +8,9 @@ all: schematic.png schematic.svg schematic.pdf
 
 %.pdf: %.dot
 	dot -T pdf $< -o $@
+
+%.html: %.asciidoc
+	asciidoctor $<
 
 .PHONY: clean
 

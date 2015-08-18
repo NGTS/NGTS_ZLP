@@ -14,3 +14,4 @@ stds_proc*.fits
 !testing/hjd_example_catalogue.fits
 tmp/*
 *.swp
+photometry-design/*.html

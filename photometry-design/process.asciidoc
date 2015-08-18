@@ -1,0 +1,36 @@
+= Process
+
+Here we document every step the photometry module takes.
+
+The package is basically a wrapper around calling `imcore_list` which performs list-driven photometry on positions. All code runs per-image.
+
+* `m_solve_images`
+  ** Initialise the wcs cache, before parallel processing
+  ** solve the image
+    *** apply the initial wcs solution (supplied to the pipeline)
+    *** run `imcore` to extract the sources
+      **** extracted next to original file, e.g. `file.fits` -> `file.cat`
+      **** extract sources with:
+        ***** `ipix = 2`
+        ***** `rcore = 3`
+        ***** `threshold = 2`
+        ***** No confidence map
+        ***** `filtfwhm = 1`
+    *** run `wcsfit` to solve the image
+      **** reference catalogue as given
+    *** perform QC analysis on the solution
+* `m_wcs_photom`
+  ** run `imcore_list` on the solved image, with the input catalogue
+    *** aperture size: 3
+  ** run qa
+    *** extract the PSF statistics
+      **** stamp in header
+    *** compute frame signal to noise
+      **** stamp in header
+  ** compute HJD correction value - per star
+  ** add frame move parameters to each frame
+    *** `sky_move` - total shift from previous frame in arcseconds
+    *** `ra_move`  - ra shift from previous frame
+    *** `dec_move` - dec shift from previous frame 
+    *** `wcsf_ra`  - ra of central pixel
+    *** `wcsf_dec` - dec of central pixel
