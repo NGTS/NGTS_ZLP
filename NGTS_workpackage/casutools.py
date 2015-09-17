@@ -67,6 +67,7 @@ def imcore(input_file, output_table,
            confidence_map='noconf',
            rcore=2,
            filtfwhm=1,
+           nbsize=32,
            ellfile=False,
            casu_verbose=False,
            verbose=False):
@@ -74,7 +75,7 @@ def imcore(input_file, output_table,
     Runs the casu task `imcore`
     '''
     cmd = ['imcore', input_file, confidence_map, output_table, ipix, threshold,
-           '--filtfwhm', filtfwhm, '--rcore', rcore]
+           '--filtfwhm', filtfwhm, '--rcore', rcore, '--nbsize', nbsize]
 
     if casu_verbose:
         cmd.append('--verbose')
@@ -90,6 +91,7 @@ def imcore_list(input_file, listfile, output_file,
                 confidence_map='noconf',
                 rcore=3,
                 cattype=6,
+                nbsize=32,
                 casu_verbose=False,
                 noell=True,
                 verbose=False):
@@ -97,7 +99,8 @@ def imcore_list(input_file, listfile, output_file,
     Runs the casu task `imcore_list`
     '''
     cmd = ['imcore_list', input_file, confidence_map, listfile, output_file,
-           threshold, '--rcore', rcore, '--cattype', cattype]
+           threshold, '--rcore', rcore, '--cattype', cattype, '--nbsize',
+           nbsize]
 
     if noell:
         cmd.append('--noell')
