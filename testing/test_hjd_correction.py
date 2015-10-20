@@ -6,7 +6,7 @@ import os
 import pytest
 import fitsio
 import shutil
-from numpy import allclose, dtype, float64
+from numpy import allclose, isclose, dtype, float64
 
 
 def get_column_names(fname):
@@ -31,16 +31,17 @@ def backup_file(example_file, tmpdir):
     return out_path
 
 
-def test_hjd_computation():
-    ref_jd = 2456834.4
-    ref_ra = 14. * 15.
-    ref_dec = -60.0
-    sun_ra = 6.30860 * 15.
-    sun_dec = 23.37027
-
+@pytest.mark.parametrize('ref_jd,ref_ra,ref_dec,sun_ra,sun_dec,expected', [
+    (2456852.5, 210., -60.0, 113.0, 21.75,
+        3.1380841438850187 / 1440.),
+    (2457314.5, 300., -45., 203, -9.7,
+        -0.30763509918308357 / 1440.),
+    (2457023.5, 75., -20., 280.75, -23.05,
+        5.353955546815609 / 1440.),
+])
+def test_hjd_computation(ref_jd, ref_ra, ref_dec, sun_ra, sun_dec, expected):
     result = compute_hjd_correction(ref_jd, ref_ra, ref_dec, sun_ra, sun_dec)
-    expected = 2456834.403118045 - 2456834.399988426
-    assert allclose(result, expected, rtol=1E-2, atol=0)
+    assert isclose(result, expected, rtol=1E-1, atol=0)
 
 
 def test_read_from_file(example_file):
