@@ -204,26 +204,57 @@ def casu_solve(casuin, wcsref, dist_map, thresh=3, verbose=False, catsrc='viz2ma
     return 'ok'
 
 
+class InitialAstrometricSolutionParser(object):
+    KEYS = ['CTYPE1', 'CTYPE2', 'CRPIX1', 'CRPIX2',
+            'CRVAL1', 'CRVAL2', 'CD1_1', 'CD1_2', 'CD2_1', 'CD2_2',
+            'PV2_1', 'PV2_3', 'PV2_5', 'PV2_7']
+
+    def __init__(self, filename):
+        self.filename = filename
+
+    @property
+    def mimetype(self):
+        fileformat_map = {
+            '.fits': 'fits',
+            '.json': 'json',
+            '.p': 'pickle',
+        }
+        for key in fileformat_map:
+            if self.filename.endswith(key):
+                return fileformat_map[key]
+
+        raise ValueError("Invalid file extension. Must be one of %s" % (
+            fileformat_map.keys()))
+
+    def parse(self):
+        fn = getattr(self, 'parse_{mimetype}'.format(mimetype=self.mimetype))
+        solution = fn()
+        self.check_solution(solution)
+        return solution
+
+    def parse_json(self):
+        with open(self.filename) as infile:
+            json_data = json.load(infile)['wcs']
+        return { key: json_data[key] for key in self.KEYS }
+
+    def parse_fits(self):
+        header = fits.getheader(self.filename)
+        return { key: header[key] for key in self.KEYS }
+
+    def parse_pickle(self):
+        with open(self.filename) as infile:
+            solution = pickle.load(infile)
+        return { key: solution[key] for key in self.KEYS }
+
+    @staticmethod
+    def check_solution(solution):
+        if 'CD1_1' not in solution:
+            raise KeyError("Cannot find valid wcs solution in map {}".format(
+                json.dumps(solution)))
+
+
 def extract_dist_map(filename):
-    with open(filename) as infile:
-        try:
-            dist_map = json.load(infile)
-        except ValueError as err:
-            if 'No JSON object could be decoded' in str(err):
-                infile.seek(0)
-                dist_map = pickle.load(infile)
-            else:
-                raise
-
-    if 'meta' in dist_map:
-        print(json.dumps(dist_map['meta'], indent=2))
-        dist_map = dist_map['wcs']
-
-    if 'CD1_1' not in dist_map:
-        raise KeyError("Cannot find valid wcs solution in map {}".format(
-            json.dumps(dist_map)))
-
-    return dist_map
+    return InitialAstrometricSolutionParser(filename).parse()
 
 
 def reference_catalogue_objects(catalogue, catpath):
