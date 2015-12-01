@@ -18,8 +18,7 @@ def source_filename(tmpdir):
 @pytest.fixture
 def dist_map():
     fname = os.path.join(TESTDIR, 'fixtures', 'wcs_params.json')
-    with open(fname) as infile:
-        return json.load(infile)
+    return w.extract_dist_map(fname)
 
 
 @pytest.fixture
